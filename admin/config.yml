@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: ton-user-github/ton-repo
+  repo: clayton63/QuartzReport
   branch: main
 
   # Auth GitHub via les variables Netlify
