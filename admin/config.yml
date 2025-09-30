@@ -3,6 +3,10 @@ backend:
   repo: Clayton630/QuartzReport
   branch: main
 
+  # Auth GitHub via Netlify
+  base_url: https://api.netlify.com
+  auth_endpoint: auth
+
 media_folder: "img/uploads"
 public_folder: "/img/uploads"
 
