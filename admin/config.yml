@@ -3,6 +3,10 @@ backend:
   repo: ton-user-github/ton-repo
   branch: main
 
+  # Auth GitHub via les variables Netlify
+  base_url: https://api.netlify.com
+  auth_endpoint: auth
+
 media_folder: "img/uploads"
 public_folder: "/img/uploads"
 
