@@ -4,9 +4,9 @@ backend:
   branch: main
   base_url: https://decap-oauth-proxy-5t6x.onrender.com
   auth_endpoint: auth
+
 media_folder: "img/uploads"
 public_folder: "/img/uploads"
-local_backend: true
 
 collections:
   - name: "articles"
