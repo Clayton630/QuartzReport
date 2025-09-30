@@ -7,11 +7,15 @@ media_folder: "img/uploads"
 public_folder: "/img/uploads"
 
 collections:
-  - name: "test"
-    label: "Test Articles"
+  - name: "articles"
+    label: "Articles"
     folder: "articles"
     create: true
-    slug: "{{slug}}"
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     fields:
       - { label: "Titre", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Auteur", name: "author", widget: "string", default: "Clément Lamps" }
+      - { label: "Résumé", name: "description", widget: "text" }
       - { label: "Contenu", name: "body", widget: "markdown" }
+      - { label: "Image de couverture", name: "thumbnail", widget: "image" }
