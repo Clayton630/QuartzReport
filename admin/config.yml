@@ -2,7 +2,7 @@ backend:
   name: github
   repo: Clayton630/QuartzReport
   branch: main
-  base_url: https://decap-oauth-proxy-5t6x.onrender.com/callback
+  base_url: https://decap-oauth-proxy-5t6x.onrender.com
   auth_endpoint: auth
 
 media_folder: "img/uploads"
@@ -21,3 +21,4 @@ collections:
       - { label: "Résumé", name: "description", widget: "text" }
       - { label: "Contenu", name: "body", widget: "markdown" }
       - { label: "Image de couverture", name: "thumbnail", widget: "image" }
+      
