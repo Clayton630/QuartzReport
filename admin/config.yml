@@ -1,8 +1,9 @@
 backend:
-  name: git-gateway
-  branch: main   # Branche où seront stockés les articles
+  name: github
+  repo: ton-user-github/ton-repo
+  branch: main
 
-media_folder: "img/uploads"   # Où stocker les images
+media_folder: "img/uploads"
 public_folder: "/img/uploads"
 
 collections:
