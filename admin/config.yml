@@ -1,5 +1,5 @@
 backend:
-  name: github
+  name: git-gateway
   repo: Clayton630/QuartzReport
   branch: main
   base_url: https://decap-oauth-proxy-5t6x.onrender.com
