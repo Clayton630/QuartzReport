@@ -1,10 +1,12 @@
 backend:
   name: github
-  repo: Clayton630/QuartzReport   # ton repo GitHub
+  repo: Clayton630/QuartzReport
   branch: main
+  base_url: https://decap-oauth-proxy-5t6x.onrender.com/callback
+  auth_endpoint: auth
 
-media_folder: "img/uploads"       # où les images seront stockées dans ton repo
-public_folder: "/img/uploads"     # chemin public pour ton site
+media_folder: "img/uploads"
+public_folder: "/img/uploads"
 
 collections:
   - name: "articles"
