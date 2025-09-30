@@ -21,4 +21,3 @@ collections:
       - { label: "Résumé", name: "description", widget: "text" }
       - { label: "Contenu", name: "body", widget: "markdown" }
       - { label: "Image de couverture", name: "thumbnail", widget: "image" }
-      
