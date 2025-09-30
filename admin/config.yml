@@ -6,6 +6,7 @@ backend:
   auth_endpoint: auth
 media_folder: "img/uploads"
 public_folder: "/img/uploads"
+local_backend: true
 
 collections:
   - name: "articles"
