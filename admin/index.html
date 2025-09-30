@@ -6,20 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 </head>
 <body>
-  <!-- Point de montage obligatoire -->
   <div id="nc-root"></div>
 
-  <!-- Script Decap CMS -->
+  <!-- Charger l’ancien bundle Netlify CMS -->
   <script src="https://unpkg.com/netlify-cms-app@^2.15.72/dist/netlify-cms.js"></script>
-
-  <!-- Enregistrement explicite du backend GitHub -->
-  <script>
-    if (window.CMS_BACKENDS && window.CMS_BACKENDS.github) {
-      CMS.registerBackend("github", window.CMS_BACKENDS.github);
-      console.log("✅ Backend GitHub enregistré avec succès");
-    } else {
-      console.error("❌ Backend GitHub introuvable dans CMS_BACKENDS");
-    }
-  </script>
 </body>
 </html>
