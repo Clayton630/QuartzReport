@@ -1,14 +1,10 @@
 backend:
   name: github
-  repo: Clayton630/QuartzReport
+  repo: Clayton630/QuartzReport   # ton repo GitHub
   branch: main
 
-  # Auth GitHub via Netlify
-  base_url: https://api.netlify.com
-  auth_endpoint: auth
-
-media_folder: "img/uploads"
-public_folder: "/img/uploads"
+media_folder: "img/uploads"       # où les images seront stockées dans ton repo
+public_folder: "/img/uploads"     # chemin public pour ton site
 
 collections:
   - name: "articles"
