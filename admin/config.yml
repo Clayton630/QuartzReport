@@ -1,8 +1,8 @@
 backend:
   name: github
-  repo: Clayton630/QuartzReport
+  repo: Clayton630/QuartzReport   # Ton dépôt
   branch: main
-  base_url: https://decap-oauth-proxy-5t6x.onrender.com
+  base_url: https://quartzreport-oauth.claytonelhorga.workers.dev
   auth_endpoint: auth
 
 media_folder: "img/uploads"
