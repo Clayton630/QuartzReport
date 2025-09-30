@@ -1,0 +1,213 @@
+/* =========================
+   Reset & bases
+   ========================= */
+html, body {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  overflow-x: hidden; /* empêche scroll horizontal */
+  font-family: Arial, sans-serif;
+  background: #f5f7fa;
+  color: #111;
+}
+
+/* =========================
+   Header
+   ========================= */
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #3a7bd5;
+}
+.logo span {
+  color: #1d4ed8;
+}
+
+.icons {
+  display: flex;
+  gap: 8px;
+}
+.icons button {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+/* =========================
+   Navigation (catégories)
+   ========================= */
+.main-nav {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  background: #f5f7fa;
+  padding: 10px 16px;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
+}
+.main-nav ul {
+  display: flex;
+  gap: 10px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-wrap: nowrap;
+}
+.main-nav a {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: #3a7bd5;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* =========================
+   Section Hottest
+   ========================= */
+.hottest {
+  padding: 16px;
+}
+.hottest h2 {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+.hottest-grid {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;     /* ✅ autorise le scroll horizontal */
+  scroll-snap-type: x mandatory; /* ✅ optionnel : effet “snap” propre */
+  padding-bottom: 8px;  /* petit espace pour ne pas couper les cartes */
+}
+
+.hottest-grid .card {
+  flex: 0 0 80%;        /* ✅ chaque carte prend ~80% de la largeur de l’écran */
+  scroll-snap-align: start;
+}
+.card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.card img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.card h3 {
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+/* =========================
+   Articles récents
+   ========================= */
+.articles {
+  padding: 16px;
+}
+.article-block {
+  display: block; /* Mobile = pile */
+  background: #fff;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+.article-block img {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+.article-block .content {
+  padding: 12px;
+}
+.article-block h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+.article-block p {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* =========================
+   Optimisation Mobile (≤480px)
+   ========================= */
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.8rem; /* plus visible */
+  }
+
+  .icons button {
+    font-size: 1.8rem; /* icônes plus grosses */
+  }
+
+  .main-nav a {
+    font-size: 1rem;
+    padding: 8px 16px; /* pastilles plus larges */
+  }
+
+  .hottest h2 {
+    font-size: 1.3rem;
+  }
+
+  .card h3 {
+    font-size: 1.1rem;
+    padding: 12px;
+  }
+
+  .article-block h3 {
+    font-size: 1.2rem;
+  }
+  .article-block p {
+    font-size: 1rem;
+  }
+}
+
+/* =========================
+   Version Desktop (≥768px)
+   ========================= */
+@media (min-width: 768px) {
+  .site-header {
+    padding: 10px 20px;
+  }
+
+  .main-nav ul {
+    justify-content: center;
+  }
+
+  .hottest-grid {
+    grid-template-columns: repeat(3, 1fr); /* 3 colonnes sur desktop */
+  }
+
+  .article-block {
+    display: flex; /* Desktop = image + texte côte à côte */
+  }
+  .article-block img {
+    width: 200px;
+    height: auto;
+    object-fit: cover;
+  }
+}
