@@ -103,18 +103,17 @@ html, body {
   scroll-snap-align: start;
   text-decoration: none;
   color: inherit;
-  display: block;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ✅ Style général des cartes */
 .card {
   background: #fff;
-  border-radius: 20px; /* arrondi plus prononcé */
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  display: flex;
-  flex-direction: column;
 }
 .card:hover {
   transform: translateY(-3px);
@@ -128,14 +127,20 @@ html, body {
   display: block;
 }
 
-/* ✅ Texte sous l’image avec dégradé */
-.card h3 {
+/* ✅ Bloc texte toujours rempli de dégradé */
+.card-content {
+  flex: 1;
+  background: linear-gradient(to bottom, #879ED2, #579FEA);
+  display: flex;
+  align-items: flex-start;
+}
+
+.card-content h3 {
   padding: 16px;
   font-size: 1rem;
   margin: 0;
-  text-align: left;
   color: #fff;
-  background: linear-gradient(to bottom, #879ED2, #579FEA);
+  text-align: left;
 }
 
 /* =========================
@@ -193,7 +198,7 @@ html, body {
     font-size: 1.3rem;
   }
 
-  .card h3 {
+  .card-content h3 {
     font-size: 1.1rem;
     padding: 18px;
   }
@@ -220,7 +225,7 @@ html, body {
 
   .hottest-grid {
     overflow-x: visible;
-    justify-content: flex-start; /* alignement à gauche */
+    justify-content: flex-start;
     flex-wrap: wrap;
   }
 
@@ -229,7 +234,7 @@ html, body {
     max-width: 250px;
   }
 
-  .card h3 {
+  .card-content h3 {
     font-size: 1rem;
     padding: 16px;
   }
