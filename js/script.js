@@ -1,5 +1,7 @@
 async function loadArticles() {
   const container = document.getElementById("articles");
+  const hottestContainer = document.getElementById("hottest");
+  const categoriesContainer = document.getElementById("categories");
 
   // Ton repo GitHub
   const repo = "Clayton630/QuartzReport";
@@ -14,8 +16,8 @@ async function loadArticles() {
     }
 
     const files = await resp.json();
-
     const articles = [];
+
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
@@ -40,28 +42,68 @@ async function loadArticles() {
         author: meta.author || "",
         description: meta.description || "",
         thumbnail: meta.thumbnail || "img/article-placeholder.jpg",
+        category: meta.category || "Autre",
+        important: meta.important === "true" || meta.important === true,
         file: file.download_url
       });
     }
 
-    // 2. Trier par date décroissante
+    // 2. Trier les articles par date décroissante
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // 3. Générer autant de blocs que nécessaire
-    for (let article of articles) {
-      const el = document.createElement("article");
-      el.className = "article-block";
-      el.innerHTML = `
+    // 3. Générer la navigation catégories
+    const uniqueCategories = [...new Set(articles.map(a => a.category))];
+    categoriesContainer.innerHTML = uniqueCategories
+      .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
+      .join("");
+
+    // 4. Générer les articles Hottest (important: true)
+    hottestContainer.innerHTML = "";
+    const hottestArticles = articles.filter(a => a.important).slice(0, 3);
+    hottestArticles.forEach(article => {
+      const card = document.createElement("article");
+      card.className = "card";
+      card.innerHTML = `
         <img src="${article.thumbnail}" alt="">
-        <div class="content">
-          <h3>${article.title}</h3>
-          <p><em>${article.date} – ${article.author}</em></p>
-          <p>${article.description}</p>
-          <a href="${article.file}" target="_blank">Lire l’article complet</a>
-        </div>
+        <h3>${article.title}</h3>
       `;
-      container.appendChild(el);
+      hottestContainer.appendChild(card);
+    });
+
+    // 5. Fonction pour afficher la liste des articles
+    function renderArticles(list) {
+      container.innerHTML = "";
+      list.forEach(article => {
+        const el = document.createElement("article");
+        el.className = "article-block";
+        el.innerHTML = `
+          <img src="${article.thumbnail}" alt="">
+          <div class="content">
+            <h3>${article.title}</h3>
+            <p><em>${article.date} – ${article.author} – ${article.category}</em></p>
+            <p>${article.description}</p>
+            <a href="${article.file}" target="_blank">Lire l’article complet</a>
+          </div>
+        `;
+        container.appendChild(el);
+      });
     }
+
+    // 6. Afficher tous les articles au départ
+    renderArticles(articles);
+
+    // 7. Filtrage par catégorie
+    categoriesContainer.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        const cat = link.getAttribute("data-category");
+        if (cat === "Tous") {
+          renderArticles(articles);
+        } else {
+          renderArticles(articles.filter(a => a.category === cat));
+        }
+      });
+    });
   } catch (err) {
     console.error("Erreur lors du chargement des articles :", err);
     container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
