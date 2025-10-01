@@ -69,7 +69,9 @@ async function loadArticles() {
 
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="">
-        <h3>${article.title}</h3>
+        <div class="card-content">
+          <h3>${article.title}</h3>
+        </div>
       `;
 
       hottestContainer.appendChild(link);
