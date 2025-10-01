@@ -139,7 +139,7 @@ document.addEventListener("DOMContentLoaded", loadArticles);
    - Tilt 3D doux avec inertie
    ========================= */
 (function () {
-  const SELECTOR = ".hottest-grid .card, .main-nav a, .article-block";
+  const SELECTOR = ".hottest-grid .card"; // ✅ uniquement Hottest
 
   function setMouseVars(el, e) {
     const r = el.getBoundingClientRect();
@@ -151,9 +151,9 @@ document.addEventListener("DOMContentLoaded", loadArticles);
 
   function tilt(el, e) {
     const r = el.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - 0.5;  // -0.5..0.5
+    const px = (e.clientX - r.left) / r.width - 0.5;
     const py = (e.clientY - r.top) / r.height - 0.5;
-    const maxTilt = 6; // degrés
+    const maxTilt = 6;
     const rx = (+py * -maxTilt).toFixed(2);
     const ry = (+px *  maxTilt).toFixed(2);
     el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
@@ -183,16 +183,4 @@ document.addEventListener("DOMContentLoaded", loadArticles);
   }
 
   document.querySelectorAll(SELECTOR).forEach(attach);
-
-  // Si du contenu est chargé dynamiquement plus tard (ex: filtrage),
-  // on peut rappeler attach() pour les nouveaux éléments :
-  const mo = new MutationObserver(() => {
-    document.querySelectorAll(SELECTOR).forEach(el => {
-      if (!el.dataset._attached) {
-        el.dataset._attached = "1";
-        attach(el);
-      }
-    });
-  });
-  mo.observe(document.body, { childList: true, subtree: true });
 })();
