@@ -1,42 +1,50 @@
 async function loadArticles() {
-  const container = document.getElementById("articles");
-
-  // ⚠️ Pour l’instant, on liste les fichiers à la main.
-  // Plus tard, on pourra automatiser avec GitHub API ou un index JSON généré.
+  // Liste manuelle des fichiers, le plus récent en premier
   const files = [
-    "articles/2025-10-01-article-test.md"
+    "articles/2025-10-01-article-test.md",
+    // "articles/2025-09-28-un-autre-article.md"
   ];
 
-  for (let file of files) {
-    try {
-      const resp = await fetch(file);
-      if (!resp.ok) continue;
-      const text = await resp.text();
-
-      // Extraire front matter YAML (entre --- et ---)
-      const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
-      let meta = {}, body = text;
-      if (match) {
-        const yaml = match[1].trim();
-        body = match[2].trim();
-        yaml.split("\n").forEach(line => {
-          const [k, ...rest] = line.split(":");
-          meta[k.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
-        });
-      }
-
-      // Créer le bloc article
-      const articleEl = document.createElement("article");
-      articleEl.innerHTML = `
-        <h3>${meta.title || "Sans titre"}</h3>
-        <p><em>${meta.date || ""} – ${meta.author || ""}</em></p>
-        <p>${meta.description || ""}</p>
-        <a href="${file}">Lire l'article complet</a>
-      `;
-      container.appendChild(articleEl);
-    } catch (err) {
-      console.error("Erreur chargement article", file, err);
+  // Charger le premier article
+  if (files[0]) {
+    const article = await fetchAndParse(files[0]);
+    if (article) {
+      document.getElementById("last-article-title").textContent = article.title;
+      document.getElementById("last-article-desc").textContent = article.description;
+      document.getElementById("hottest-title").textContent = article.title;
     }
+  }
+
+  // Charger le second article si dispo
+  if (files[1]) {
+    const article = await fetchAndParse(files[1]);
+    if (article) {
+      document.getElementById("prev-article-title").textContent = article.title;
+      document.getElementById("prev-article-desc").textContent = article.description;
+    }
+  }
+}
+
+async function fetchAndParse(file) {
+  try {
+    const resp = await fetch(file);
+    if (!resp.ok) return null;
+    const text = await resp.text();
+
+    // Extraire front matter YAML
+    const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
+    let meta = {};
+    if (match) {
+      const yaml = match[1].trim();
+      yaml.split("\n").forEach(line => {
+        const [k, ...rest] = line.split(":");
+        meta[k.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
+      });
+    }
+    return meta;
+  } catch (err) {
+    console.error("Erreur article", file, err);
+    return null;
   }
 }
 
