@@ -6,7 +6,7 @@ html, body {
   padding: 0;
   max-width: 100%;
   overflow-x: hidden;
-  overflow-y: visible; /* ✅ évite de couper les ombres en vertical */
+  overflow-y: visible; /* ✅ laisse passer les ombres */
   font-family: 'Inter', Arial, sans-serif;
   background: linear-gradient(135deg, #f3f6fb, #ffffff);
   color: #111;
@@ -105,9 +105,8 @@ html, body {
    ========================= */
 .hottest {
   padding: 20px;
-  overflow: visible; /* ✅ évite de couper l’ombre */
-  position: relative; /* ✅ garantit que le contexte n’écrase pas les ombres */
-  z-index: 0;
+  margin-bottom: 20px; /* ✅ laisse de l’espace pour l’ombre */
+  overflow: visible;
 }
 .hottest h2 {
   font-size: 1.2rem;
@@ -117,9 +116,14 @@ html, body {
   display: flex;
   gap: 14px;
   scroll-snap-type: x mandatory;
-  padding-bottom: 12px;
-  overflow-x: auto;      /* ✅ garde le scroll horizontal */
-  overflow-y: visible;   /* ✅ laisse passer l’ombre verticalement */
+  padding-bottom: 16px;
+
+  overflow-x: auto;      /* ✅ scroll horizontal */
+  overflow-y: visible;   /* ✅ autorise les ombres verticales */
+  overscroll-behavior-x: contain;
+}
+.hottest-grid::-webkit-scrollbar {
+  display: none; /* ✅ supprime la barre de scroll moche sur mobile */
 }
 
 .hottest-grid .card {
@@ -136,7 +140,7 @@ html, body {
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
-  overflow: hidden; /* ✅ masque l’image */
+  overflow: hidden;
 }
 .hottest-grid .card:hover {
   transform: translateY(-4px);
@@ -168,7 +172,7 @@ html, body {
    ========================= */
 .articles {
   padding: 20px;
-  overflow: visible; /* ✅ évite de couper l’ombre */
+  overflow: visible;
 }
 .article-block {
   background: rgba(255,255,255,0.4);
