@@ -222,6 +222,20 @@ html, body {
     padding: 10px;
   }
 
+      /* Cartes Hottest en lien (<a>) */
+   .hottest-grid .card {
+     text-decoration: none;   /* supprime le souligné du lien */
+     color: inherit;          /* hérite de la couleur du texte normal */
+     display: block;          /* s'assure que l'ancre se comporte comme un bloc */
+   }
+   
+   /* Titre des cartes Hottest */
+   .hottest-grid .card h3 {
+     text-align: left;        /* aligne à gauche */
+     color: #111;             /* couleur standard du texte */
+     margin: 0;
+   }
+
   .article-block {
     display: flex; /* Desktop = image + texte côte à côte */
   }
