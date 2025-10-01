@@ -61,13 +61,18 @@ async function loadArticles() {
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
-      const card = document.createElement("article");
-      card.className = "card";
-      card.innerHTML = `
+      // Toute la carte est cliquable
+      const link = document.createElement("a");
+      link.href = article.file;
+      link.target = "_blank";
+      link.className = "card";
+
+      link.innerHTML = `
         <img src="${article.thumbnail}" alt="">
         <h3>${article.title}</h3>
       `;
-      hottestContainer.appendChild(card);
+
+      hottestContainer.appendChild(link);
     });
 
     // 5. Fonction pour afficher la liste des articles
