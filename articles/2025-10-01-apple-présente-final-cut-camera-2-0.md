@@ -5,7 +5,7 @@ author: Julien
 description: La version 2.0 fait un immense bond en avant avec la prise en
   charge de ProRes RAW et Genlock sur l’iPhone 17 Pro et l’iPhone 17 Pro Max, et
   de la caméra avant Center Stage de la nouvelle famille d’iPhone.
-thumbnail: /img/uploads/apple-final-cut-camera-2-0-lifestyle-250909_big.jpg.large_2x.jpg
+thumbnail: /img/uploads/apple-final-cut-camera-2-0-lifestyle-250909_big.jpg.large_2x-grande.jpeg
 important: true
 category: Apple
 ---
