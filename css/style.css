@@ -1,251 +1,114 @@
-/* =========================
-   Reset & bases
-   ========================= */
-html, body {
-  margin: 0;
-  padding: 0;
-  max-width: 100%;
-  overflow-x: hidden;
-  font-family: Arial, sans-serif;
-  background: #f5f7fa;
-  color: #111;
-}
+async function loadArticles() {
+  const container = document.getElementById("articles");
+  const hottestContainer = document.getElementById("hottest");
+  const categoriesContainer = document.getElementById("categories");
 
-/* =========================
-   Header
-   ========================= */
-.site-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: #fff;
-  box-shadow: 0 1px 5px rgba(0,0,0,0.1);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-sizing: border-box;
-  max-width: 100%;
-}
+  const repo = "Clayton630/QuartzReport";
+  const branch = "main";
 
-.logo {
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #3a7bd5;
-}
-.logo span {
-  color: #1d4ed8;
-}
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${repo}/contents/articles?ref=${branch}`);
+    if (!resp.ok) {
+      container.innerHTML = "<p>Impossible de charger les articles.</p>";
+      return;
+    }
 
-.icons {
-  display: flex;
-  gap: 8px;
-}
-.icons button {
-  background: none;
-  border: none;
-  font-size: 1.4rem;
-  cursor: pointer;
-}
+    const files = await resp.json();
+    const articles = [];
 
-/* =========================
-   Navigation (catégories)
-   ========================= */
-.main-nav {
-  max-width: 100%;
-  overflow-x: auto;
-  white-space: nowrap;
-  background: #f5f7fa;
-  padding: 10px 16px;
-  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.05);
-}
-.main-nav ul {
-  display: flex;
-  gap: 10px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  flex-wrap: nowrap;
-}
-.main-nav a {
-  display: inline-block;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: #3a7bd5;
-  color: #fff;
-  text-decoration: none;
-  font-size: 0.9rem;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
+    for (let file of files) {
+      if (!file.name.endsWith(".md")) continue;
 
-/* =========================
-   Section Hottest
-   ========================= */
-.hottest {
-  padding: 16px;
-}
-.hottest h2 {
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-}
-.hottest-grid {
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  padding-bottom: 8px;
-}
+      const raw = await fetch(file.download_url);
+      const text = await raw.text();
 
-.hottest-grid .card {
-  flex: 0 0 80%;
-  max-width: 320px;
-  scroll-snap-align: start;
-  text-decoration: none;
-  color: inherit;
-  display: flex;
-  flex-direction: column;
-}
+      const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
+      let meta = {}, body = text;
+      if (match) {
+        const yaml = match[1].trim();
+        body = match[2].trim();
+        yaml.split("\n").forEach(line => {
+          const [k, ...rest] = line.split(":");
+          meta[k.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
+        });
+      }
 
-/* ✅ Style général des cartes */
-.card {
-  background: #fff;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+      articles.push({
+        title: meta.title || "Sans titre",
+        date: meta.date || "",
+        author: meta.author || "",
+        description: meta.description || "",
+        thumbnail: meta.thumbnail || "img/article-placeholder.jpg",
+        category: meta.category || "Autre",
+        important: meta.important === "true" || meta.important === true,
+        file: file.download_url,
+        body: body // ✅ on garde le contenu complet du markdown
+      });
+    }
 
-/* ✅ Images toujours en 16:9 */
-.card img {
-  width: 100%;
-  aspect-ratio: 16 / 9;   /* force le format 16/9 */
-  object-fit: cover;
-  display: block;
-}
+    articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-/* ✅ Bloc texte toujours rempli de dégradé */
-.card-content {
-  flex: 1;
-  background: linear-gradient(to bottom, #879ED2, #579FEA);
-  display: flex;
-  align-items: flex-start;
-}
+    const uniqueCategories = [...new Set(articles.map(a => a.category))];
+    categoriesContainer.innerHTML = uniqueCategories
+      .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
+      .join("");
 
-.card-content h3 {
-  padding: 16px;
-  font-size: 1rem;
-  margin: 0;
-  color: #fff;
-  text-align: left;
-}
+    hottestContainer.innerHTML = "";
+    const hottestArticles = articles.filter(a => a.important).slice(0, 3);
+    hottestArticles.forEach(article => {
+      const link = document.createElement("a");
+      link.href = article.file;
+      link.target = "_blank";
+      link.className = "card";
+      link.innerHTML = `
+        <img src="${article.thumbnail}" alt="">
+        <div class="card-content">
+          <h3>${article.title}</h3>
+        </div>
+      `;
+      hottestContainer.appendChild(link);
+    });
 
-/* =========================
-   Articles récents
-   ========================= */
-.articles {
-  padding: 16px;
-}
-.article-block {
-  display: block;
-  background: #fff;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  width: 100%;
-  box-sizing: border-box;
-}
-.article-block img {
-  width: 100%;
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-.article-block .content {
-  padding: 12px;
-}
-.article-block h3 {
-  margin: 0 0 8px;
-  font-size: 1rem;
-}
-.article-block p {
-  font-size: 0.9rem;
-  color: #555;
-}
+    function renderArticles(list) {
+      container.innerHTML = "";
+      list.forEach(article => {
+        const el = document.createElement("article");
+        el.className = "article-block";
+        el.innerHTML = `
+          <div class="article-header">
+            <h3>${article.title}</h3>
+          </div>
+          <div class="article-meta">
+            <p><em>${article.date} – ${article.author} – ${article.category}</em></p>
+          </div>
+          <div class="article-image">
+            <img src="${article.thumbnail}" alt="">
+          </div>
+          <div class="article-body">
+            <p>${article.body.replace(/\n/g, "<br>")}</p>
+          </div>
+        `;
+        container.appendChild(el);
+      });
+    }
 
-/* =========================
-   Optimisation Mobile (≤480px)
-   ========================= */
-@media (max-width: 480px) {
-  .logo {
-    font-size: 1.8rem;
-  }
+    renderArticles(articles);
 
-  .icons button {
-    font-size: 1.8rem;
-  }
-
-  .main-nav a {
-    font-size: 1rem;
-    padding: 8px 16px;
-  }
-
-  .hottest h2 {
-    font-size: 1.3rem;
-  }
-
-  .card-content h3 {
-    font-size: 1.1rem;
-    padding: 18px;
-  }
-
-  .article-block h3 {
-    font-size: 1.2rem;
-  }
-  .article-block p {
-    font-size: 1rem;
+    categoriesContainer.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        const cat = link.getAttribute("data-category");
+        if (cat === "Tous") {
+          renderArticles(articles);
+        } else {
+          renderArticles(articles.filter(a => a.category === cat));
+        }
+      });
+    });
+  } catch (err) {
+    console.error("Erreur lors du chargement des articles :", err);
+    container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
 
-/* =========================
-   Version Desktop (≥768px)
-   ========================= */
-@media (min-width: 768px) {
-  .site-header {
-    padding: 10px 20px;
-  }
-
-  .main-nav ul {
-    justify-content: center;
-  }
-
-  .hottest-grid {
-    overflow-x: visible;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .hottest-grid .card {
-    flex: 0 0 250px;
-    max-width: 250px;
-  }
-
-  .card-content h3 {
-    font-size: 1rem;
-    padding: 16px;
-  }
-
-  .article-block {
-    display: flex;
-  }
-  .article-block img {
-    width: 200px;
-    height: auto;
-    object-fit: cover;
-  }
-}
+document.addEventListener("DOMContentLoaded", loadArticles);
