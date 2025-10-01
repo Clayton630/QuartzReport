@@ -82,9 +82,9 @@ html, body {
   display: inline-block;
   padding: 8px 16px;
   border-radius: 20px;
-  background: rgba(255,255,255,0.35);
-  border: 1px solid rgba(255,255,255,0.5);
-  backdrop-filter: blur(10px);
+  background: #fff; /* ✅ blanc pur */
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   color: #1d4ed8;
   font-weight: 500;
   text-decoration: none;
@@ -94,9 +94,9 @@ html, body {
   transition: all 0.3s ease;
 }
 .main-nav a:hover {
-  background: rgba(58,123,213,0.2);
+  background: #f8faff;
   color: #111;
-  box-shadow: 0 0 8px rgba(58,123,213,0.4);
+  box-shadow: 0 2px 8px rgba(58,123,213,0.25);
 }
 
 /* =========================
@@ -104,6 +104,7 @@ html, body {
    ========================= */
 .hottest {
   padding: 20px;
+  overflow: visible; /* ✅ évite de couper l’ombre */
 }
 .hottest h2 {
   font-size: 1.2rem;
@@ -125,12 +126,13 @@ html, body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: 20px; /* ✅ arrondi complet */
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(12px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
+  overflow: hidden; /* ✅ masque l’image */
 }
 .hottest-grid .card:hover {
   transform: translateY(-4px);
@@ -142,6 +144,7 @@ html, body {
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
+  border-radius: 0; /* ✅ image non arrondie directement */
 }
 
 .card-content {
@@ -161,6 +164,7 @@ html, body {
    ========================= */
 .articles {
   padding: 20px;
+  overflow: visible; /* ✅ évite de couper l’ombre */
 }
 .article-block {
   background: rgba(255,255,255,0.4);
