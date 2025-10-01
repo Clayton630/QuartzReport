@@ -92,25 +92,33 @@ html, body {
 .hottest-grid {
   display: flex;
   gap: 12px;
-  overflow-x: auto;     /* ✅ autorise le scroll horizontal */
-  scroll-snap-type: x mandatory; /* ✅ optionnel : effet “snap” propre */
-  padding-bottom: 8px;  /* petit espace pour ne pas couper les cartes */
+  overflow-x: auto;     /* ✅ scroll horizontal sur mobile */
+  scroll-snap-type: x mandatory; 
+  padding-bottom: 8px;
 }
 
 .hottest-grid .card {
-  flex: 0 0 80%;        /* ✅ chaque carte prend ~80% de la largeur de l’écran */
+  flex: 0 0 80%;        /* ✅ par défaut (mobile), occupe 80% */
+  max-width: 320px;     /* ✅ limite la taille max */
   scroll-snap-align: start;
 }
+
 .card {
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 .card img {
   width: 100%;
   max-width: 100%;
-  height: auto;
+  height: 160px;        /* ✅ hauteur fixe */
+  object-fit: cover;    /* ✅ recadrage propre */
   display: block;
 }
 .card h3 {
@@ -199,7 +207,19 @@ html, body {
   }
 
   .hottest-grid {
-    grid-template-columns: repeat(3, 1fr); /* 3 colonnes sur desktop */
+    overflow-x: visible;     /* ✅ pas de scroll sur desktop */
+    justify-content: center; /* ✅ centre les cartes */
+    flex-wrap: wrap;         /* ✅ plusieurs cartes par ligne */
+  }
+
+  .hottest-grid .card {
+    flex: 0 0 250px;         /* ✅ largeur fixe */
+    max-width: 250px;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    padding: 10px;
   }
 
   .article-block {
