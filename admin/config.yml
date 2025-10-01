@@ -21,3 +21,5 @@ collections:
       - { label: "Résumé", name: "description", widget: "text" }
       - { label: "Contenu", name: "body", widget: "markdown" }
       - { label: "Image de couverture", name: "thumbnail", widget: "image" }
+      - { label: "Important", name: "important", widget: "boolean", default: false }
+      - { label: "Catégorie", name: "category", widget: "select", options: ["Apple", "Comparatif", "Review", "Analyse", "Autre"] }
