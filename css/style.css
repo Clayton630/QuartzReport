@@ -113,9 +113,10 @@ html, body {
 .hottest-grid {
   display: flex;
   gap: 14px;
-  overflow-x: auto;
   scroll-snap-type: x mandatory;
   padding-bottom: 12px;
+  overflow-x: auto;      /* ✅ garde le scroll horizontal */
+  overflow-y: visible;   /* ✅ laisse passer l’ombre verticalement */
 }
 
 .hottest-grid .card {
