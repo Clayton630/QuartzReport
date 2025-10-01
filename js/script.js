@@ -132,3 +132,15 @@ async function loadArticles() {
 }
 
 document.addEventListener("DOMContentLoaded", loadArticles);
+
+// Cursor glow → met à jour --mx / --my en pourcentage du conteneur survolé
+document.addEventListener("mousemove", (e) => {
+  const targets = document.querySelectorAll(".hottest-grid .card, .main-nav a, .article-block");
+  targets.forEach(el => {
+    const r = el.getBoundingClientRect();
+    const x = ((e.clientX - r.left) / r.width) * 100;
+    const y = ((e.clientY - r.top) / r.height) * 100;
+    el.style.setProperty("--mx", `${x}%`);
+    el.style.setProperty("--my", `${y}%`);
+  });
+});
