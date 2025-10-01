@@ -7,7 +7,7 @@ html, body {
   max-width: 100%;
   overflow-x: hidden;
   font-family: Arial, sans-serif;
-  background: linear-gradient(135deg, #e6ecf5, #f9fbfd); /* léger dégradé */
+  background: linear-gradient(135deg, #e6ecf5, #f9fbfd);
   color: #111;
 }
 
@@ -19,8 +19,8 @@ html, body {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.6); /* translucide */
-  backdrop-filter: blur(12px); /* verre dépoli */
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-radius: 0 0 20px 20px;
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -97,7 +97,7 @@ html, body {
 }
 
 /* =========================
-   Section Hottest
+   Section Hottest (remis comme avant)
    ========================= */
 .hottest {
   padding: 16px;
@@ -123,15 +123,13 @@ html, body {
   display: flex;
   flex-direction: column;
   border-radius: 20px;
-  background: rgba(255,255,255,0.55);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-
-.card:hover {
+.hottest-grid .card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .card img {
@@ -143,7 +141,7 @@ html, body {
 
 .card-content {
   flex: 1;
-  background: linear-gradient(to bottom, rgba(135,158,210,0.9), rgba(87,159,234,0.9));
+  background: linear-gradient(to bottom, #879ED2, #579FEA);
   display: flex;
   align-items: flex-start;
 }
@@ -181,16 +179,17 @@ html, body {
   font-size: 1.4rem;
 }
 
+/* ✅ Remettre l’encadré gris comme avant */
 .article-meta {
   padding: 16px;
   font-size: 0.9rem;
-  color: #eee;
-  background: rgba(0,0,0,0.35);
-  backdrop-filter: blur(6px);
+  color: #444;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
 }
 .article-meta em {
   font-style: normal;
-  color: #f5f5f5;
+  color: #555;
   font-weight: 500;
 }
 
