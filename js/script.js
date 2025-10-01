@@ -1,50 +1,64 @@
 async function loadArticles() {
-  // Liste manuelle des fichiers, le plus récent en premier
-  const files = [
-    "articles/2025-10-01-article-test.md",
-    // "articles/2025-09-28-un-autre-article.md"
-  ];
+  const container = document.getElementById("articles");
 
-  // Charger le premier article
-  if (files[0]) {
-    const article = await fetchAndParse(files[0]);
-    if (article) {
-      document.getElementById("last-article-title").textContent = article.title;
-      document.getElementById("last-article-desc").textContent = article.description;
-      document.getElementById("hottest-title").textContent = article.title;
-    }
+  // Ton repo
+  const repo = "Clayton630/QuartzReport";
+  const branch = "main";
+
+  // 1. Lister les fichiers via l’API GitHub
+  const resp = await fetch(`https://api.github.com/repos/${repo}/contents/articles?ref=${branch}`);
+  if (!resp.ok) {
+    container.innerHTML = "<p>Impossible de charger les articles.</p>";
+    return;
   }
 
-  // Charger le second article si dispo
-  if (files[1]) {
-    const article = await fetchAndParse(files[1]);
-    if (article) {
-      document.getElementById("prev-article-title").textContent = article.title;
-      document.getElementById("prev-article-desc").textContent = article.description;
-    }
-  }
-}
+  const files = await resp.json();
 
-async function fetchAndParse(file) {
-  try {
-    const resp = await fetch(file);
-    if (!resp.ok) return null;
-    const text = await resp.text();
+  // 2. Charger chaque fichier .md et parser
+  const articles = [];
+  for (let file of files) {
+    if (!file.name.endsWith(".md")) continue;
 
-    // Extraire front matter YAML
+    const raw = await fetch(file.download_url);
+    const text = await raw.text();
+
     const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
-    let meta = {};
+    let meta = {}, body = text;
     if (match) {
       const yaml = match[1].trim();
+      body = match[2].trim();
       yaml.split("\n").forEach(line => {
         const [k, ...rest] = line.split(":");
         meta[k.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
       });
     }
-    return meta;
-  } catch (err) {
-    console.error("Erreur article", file, err);
-    return null;
+
+    articles.push({
+      title: meta.title || "Sans titre",
+      date: meta.date || "",
+      author: meta.author || "",
+      description: meta.description || "",
+      body: body,
+      file: file.download_url
+    });
+  }
+
+  // 3. Trier les articles par date décroissante
+  articles.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // 4. Générer le HTML
+  for (let article of articles) {
+    const el = document.createElement("article");
+    el.className = "article-block";
+    el.innerHTML = `
+      <div class="content">
+        <h3>${article.title}</h3>
+        <p><em>${article.date} – ${article.author}</em></p>
+        <p>${article.description}</p>
+        <a href="${article.file}" target="_blank">Lire l’article complet</a>
+      </div>
+    `;
+    container.appendChild(el);
   }
 }
 
