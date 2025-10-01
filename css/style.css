@@ -119,10 +119,11 @@ html, body {
   transform: translateY(-3px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
+
+/* ✅ Images toujours en 16:9 */
 .card img {
   width: 100%;
-  max-width: 100%;
-  height: 160px;
+  aspect-ratio: 16 / 9;   /* force le format 16/9 */
   object-fit: cover;
   display: block;
 }
