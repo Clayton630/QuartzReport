@@ -97,7 +97,7 @@ html, body {
 }
 
 /* =========================
-   Section Hottest (remis comme avant)
+   Section Hottest
    ========================= */
 .hottest {
   padding: 16px;
@@ -122,7 +122,7 @@ html, body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: 12px; /* ✅ remis comme avant */
   background: #fff;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -179,7 +179,6 @@ html, body {
   font-size: 1.4rem;
 }
 
-/* ✅ Remettre l’encadré gris comme avant */
 .article-meta {
   padding: 16px;
   font-size: 0.9rem;
