@@ -92,15 +92,19 @@ html, body {
 .hottest-grid {
   display: flex;
   gap: 12px;
-  overflow-x: auto;     /* ✅ scroll horizontal sur mobile */
+  overflow-x: auto;     
   scroll-snap-type: x mandatory; 
   padding-bottom: 8px;
 }
 
 .hottest-grid .card {
-  flex: 0 0 80%;        /* ✅ par défaut (mobile), occupe 80% */
-  max-width: 320px;     /* ✅ limite la taille max */
+  flex: 0 0 80%;
+  max-width: 320px;
   scroll-snap-align: start;
+  text-decoration: none;   
+  color: inherit;          
+  display: block;          
+  padding: 10px;           /* ✅ padding autour du contenu */
 }
 
 .card {
@@ -117,13 +121,16 @@ html, body {
 .card img {
   width: 100%;
   max-width: 100%;
-  height: 160px;        /* ✅ hauteur fixe */
-  object-fit: cover;    /* ✅ recadrage propre */
+  height: 160px;        
+  object-fit: cover;    
   display: block;
 }
 .card h3 {
-  padding: 8px;
-  font-size: 0.9rem;
+  padding: 12px;       /* ✅ plus de padding */
+  font-size: 0.95rem;  
+  text-align: left;    
+  color: #111;         
+  margin: 0;
 }
 
 /* =========================
@@ -133,7 +140,7 @@ html, body {
   padding: 16px;
 }
 .article-block {
-  display: block; /* Mobile = pile */
+  display: block;
   background: #fff;
   margin-bottom: 16px;
   border-radius: 12px;
@@ -165,16 +172,16 @@ html, body {
    ========================= */
 @media (max-width: 480px) {
   .logo {
-    font-size: 1.8rem; /* plus visible */
+    font-size: 1.8rem; 
   }
 
   .icons button {
-    font-size: 1.8rem; /* icônes plus grosses */
+    font-size: 1.8rem; 
   }
 
   .main-nav a {
     font-size: 1rem;
-    padding: 8px 16px; /* pastilles plus larges */
+    padding: 8px 16px; 
   }
 
   .hottest h2 {
@@ -183,7 +190,7 @@ html, body {
 
   .card h3 {
     font-size: 1.1rem;
-    padding: 12px;
+    padding: 14px;     /* ✅ plus de padding sur mobile aussi */
   }
 
   .article-block h3 {
@@ -207,37 +214,23 @@ html, body {
   }
 
   .hottest-grid {
-    overflow-x: visible;     /* ✅ pas de scroll sur desktop */
-    justify-content: center; /* ✅ centre les cartes */
-    flex-wrap: wrap;         /* ✅ plusieurs cartes par ligne */
+    overflow-x: visible;     
+    justify-content: flex-start; /* ✅ alignement à gauche */
+    flex-wrap: wrap;         
   }
 
   .hottest-grid .card {
-    flex: 0 0 250px;         /* ✅ largeur fixe */
+    flex: 0 0 250px;         
     max-width: 250px;
   }
 
   .card h3 {
     font-size: 1rem;
-    padding: 10px;
+    padding: 12px;  /* ✅ plus de padding */
   }
 
-      /* Cartes Hottest en lien (<a>) */
-   .hottest-grid .card {
-     text-decoration: none;   /* supprime le souligné du lien */
-     color: inherit;          /* hérite de la couleur du texte normal */
-     display: block;          /* s'assure que l'ancre se comporte comme un bloc */
-   }
-   
-   /* Titre des cartes Hottest */
-   .hottest-grid .card h3 {
-     text-align: left;        /* aligne à gauche */
-     color: #111;             /* couleur standard du texte */
-     margin: 0;
-   }
-
   .article-block {
-    display: flex; /* Desktop = image + texte côte à côte */
+    display: flex; 
   }
   .article-block img {
     width: 200px;
