@@ -72,16 +72,18 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // Format "Le JJ/MM/AAAA à HH:MM"
+    // ✅ Format "Le JJ/MM/AAAA à HH:MM" (Europe/Paris)
     function formatDateTime(dateStr) {
       const d = new Date(dateStr);
       if (isNaN(d)) return dateStr;
-      const day = String(d.getDate()).padStart(2, "0");
-      const month = String(d.getMonth() + 1).padStart(2, "0");
-      const year = d.getFullYear();
-      const hours = String(d.getHours()).padStart(2, "0");
-      const minutes = String(d.getMinutes()).padStart(2, "0");
-      return `Le ${day}/${month}/${year} à ${hours}:${minutes}`;
+
+      const dateOptions = { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Paris" };
+      const timeOptions = { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Paris" };
+
+      const date = d.toLocaleDateString("fr-FR", dateOptions);
+      const time = d.toLocaleTimeString("fr-FR", timeOptions);
+
+      return `Le ${date} à ${time}`;
     }
 
     // Rendu des articles (feed complet)
