@@ -101,10 +101,9 @@ html, body {
   flex: 0 0 80%;
   max-width: 320px;
   scroll-snap-align: start;
-  text-decoration: none;   
-  color: inherit;          
-  display: block;          
-  padding: 10px;           /* ✅ padding autour du contenu */
+  text-decoration: none;   /* pas de souligné */
+  color: inherit;          /* hérite couleur normale */
+  display: block;
 }
 
 .card {
@@ -126,10 +125,10 @@ html, body {
   display: block;
 }
 .card h3 {
-  padding: 12px;       /* ✅ plus de padding */
+  padding: 16px;         /* ✅ padding uniquement autour du texte */
   font-size: 0.95rem;  
-  text-align: left;    
-  color: #111;         
+  text-align: left;      
+  color: #111;           
   margin: 0;
 }
 
@@ -190,7 +189,7 @@ html, body {
 
   .card h3 {
     font-size: 1.1rem;
-    padding: 14px;     /* ✅ plus de padding sur mobile aussi */
+    padding: 18px;     /* ✅ un peu plus sur mobile */
   }
 
   .article-block h3 {
@@ -226,7 +225,7 @@ html, body {
 
   .card h3 {
     font-size: 1rem;
-    padding: 12px;  /* ✅ plus de padding */
+    padding: 16px;  /* ✅ padding texte */
   }
 
   .article-block {
