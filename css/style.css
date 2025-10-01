@@ -175,7 +175,8 @@ html, body {
 }
 .article-meta em {
   font-style: normal;
-  color: #666;
+  color: #555;
+  font-weight: 500;
 }
 
 .article-image {
