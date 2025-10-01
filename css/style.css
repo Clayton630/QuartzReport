@@ -180,7 +180,7 @@ html, body {
 }
 .article-image img {
   max-width: 95%;      /* images horizontales plus larges */
-  max-height: 500px;   /* limite la taille des verticales */
+  max-height: 350px;   /* ✅ limite stricte sur desktop */
   width: auto;
   height: auto;
   border-radius: 8px;
@@ -229,8 +229,8 @@ html, body {
   }
 
   .article-image img {
-    max-width: 100%;    /* sur mobile → utiliser toute la largeur */
-    max-height: 350px;  /* réduire encore pour éviter le scroll excessif */
+    max-width: 100%;
+    max-height: 250px;  /* ✅ limite plus stricte sur mobile */
   }
 }
 
