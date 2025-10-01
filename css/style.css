@@ -122,12 +122,16 @@ html, body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 12px; /* ✅ remis comme avant */
+}
+
+.card {
   background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
-.hottest-grid .card:hover {
+.card:hover {
   transform: translateY(-3px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
