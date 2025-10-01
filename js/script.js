@@ -42,17 +42,20 @@ async function loadArticles() {
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
         file: file.download_url,
-        body: body // ✅ on garde le contenu complet du markdown
+        body: body
       });
     }
 
+    // ✅ Trier par date décroissante
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+    // ✅ Générer catégories (on garde, même si non affichées dans meta)
     const uniqueCategories = [...new Set(articles.map(a => a.category))];
     categoriesContainer.innerHTML = uniqueCategories
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
+    // ✅ Générer Hottest
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
@@ -69,9 +72,21 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
+    // ✅ Fonction pour formater la date
+    function formatDate(dateStr) {
+      const d = new Date(dateStr);
+      if (isNaN(d)) return dateStr;
+      const day = String(d.getDate()).padStart(2, "0");
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const year = d.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+
+    // ✅ Rendu des articles
     function renderArticles(list) {
       container.innerHTML = "";
       list.forEach(article => {
+        const formattedDate = formatDate(article.date);
         const el = document.createElement("article");
         el.className = "article-block";
         el.innerHTML = `
@@ -79,7 +94,7 @@ async function loadArticles() {
             <h3>${article.title}</h3>
           </div>
           <div class="article-meta">
-            <p><em>${article.date} – ${article.author} – ${article.category}</em></p>
+            <p><em>${formattedDate} — par ${article.author}</em></p>
           </div>
           <div class="article-image">
             <img src="${article.thumbnail}" alt="">
@@ -94,6 +109,7 @@ async function loadArticles() {
 
     renderArticles(articles);
 
+    // ✅ Filtrage catégories
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
