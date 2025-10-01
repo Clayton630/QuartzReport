@@ -133,14 +133,66 @@ async function loadArticles() {
 
 document.addEventListener("DOMContentLoaded", loadArticles);
 
-// Cursor glow → met à jour --mx / --my en pourcentage du conteneur survolé
-document.addEventListener("mousemove", (e) => {
-  const targets = document.querySelectorAll(".hottest-grid .card, .main-nav a, .article-block");
-  targets.forEach(el => {
+/* =========================
+   Ultra Liquid Glass interactions
+   - Glow suiveur via CSS vars --mx/--my
+   - Tilt 3D doux avec inertie
+   ========================= */
+(function () {
+  const SELECTOR = ".hottest-grid .card, .main-nav a, .article-block";
+
+  function setMouseVars(el, e) {
     const r = el.getBoundingClientRect();
     const x = ((e.clientX - r.left) / r.width) * 100;
     const y = ((e.clientY - r.top) / r.height) * 100;
     el.style.setProperty("--mx", `${x}%`);
     el.style.setProperty("--my", `${y}%`);
+  }
+
+  function tilt(el, e) {
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;  // -0.5..0.5
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    const maxTilt = 6; // degrés
+    const rx = (+py * -maxTilt).toFixed(2);
+    const ry = (+px *  maxTilt).toFixed(2);
+    el.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translateZ(0)`;
+  }
+
+  function resetTilt(el) {
+    el.style.transform = "perspective(900px) rotateX(0) rotateY(0) translateZ(0)";
+  }
+
+  function attach(el) {
+    let raf;
+    function onMove(e) {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        setMouseVars(el, e);
+        tilt(el, e);
+      });
+    }
+    function onLeave() {
+      cancelAnimationFrame(raf);
+      el.style.transition = "transform .35s cubic-bezier(.2,.8,.2,1)";
+      resetTilt(el);
+      setTimeout(()=> el.style.transition = "", 380);
+    }
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+  }
+
+  document.querySelectorAll(SELECTOR).forEach(attach);
+
+  // Si du contenu est chargé dynamiquement plus tard (ex: filtrage),
+  // on peut rappeler attach() pour les nouveaux éléments :
+  const mo = new MutationObserver(() => {
+    document.querySelectorAll(SELECTOR).forEach(el => {
+      if (!el.dataset._attached) {
+        el.dataset._attached = "1";
+        attach(el);
+      }
+    });
   });
-});
+  mo.observe(document.body, { childList: true, subtree: true });
+})();
