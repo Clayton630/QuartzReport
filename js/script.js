@@ -46,16 +46,16 @@ async function loadArticles() {
       });
     }
 
-    // ✅ Trier par date décroissante
+    // Trier par date décroissante
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // ✅ Générer catégories (on garde, même si non affichées dans meta)
+    // Générer catégories
     const uniqueCategories = [...new Set(articles.map(a => a.category))];
     categoriesContainer.innerHTML = uniqueCategories
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
-    // ✅ Générer Hottest
+    // Générer Hottest
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
@@ -72,21 +72,24 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // ✅ Fonction pour formater la date
-    function formatDate(dateStr) {
+    // Fonction pour formater date + heure
+    function formatDateTime(dateStr) {
       const d = new Date(dateStr);
       if (isNaN(d)) return dateStr;
       const day = String(d.getDate()).padStart(2, "0");
       const month = String(d.getMonth() + 1).padStart(2, "0");
       const year = d.getFullYear();
-      return `${day}/${month}/${year}`;
+      const hours = String(d.getHours()).padStart(2, "0");
+      const minutes = String(d.getMinutes()).padStart(2, "0");
+      return `${day}/${month}/${year} ${hours}:${minutes}`;
     }
 
-    // ✅ Rendu des articles
+    // Rendu des articles
     function renderArticles(list) {
       container.innerHTML = "";
       list.forEach(article => {
-        const formattedDate = formatDate(article.date);
+        const formattedDate = formatDateTime(article.date);
+
         const el = document.createElement("article");
         el.className = "article-block";
         el.innerHTML = `
@@ -94,7 +97,7 @@ async function loadArticles() {
             <h3>${article.title}</h3>
           </div>
           <div class="article-meta">
-            <p><em>${formattedDate} — par ${article.author}</em></p>
+            <p><em>${formattedDate} par ${article.author}</em></p>
           </div>
           <div class="article-image">
             <img src="${article.thumbnail}" alt="">
@@ -109,7 +112,7 @@ async function loadArticles() {
 
     renderArticles(articles);
 
-    // ✅ Filtrage catégories
+    // Filtrage par catégorie
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
