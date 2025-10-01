@@ -6,6 +6,7 @@ html, body {
   padding: 0;
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: visible; /* ✅ évite de couper les ombres en vertical */
   font-family: 'Inter', Arial, sans-serif;
   background: linear-gradient(135deg, #f3f6fb, #ffffff);
   color: #111;
@@ -105,6 +106,8 @@ html, body {
 .hottest {
   padding: 20px;
   overflow: visible; /* ✅ évite de couper l’ombre */
+  position: relative; /* ✅ garantit que le contexte n’écrase pas les ombres */
+  z-index: 0;
 }
 .hottest h2 {
   font-size: 1.2rem;
@@ -145,7 +148,7 @@ html, body {
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
-  border-radius: 0; /* ✅ image non arrondie directement */
+  border-radius: 0;
 }
 
 .card-content {
