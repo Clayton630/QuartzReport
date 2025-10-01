@@ -169,18 +169,22 @@ html, body {
 .article-meta {
   padding: 8px 16px;
   font-size: 0.9rem;
-  color: #555;
-  background: #f1f1f1;
+  color: #444;
+  background: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+}
+.article-meta em {
+  font-style: normal;
+  color: #666;
 }
 
-/* ✅ Images mieux gérées */
 .article-image {
   text-align: center;
   padding: 12px;
 }
 .article-image img {
-  max-width: 95%;      /* images horizontales plus larges */
-  max-height: 350px;   /* ✅ limite stricte sur desktop */
+  max-width: 95%;
+  max-height: 350px;
   width: auto;
   height: auto;
   border-radius: 8px;
@@ -230,7 +234,7 @@ html, body {
 
   .article-image img {
     max-width: 100%;
-    max-height: 250px;  /* ✅ limite plus stricte sur mobile */
+    max-height: 250px;
   }
 }
 
