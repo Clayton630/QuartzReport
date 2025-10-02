@@ -274,9 +274,9 @@ html, body {
 
   /* ✅ aligner la première et la dernière carte avec le feed */
   .hottest-grid {
-    padding-left: 20px;
-    padding-right: 20px;
-    margin: 0 -20px -40px -20px;
+    padding-left: 24px;   /* ✅ plus de place à gauche */
+    padding-right: 24px;  /* ✅ symétrie à droite */
+    margin: 0 -24px -40px -24px; /* ✅ compense le coussin */
   }
 }
 
