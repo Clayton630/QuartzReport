@@ -272,11 +272,11 @@ html, body {
     max-height: 250px;
   }
 
-  /* ✅ aligner les cartes avec le feed sans casser les ombres */
+  /* ✅ décoller la 1ère carte de la bordure gauche */
   .hottest-grid {
-    padding-left: 20px;
-    padding-right: 20px;
-    margin: 0 -20px -40px -20px; /* garde le coussin bas */
+    padding-left: 24px;   /* espace à gauche */
+    padding-right: 20px;  /* espace à droite */
+    margin: 0 -20px -40px -20px; /* garde le coussin bas + symétrie */
   }
 }
 
