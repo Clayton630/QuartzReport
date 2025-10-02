@@ -310,3 +310,34 @@ html, body {
     font-size: 1rem;
   }
 }
+
+/* === Alignement mobile parfait (≤480px) === */
+@media (max-width: 480px) {
+  /* 1) Pas de padding latéral sur la section (évite le double décalage) */
+  .hottest {
+    padding: 20px 0; /* vertical 20, latéral 0 */
+  }
+
+  /* 2) Le titre reste aligné avec le feed (qui a 20px) */
+  .hottest h2 {
+    margin: 0 20px 14px 20px;
+  }
+
+  /* 3) Le conteneur scroll reçoit le "coussin" interne
+        → place pour l’ombre à gauche/droite ET
+        → 40px en bas pour l’ombre basse (compensée par margin-bottom négatif)
+     IMPORTANT : on retire TOUTE marge négative latérale ici.
+  */
+  .hottest-grid {
+    padding: 0 20px 40px 20px;  /* L R B T: 20 | 20 | 40 | 20 */
+    margin: 0 0 -40px 0;        /* compense uniquement le bas */
+    overflow-x: auto;
+    overflow-y: visible;
+    box-sizing: content-box;     /* s'assure que le padding n’étrangle pas le contenu */
+  }
+
+  /* 4) On ne touche pas aux cartes : elles s’alignent naturellement
+        La 1ère carte sera à 20px du bord, comme le feed.
+        Les ombres latérales "vivent" dans le padding de .hottest-grid.
+  */
+}
