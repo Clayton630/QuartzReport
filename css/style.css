@@ -105,7 +105,6 @@ html, body {
    ========================= */
 .hottest {
   padding: 20px;
-  margin-bottom: 20px; /* ✅ laisse de l’espace pour l’ombre */
   overflow: visible;
 }
 .hottest h2 {
@@ -116,11 +115,12 @@ html, body {
   display: flex;
   gap: 14px;
   scroll-snap-type: x mandatory;
-  padding-bottom: 16px;
-
-  overflow-x: auto;      /* ✅ scroll horizontal */
-  overflow-y: visible;   /* ✅ autorise les ombres verticales */
+  overflow-x: auto;
+  overflow-y: visible;
   overscroll-behavior-x: contain;
+
+  padding-bottom: 40px;  /* ✅ zone invisible sous les cartes pour l’ombre */
+  margin-bottom: -40px;  /* ✅ compense, pas d’espace ajouté entre hottest et feed */
 }
 .hottest-grid::-webkit-scrollbar {
   display: none; /* ✅ supprime la barre de scroll moche sur mobile */
@@ -289,6 +289,8 @@ html, body {
     overflow-x: visible;
     justify-content: flex-start;
     flex-wrap: wrap;
+    padding-bottom: 0;   /* ✅ pas besoin de coussin invisible en desktop */
+    margin-bottom: 0;
   }
 
   .hottest-grid .card {
