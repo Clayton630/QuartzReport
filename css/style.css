@@ -104,12 +104,12 @@ html, body {
    Section Hottest
    ========================= */
 .hottest {
-  padding: 20px;
+  padding: 20px 0; /* ✅ plus de marge entre le titre et les cartes */
   overflow: visible;
 }
 .hottest h2 {
   font-size: 1.2rem;
-  margin-bottom: 14px;
+  margin: 0 16px 14px 16px; /* ✅ aligne le titre comme le feed */
 }
 .hottest-grid {
   display: flex;
@@ -118,13 +118,10 @@ html, body {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-
-  /* ✅ on garde le coussin bas (ombres) sans créer d’espace visuel */
-  padding-bottom: 40px;
-  margin-bottom: -40px;
+  padding: 0; /* ✅ pas de padding = pas de clipping des ombres */
 }
 .hottest-grid::-webkit-scrollbar {
-  display: none; /* ✅ barre de scroll cachée sur mobile */
+  display: none;
 }
 
 .hottest-grid .card {
@@ -135,7 +132,7 @@ html, body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 20px; /* ✅ arrondi complet */
+  border-radius: 20px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(12px);
@@ -148,12 +145,19 @@ html, body {
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
 
+/* ✅ alignement de la 1ʳᵉ carte avec le feed */
+.hottest-grid .card:first-child {
+  margin-left: 16px;
+}
+.hottest-grid .card:last-child {
+  margin-right: 16px;
+}
+
 .card img {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
-  border-radius: 0;
 }
 
 .card-content {
@@ -172,7 +176,7 @@ html, body {
    Articles du feed
    ========================= */
 .articles {
-  padding: 20px;
+  padding: 20px 16px; /* ✅ même alignement horizontal que hottest */
   overflow: visible;
 }
 .article-block {
@@ -190,131 +194,14 @@ html, body {
   box-shadow: 0 12px 35px rgba(0,0,0,0.12);
 }
 
-.article-header {
-  background: linear-gradient(120deg, rgba(106,27,154,0.8), rgba(142,36,170,0.8));
-  backdrop-filter: blur(8px);
-  color: #fff;
-  padding: 16px 20px;
-}
-.article-header h3 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.article-meta {
-  padding: 14px 20px;
-  font-size: 0.9rem;
-  color: #444;
-  background: rgba(245,245,245,0.6);
-  border-bottom: 1px solid rgba(224,224,224,0.6);
-}
-.article-meta em {
-  font-style: normal;
-  color: #555;
-  font-weight: 500;
-}
-
-.article-image {
-  text-align: center;
-  padding: 16px 16px 0 16px;
-}
-.article-image img {
-  max-width: 95%;
-  max-height: 350px;
-  width: auto;
-  height: auto;
-  border-radius: 12px;
-  object-fit: contain;
-}
-
-.article-body {
-  padding: 16px 20px;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #222;
-}
-
 /* =========================
-   Optimisation Mobile (≤480px)
+   Optimisation Mobile
    ========================= */
 @media (max-width: 480px) {
-  .logo {
-    font-size: 1.8rem;
-  }
-
-  .icons button {
-    font-size: 1.8rem;
-  }
-
-  .main-nav a {
-    font-size: 1rem;
-    padding: 8px 16px;
-  }
-
   .hottest h2 {
     font-size: 1.3rem;
   }
-
   .card-content h3 {
     font-size: 1.1rem;
-  }
-
-  .article-header h3 {
-    font-size: 1.3rem;
-  }
-
-  .article-body {
-    font-size: 0.95rem;
-  }
-
-  .article-image img {
-    max-width: 100%;
-    max-height: 250px;
-  }
-
-  /* ✅ Alignement parfait avec le feed
-     - coussin interne pour les ombres (gauche/droite)
-     - on compense visuellement en ramenant la 1ʳᵉ et la dernière carte */
-  .hottest-grid {
-    padding-left: 16px;
-    padding-right: 16px;
-    /* on ne met PAS de margin négatif ici pour ne pas décaler l’ensemble */
-  }
-  .hottest-grid .card:first-child {
-    margin-left: -16px;  /* ✅ ramène la première carte pile à l’alignement du feed */
-  }
-  .hottest-grid .card:last-child {
-    margin-right: -16px; /* ✅ symétrie à droite */
-  }
-}
-
-/* =========================
-   Version Desktop (≥768px)
-   ========================= */
-@media (min-width: 768px) {
-  .site-header {
-    padding: 14px 24px;
-  }
-
-  .main-nav ul {
-    justify-content: center;
-  }
-
-  .hottest-grid {
-    overflow-x: visible;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-    padding: 0;   /* ✅ reset du coussin en desktop */
-    margin: 0;
-  }
-
-  .hottest-grid .card {
-    flex: 0 0 260px;
-    max-width: 260px;
-  }
-
-  .card-content h3 {
-    font-size: 1rem;
   }
 }
