@@ -126,6 +126,12 @@ html, body {
   display: none; /* ✅ supprime la barre de scroll moche sur mobile */
 }
 
+/* ✅ espace invisible avant la première carte */
+.hottest-grid::before {
+  content: "";
+  flex: 0 0 20px; /* décale la première carte de 20px */
+}
+
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -273,17 +279,13 @@ html, body {
     max-height: 250px;
   }
 
-  /* ✅ nouvelle version fusionnée */
   .hottest {
     padding: 20px 0; /* vertical 20, pas de padding latéral */
   }
 
   .hottest-grid {
-    padding: 0 24px 40px 24px;  /* coussin gauche/droite + bas */
-    margin: 0 0 -40px 0;        /* compense uniquement le bas */
-    overflow-x: auto;
-    overflow-y: visible;
-    box-sizing: content-box;
+    padding: 0 40px 40px 40px;
+    margin: 0 -40px -40px -40px;
   }
 }
 
