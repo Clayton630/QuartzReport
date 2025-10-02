@@ -119,17 +119,17 @@ html, body {
   overflow-y: visible;
   overscroll-behavior-x: contain;
 
-  padding: 0 40px 40px 40px;   /* ✅ coussins invisibles (bas + côtés) */
-  margin: 0 -40px -40px -40px; /* ✅ compense, pas de vide visuel */
+  padding: 0 40px 40px 40px;   /* coussins visibles (gauche/droite/bas) */
+  margin: 0 0 -40px 0;         /* ✅ uniquement le bas, plus de négatif gauche/droite */
 }
 .hottest-grid::-webkit-scrollbar {
-  display: none; /* ✅ supprime la barre de scroll moche sur mobile */
+  display: none;
 }
 
 /* ✅ espace invisible avant la première carte */
 .hottest-grid::before {
   content: "";
-  flex: 0 0 20px; /* décale la première carte de 20px */
+  flex: 0 0 20px; /* espace de 20px avant la première carte */
 }
 
 .hottest-grid .card {
@@ -140,7 +140,7 @@ html, body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 20px; /* ✅ arrondi complet */
+  border-radius: 20px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(12px);
@@ -285,7 +285,7 @@ html, body {
 
   .hottest-grid {
     padding: 0 40px 40px 40px;
-    margin: 0 -40px -40px -40px;
+    margin: 0 0 -40px 0;
   }
 }
 
@@ -306,7 +306,7 @@ html, body {
     justify-content: flex-start;
     flex-wrap: wrap;
 
-    padding: 0;   /* ✅ reset du coussin en desktop */
+    padding: 0;
     margin: 0;
   }
 
