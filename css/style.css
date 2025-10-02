@@ -5,8 +5,8 @@ html, body {
   margin: 0;
   padding: 0;
   max-width: 100%;
-  /* ❌ overflow-x: hidden supprimé */
-  overflow-y: visible;
+  overflow-x: hidden;
+  overflow-y: visible; /* ✅ laisse passer les ombres */
   font-family: 'Inter', Arial, sans-serif;
   background: linear-gradient(135deg, #f3f6fb, #ffffff);
   color: #111;
@@ -83,7 +83,7 @@ html, body {
   display: inline-block;
   padding: 8px 16px;
   border-radius: 20px;
-  background: #fff;
+  background: #fff; /* ✅ blanc pur */
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   color: #1d4ed8;
@@ -104,12 +104,12 @@ html, body {
    Section Hottest
    ========================= */
 .hottest {
-  padding: 20px 0;
+  padding: 20px;
   overflow: visible;
 }
 .hottest h2 {
   font-size: 1.2rem;
-  margin: 0 20px 14px 20px;
+  margin-bottom: 14px;
 }
 .hottest-grid {
   display: flex;
@@ -119,17 +119,14 @@ html, body {
   overflow-y: visible;
   overscroll-behavior-x: contain;
 
-  padding: 0 20px 40px 20px;
-  margin: 0 0 -40px 0;
+  /* ✅ coussins internes → première carte bien décollée */
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 40px;
+  margin: 0; /* ❌ aucune marge négative qui casse l’espacement */
 }
 .hottest-grid::-webkit-scrollbar {
   display: none;
-}
-
-/* ✅ espace invisible avant la première carte */
-.hottest-grid::before {
-  content: "";
-  flex: 0 0 20px;
 }
 
 .hottest-grid .card {
@@ -295,7 +292,8 @@ html, body {
     overflow-x: visible;
     justify-content: flex-start;
     flex-wrap: wrap;
-    padding: 0;
+
+    padding: 0;   /* ✅ reset du coussin en desktop */
     margin: 0;
   }
 
