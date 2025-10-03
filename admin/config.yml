@@ -1,6 +1,6 @@
 backend:
   name: github
-  repo: Clayton630/QuartzReport   # Ton dépôt
+  repo: Clayton630/QuartzReport
   branch: main
   base_url: https://quartzreport-oauth.claytonelhorga.workers.dev
   auth_endpoint: auth
@@ -19,7 +19,8 @@ collections:
       - { label: "Date", name: "date", widget: "datetime" }
       - { label: "Auteur", name: "author", widget: "string", default: "Clayton" }
       - { label: "Résumé", name: "description", widget: "text" }
-      - { label: "Contenu", name: "body", widget: "markdown" }
-      - { label: "Image de couverture", name: "thumbnail", widget: "image" }
+      # ✅ Editeur riche avec images inline
+      - { label: "Contenu", name: "body", widget: "markdown", buttons: ["bold", "italic", "link", "heading-one", "heading-two", "quote", "bulleted-list", "numbered-list", "code", "image"], editor_components: ["image"] }
+      - { label: "Image de couverture", name: "thumbnail", widget: "image", required: false }
       - { label: "Important", name: "important", widget: "boolean", default: false }
       - { label: "Catégorie", name: "category", widget: "select", options: ["Apple", "Comparatif", "Review", "Analyse", "Autre"] }
