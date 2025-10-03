@@ -14,6 +14,7 @@ async function loadArticles() {
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
+    // Lister les fichiers d’articles
     const resp = await fetch(
       `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
       { cache: "no-store" }
@@ -29,6 +30,7 @@ async function loadArticles() {
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
+      // Récupération via Worker
       const apiResp = await fetch(
         `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`,
         { cache: "no-store" }
@@ -36,6 +38,7 @@ async function loadArticles() {
       const apiData = await apiResp.json();
       const text = base64ToUtf8(apiData.content);
 
+      // Extraction YAML front matter
       const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
       let meta = {}, body = text;
       if (match) {
@@ -47,7 +50,7 @@ async function loadArticles() {
         });
       }
 
-      // ✅ Chercher la première image inline si thumbnail manquant
+      // ✅ Image de couverture (si absente, on prend la 1ère image inline)
       let cover = meta.thumbnail || "img/article-placeholder.jpg";
       const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
       if (!meta.thumbnail && firstImg) {
@@ -67,13 +70,16 @@ async function loadArticles() {
       });
     }
 
+    // Trier par date
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+    // Générer catégories
     const uniqueCategories = [...new Set(articles.map(a => a.category))];
     categoriesContainer.innerHTML = uniqueCategories
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
+    // Articles importants (Hottest)
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
@@ -90,6 +96,7 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
+    // Fonction affichage feed
     function renderArticles(list) {
       container.innerHTML = "";
       list.forEach(article => {
@@ -106,9 +113,7 @@ async function loadArticles() {
             <img src="${article.thumbnail}" alt="">
           </div>
           <div class="article-body">
-            ${article.body
-              .replace(/\n/g, "<br>")
-              .replace(/!$begin:math:display$.*?$end:math:display$$begin:math:text$(.*?)$end:math:text$/g, '<img src="$1" class="inline-image">')}
+            ${marked.parse(article.body)} <!-- ✅ rendu Markdown -->
           </div>
         `;
         container.appendChild(el);
@@ -117,6 +122,7 @@ async function loadArticles() {
 
     renderArticles(articles);
 
+    // Filtrage catégories
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
