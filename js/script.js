@@ -23,12 +23,17 @@ async function loadArticles() {
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      // ✅ Ajout d’un cache-busting pour chaque fichier markdown
-      const raw = await fetch(file.download_url + `?nocache=${Date.now()}`, {
-        cache: "no-store"
-      });
-      const text = await raw.text();
+      // ✅ Nouvelle méthode : récupérer via API (base64) au lieu de raw.githubusercontent.com
+      const apiResp = await fetch(
+        `https://api.github.com/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`,
+        { cache: "no-store" }
+      );
+      const apiData = await apiResp.json();
 
+      // Décodage base64 → texte brut Markdown
+      const text = atob(apiData.content.replace(/\n/g, ""));
+
+      // Extraire front matter YAML
       const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
       let meta = {}, body = text;
       if (match) {
@@ -48,26 +53,26 @@ async function loadArticles() {
         thumbnail: meta.thumbnail || "img/article-placeholder.jpg",
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
-        file: file.download_url,
-        body: body // ✅ contenu complet
+        file: `https://github.com/${repo}/blob/${branch}/articles/${file.name}`, // ✅ lien GitHub pour consultation
+        body: body
       });
     }
 
-    // 2. Trier les articles par date décroissante
+    // 2. Trier par date décroissante
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // 3. Générer la navigation catégories
+    // 3. Générer navigation catégories
     const uniqueCategories = [...new Set(articles.map(a => a.category))];
     categoriesContainer.innerHTML = uniqueCategories
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
-    // 4. Générer les articles Hottest (important: true)
+    // 4. Hottest
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
       const link = document.createElement("a");
-      link.href = article.file + `?nocache=${Date.now()}`; // ✅ aussi protégé
+      link.href = article.file;
       link.target = "_blank";
       link.className = "card";
       link.innerHTML = `
@@ -79,7 +84,7 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // 5. Fonction pour afficher la liste des articles
+    // 5. Feed
     function renderArticles(list) {
       container.innerHTML = "";
       list.forEach(article => {
@@ -103,10 +108,9 @@ async function loadArticles() {
       });
     }
 
-    // 6. Afficher tous les articles au départ
     renderArticles(articles);
 
-    // 7. Filtrage par catégorie
+    // 6. Filtrage
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
