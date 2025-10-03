@@ -320,3 +320,14 @@ html, body {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
+
+/* ✅ Liens des titres dans le feed : pas de bleu ni souligné */
+.article-header a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.article-header a:hover {
+  text-decoration: underline; /* petit effet subtil au hover */
+  color: #1d4ed8; /* optionnel : bleu pro au hover */
+}
