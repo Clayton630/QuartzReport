@@ -310,3 +310,13 @@ html, body {
     font-size: 1rem;
   }
 }
+
+/* Images inline insérées via l’éditeur */
+.article-body img.inline-image {
+  max-width: 90%;
+  height: auto;
+  display: block;
+  margin: 16px auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
