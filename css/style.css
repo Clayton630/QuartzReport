@@ -112,12 +112,13 @@ html, body {
   margin: 0 20px 14px 20px;
 }
 
-/* ✅ Nouveau wrapper pour gérer les marges */
+/* ✅ Wrapper externe = gère l’alignement à gauche */
 .hottest-wrapper {
   padding: 0 20px;
   overflow: visible;
 }
 
+/* ✅ Conteneur interne bien serré */
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -125,6 +126,9 @@ html, body {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
+
+  padding-bottom: 40px; /* espace pour ombres en bas */
+  margin-bottom: -40px; /* compense visuellement */
 }
 .hottest-grid::-webkit-scrollbar {
   display: none;
@@ -275,8 +279,9 @@ html, body {
     max-height: 250px;
   }
 
+  /* ✅ wrapper plus étroit sur mobile */
   .hottest-wrapper {
-    padding: 0 16px; /* ✅ un peu plus de marge sur mobile */
+    padding: 0 16px;
   }
 }
 
@@ -296,6 +301,9 @@ html, body {
     overflow-x: visible;
     justify-content: flex-start;
     flex-wrap: wrap;
+
+    padding: 0;   /* ✅ pas de coussin desktop */
+    margin: 0;
   }
 
   .hottest-grid .card {
