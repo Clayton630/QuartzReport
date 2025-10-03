@@ -105,6 +105,7 @@ html, body {
    ========================= */
 .hottest {
   padding: 20px;
+  overflow: visible;
 }
 .hottest h2 {
   font-size: 1.2rem;
@@ -114,23 +115,19 @@ html, body {
   display: flex;
   gap: 14px;
   scroll-snap-type: x mandatory;
-
-  /* ✅ Conteneur rendu "invisible" */
-  background: transparent;
-  border: none;
-
-  /* ✅ permet les ombres complètes */
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
 
-  /* ✅ espace interne qui aligne la 1ère carte */
-  padding: 0 20px 40px 20px;
+  padding-bottom: 40px;
   margin: 0;
-  box-sizing: content-box;
+
+  /* ✅ nouvelle règle : garde 20px de "snap" virtuel à gauche */
+  scroll-padding-left: 20px;
 }
+
 .hottest-grid::-webkit-scrollbar {
-  display: none; /* supprime la barre horizontale */
+  display: none; /* ✅ supprime la barre de scroll moche sur mobile */
 }
 
 .hottest-grid .card {
@@ -260,7 +257,6 @@ html, body {
 
   .hottest h2 {
     font-size: 1.3rem;
-    margin: 0 20px 14px 20px; /* ✅ aligné avec feed */
   }
 
   .card-content h3 {
@@ -297,8 +293,10 @@ html, body {
     overflow-x: visible;
     justify-content: flex-start;
     flex-wrap: wrap;
+
     padding: 0;
     margin: 0;
+    scroll-padding-left: 0; /* ✅ reset en desktop */
   }
 
   .hottest-grid .card {
