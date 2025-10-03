@@ -14,7 +14,6 @@ async function loadArticles() {
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
-    // 1. Lister les fichiers dans /articles via le Worker (plus GitHub direct)
     const resp = await fetch(
       `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
       { cache: "no-store" }
@@ -30,17 +29,13 @@ async function loadArticles() {
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      // ✅ Récupération via le Worker (contenu base64)
       const apiResp = await fetch(
         `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`,
         { cache: "no-store" }
       );
       const apiData = await apiResp.json();
-
-      // ✅ Décodage UTF-8 du contenu
       const text = base64ToUtf8(apiData.content);
 
-      // Extraire front matter YAML
       const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
       let meta = {}, body = text;
       if (match) {
@@ -52,12 +47,19 @@ async function loadArticles() {
         });
       }
 
+      // ✅ Chercher la première image inline si thumbnail manquant
+      let cover = meta.thumbnail || "img/article-placeholder.jpg";
+      const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
+      if (!meta.thumbnail && firstImg) {
+        cover = firstImg[1];
+      }
+
       articles.push({
         title: meta.title || "Sans titre",
         date: meta.date || "",
         author: meta.author || "",
         description: meta.description || "",
-        thumbnail: meta.thumbnail || "img/article-placeholder.jpg",
+        thumbnail: cover,
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
         file: `https://github.com/${repo}/blob/${branch}/articles/${file.name}`,
@@ -65,16 +67,13 @@ async function loadArticles() {
       });
     }
 
-    // 2. Trier par date décroissante
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // 3. Générer navigation catégories
     const uniqueCategories = [...new Set(articles.map(a => a.category))];
     categoriesContainer.innerHTML = uniqueCategories
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
-    // 4. Articles importants (Hottest)
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
@@ -91,7 +90,6 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // 5. Articles dans le feed
     function renderArticles(list) {
       container.innerHTML = "";
       list.forEach(article => {
@@ -108,7 +106,9 @@ async function loadArticles() {
             <img src="${article.thumbnail}" alt="">
           </div>
           <div class="article-body">
-            <p>${article.body.replace(/\n/g, "<br>")}</p>
+            ${article.body
+              .replace(/\n/g, "<br>")
+              .replace(/!$begin:math:display$.*?$end:math:display$$begin:math:text$(.*?)$end:math:text$/g, '<img src="$1" class="inline-image">')}
           </div>
         `;
         container.appendChild(el);
@@ -117,7 +117,6 @@ async function loadArticles() {
 
     renderArticles(articles);
 
-    // 6. Filtrage par catégorie
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
