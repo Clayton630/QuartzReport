@@ -83,7 +83,7 @@ html, body {
   display: inline-block;
   padding: 8px 16px;
   border-radius: 20px;
-  background: #fff; /* ✅ blanc pur */
+  background: #fff;
   border: 1px solid rgba(0,0,0,0.05);
   box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   color: #1d4ed8;
@@ -112,13 +112,13 @@ html, body {
   margin: 0 20px 14px 20px;
 }
 
-/* ✅ Wrapper externe = gère l’alignement à gauche */
+/* Wrapper externe */
 .hottest-wrapper {
   padding: 0 20px;
   overflow: visible;
 }
 
-/* ✅ Conteneur interne bien serré */
+/* ✅ Conteneur interne : bien serré en hauteur */
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -126,9 +126,8 @@ html, body {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-
-  padding-bottom: 40px; /* espace pour ombres en bas */
-  margin-bottom: -40px; /* compense visuellement */
+  padding: 0;   /* ❌ plus de coussin artificiel */
+  margin: 0;    /* ❌ plus de marge négative */
 }
 .hottest-grid::-webkit-scrollbar {
   display: none;
@@ -279,7 +278,6 @@ html, body {
     max-height: 250px;
   }
 
-  /* ✅ wrapper plus étroit sur mobile */
   .hottest-wrapper {
     padding: 0 16px;
   }
@@ -301,9 +299,6 @@ html, body {
     overflow-x: visible;
     justify-content: flex-start;
     flex-wrap: wrap;
-
-    padding: 0;   /* ✅ pas de coussin desktop */
-    margin: 0;
   }
 
   .hottest-grid .card {
