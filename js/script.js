@@ -7,7 +7,11 @@ async function loadArticles() {
   const branch = "main";
 
   try {
-    const resp = await fetch(`https://api.github.com/repos/${repo}/contents/articles?ref=${branch}`);
+    // 1. Lister les fichiers dans /articles via API GitHub
+    const resp = await fetch(
+      `https://api.github.com/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
+      { cache: "no-store" }
+    );
     if (!resp.ok) {
       container.innerHTML = "<p>Impossible de charger les articles.</p>";
       return;
@@ -19,7 +23,10 @@ async function loadArticles() {
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      const raw = await fetch(file.download_url);
+      // ✅ Ajout d’un cache-busting pour chaque fichier markdown
+      const raw = await fetch(file.download_url + `?nocache=${Date.now()}`, {
+        cache: "no-store"
+      });
       const text = await raw.text();
 
       const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
@@ -42,25 +49,25 @@ async function loadArticles() {
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
         file: file.download_url,
-        body: body
+        body: body // ✅ contenu complet
       });
     }
 
-    // Trier par date décroissante
+    // 2. Trier les articles par date décroissante
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // Générer catégories (nav)
+    // 3. Générer la navigation catégories
     const uniqueCategories = [...new Set(articles.map(a => a.category))];
     categoriesContainer.innerHTML = uniqueCategories
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
-    // Hottest
+    // 4. Générer les articles Hottest (important: true)
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
       const link = document.createElement("a");
-      link.href = article.file;
+      link.href = article.file + `?nocache=${Date.now()}`; // ✅ aussi protégé
       link.target = "_blank";
       link.className = "card";
       link.innerHTML = `
@@ -72,25 +79,10 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // ✅ Format "Le JJ/MM/AAAA à HH:MM" (Europe/Paris)
-    function formatDateTime(dateStr) {
-      const d = new Date(dateStr);
-      if (isNaN(d)) return dateStr;
-
-      const dateOptions = { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Europe/Paris" };
-      const timeOptions = { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Europe/Paris" };
-
-      const date = d.toLocaleDateString("fr-FR", dateOptions);
-      const time = d.toLocaleTimeString("fr-FR", timeOptions);
-
-      return `Le ${date} à ${time}`;
-    }
-
-    // Rendu des articles (feed complet)
+    // 5. Fonction pour afficher la liste des articles
     function renderArticles(list) {
       container.innerHTML = "";
       list.forEach(article => {
-        const formattedDate = formatDateTime(article.date);
         const el = document.createElement("article");
         el.className = "article-block";
         el.innerHTML = `
@@ -98,7 +90,7 @@ async function loadArticles() {
             <h3>${article.title}</h3>
           </div>
           <div class="article-meta">
-            <p><em>${formattedDate} par ${article.author}</em></p>
+            <p><em>Le ${new Date(article.date).toLocaleDateString("fr-FR")} à ${new Date(article.date).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} par ${article.author}</em></p>
           </div>
           <div class="article-image">
             <img src="${article.thumbnail}" alt="">
@@ -111,9 +103,10 @@ async function loadArticles() {
       });
     }
 
+    // 6. Afficher tous les articles au départ
     renderArticles(articles);
 
-    // Filtrage par catégorie
+    // 7. Filtrage par catégorie
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
