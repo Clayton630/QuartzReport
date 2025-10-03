@@ -1,3 +1,9 @@
+function base64ToUtf8(base64) {
+  const binary = atob(base64.replace(/\n/g, ""));
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  return new TextDecoder("utf-8").decode(bytes);
+}
+
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
@@ -23,15 +29,15 @@ async function loadArticles() {
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      // ✅ Nouvelle méthode : récupérer via API (base64) au lieu de raw.githubusercontent.com
+      // ✅ Récupération via API GitHub (contenu base64)
       const apiResp = await fetch(
         `https://api.github.com/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`,
         { cache: "no-store" }
       );
       const apiData = await apiResp.json();
 
-      // Décodage base64 → texte brut Markdown
-      const text = atob(apiData.content.replace(/\n/g, ""));
+      // ✅ Décodage UTF-8 du contenu
+      const text = base64ToUtf8(apiData.content);
 
       // Extraire front matter YAML
       const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
@@ -53,7 +59,7 @@ async function loadArticles() {
         thumbnail: meta.thumbnail || "img/article-placeholder.jpg",
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
-        file: `https://github.com/${repo}/blob/${branch}/articles/${file.name}`, // ✅ lien GitHub pour consultation
+        file: `https://github.com/${repo}/blob/${branch}/articles/${file.name}`,
         body: body
       });
     }
@@ -67,7 +73,7 @@ async function loadArticles() {
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
-    // 4. Hottest
+    // 4. Articles importants (Hottest)
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
@@ -84,7 +90,7 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // 5. Feed
+    // 5. Articles dans le feed
     function renderArticles(list) {
       container.innerHTML = "";
       list.forEach(article => {
@@ -110,7 +116,7 @@ async function loadArticles() {
 
     renderArticles(articles);
 
-    // 6. Filtrage
+    // 6. Filtrage par catégorie
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
