@@ -1,5 +1,5 @@
 ---
-title: Article important numéro 1
+title: Article important numéro 1 blablabla
 date: 2025-10-01T16:13:45.030Z
 author: Clayton
 description: Résumé de l’article important
