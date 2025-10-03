@@ -321,13 +321,14 @@ html, body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* ✅ Liens des titres dans le feed : pas de bleu ni souligné */
+/* ✅ Liens des titres dans le feed : style neutre, sans hover */
 .article-header a {
   text-decoration: none;
   color: inherit;
+  cursor: pointer; /* garde l'impression que c'est cliquable */
 }
 
 .article-header a:hover {
-  text-decoration: underline; /* petit effet subtil au hover */
-  color: #1d4ed8; /* optionnel : bleu pro au hover */
+  text-decoration: none;
+  color: inherit;
 }
