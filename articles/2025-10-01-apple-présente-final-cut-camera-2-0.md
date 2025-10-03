@@ -1,7 +1,7 @@
 ---
 title: Apple présente Final Cut Camera 2.0
 date: 2025-10-01T17:43:55.136Z
-author: Julien
+author: Clayton
 description: La version 2.0 fait un immense bond en avant avec la prise en
   charge de ProRes RAW et Genlock sur l’iPhone 17 Pro et l’iPhone 17 Pro Max, et
   de la caméra avant Center Stage de la nouvelle famille d’iPhone.
