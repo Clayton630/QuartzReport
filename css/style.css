@@ -117,13 +117,14 @@ html, body {
   scroll-snap-type: x mandatory;
   overflow-x: auto;
   overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
 
-  padding-bottom: 40px;
-  margin: 0;
+  /* ✅ bordure conteneur poussée hors écran */
+  margin-left: -40px;
+  padding-left: 40px;
 
-  /* ✅ nouvelle règle : garde 20px de "snap" virtuel à gauche */
-  scroll-padding-left: 20px;
+  padding-bottom: 20px;
 }
 
 .hottest-grid::-webkit-scrollbar {
@@ -255,8 +256,22 @@ html, body {
     padding: 8px 16px;
   }
 
+  .hottest {
+    overflow: visible !important; /* ✅ laisse passer les ombres sur mobile */
+  }
+
   .hottest h2 {
     font-size: 1.3rem;
+  }
+
+  .hottest-grid {
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+
+    margin-left: -20px;  /* ✅ réduit un peu l’étendue pour mobile */
+    padding-left: 20px;  /* recale les cartes */
+    padding-bottom: 20px;
   }
 
   .card-content h3 {
@@ -294,9 +309,9 @@ html, body {
     justify-content: flex-start;
     flex-wrap: wrap;
 
-    padding: 0;
-    margin: 0;
-    scroll-padding-left: 0; /* ✅ reset en desktop */
+    margin-left: 0;
+    padding-left: 0;
+    padding-bottom: 0;
   }
 
   .hottest-grid .card {
