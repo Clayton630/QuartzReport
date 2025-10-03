@@ -11,12 +11,10 @@ async function loadArticles() {
 
   const repo = "Clayton630/QuartzReport";
   const branch = "main";
-
-  // 👉 Ton Worker Cloudflare
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
-    // 1. Lister les fichiers dans /articles via le Worker
+    // 1. Lister les fichiers dans /articles via le Worker (plus GitHub direct)
     const resp = await fetch(
       `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
       { cache: "no-store" }
@@ -32,7 +30,7 @@ async function loadArticles() {
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      // ✅ Récupération via Worker (contenu base64)
+      // ✅ Récupération via le Worker (contenu base64)
       const apiResp = await fetch(
         `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`,
         { cache: "no-store" }
