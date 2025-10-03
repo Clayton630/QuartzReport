@@ -65,7 +65,7 @@ async function loadArticles() {
         thumbnail: cover,
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
-        file: `https://github.com/${repo}/blob/${branch}/articles/${file.name}`,
+        file: file.name, // ✅ on garde juste le nom du fichier pour la redirection
         body: body
       });
     }
@@ -84,8 +84,8 @@ async function loadArticles() {
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
       const link = document.createElement("a");
-      link.href = article.file;
-      link.target = "_blank";
+      // ✅ au lieu de GitHub → redirection vers page plein écran
+      link.href = `article.html?file=${encodeURIComponent(article.file)}`;
       link.className = "card";
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="">
@@ -104,7 +104,7 @@ async function loadArticles() {
         el.className = "article-block";
         el.innerHTML = `
           <div class="article-header">
-            <h3>${article.title}</h3>
+            <h3><a href="article.html?file=${encodeURIComponent(article.file)}">${article.title}</a></h3>
           </div>
           <div class="article-meta">
             <p><em>Le ${new Date(article.date).toLocaleDateString("fr-FR")} à ${new Date(article.date).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} par ${article.author}</em></p>
