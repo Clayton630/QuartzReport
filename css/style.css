@@ -6,7 +6,7 @@ html, body {
   padding: 0;
   max-width: 100%;
   overflow-x: hidden;
-  overflow-y: visible; /* ✅ laisse passer les ombres */
+  overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
   background: linear-gradient(135deg, #f3f6fb, #ffffff);
   color: #111;
@@ -104,31 +104,30 @@ html, body {
    Section Hottest
    ========================= */
 .hottest {
-  padding: 20px;
+  padding: 20px 0;
   overflow: visible;
 }
 .hottest h2 {
   font-size: 1.2rem;
-  margin-bottom: 14px;
+  margin: 0 20px 14px 20px;
 }
+
+/* ✅ Nouveau wrapper pour gérer les marges */
+.hottest-wrapper {
+  padding: 0 20px;
+  overflow: visible;
+}
+
 .hottest-grid {
   display: flex;
   gap: 14px;
   scroll-snap-type: x mandatory;
   overflow-x: auto;
   overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
-
-  /* ✅ bordure conteneur poussée hors écran */
-  margin-left: -40px;
-  padding-left: 40px;
-
-  padding-bottom: 20px;
 }
-
 .hottest-grid::-webkit-scrollbar {
-  display: none; /* ✅ supprime la barre de scroll moche sur mobile */
+  display: none;
 }
 
 .hottest-grid .card {
@@ -139,7 +138,7 @@ html, body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 20px; /* ✅ arrondi complet */
+  border-radius: 20px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(12px);
@@ -157,7 +156,6 @@ html, body {
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
-  border-radius: 0;
 }
 
 .card-content {
@@ -256,22 +254,8 @@ html, body {
     padding: 8px 16px;
   }
 
-  .hottest {
-    overflow: visible !important; /* ✅ laisse passer les ombres sur mobile */
-  }
-
   .hottest h2 {
     font-size: 1.3rem;
-  }
-
-  .hottest-grid {
-    overflow-x: auto;
-    overflow-y: visible;
-    -webkit-overflow-scrolling: touch;
-
-    margin-left: -20px;  /* ✅ réduit un peu l’étendue pour mobile */
-    padding-left: 20px;  /* recale les cartes */
-    padding-bottom: 20px;
   }
 
   .card-content h3 {
@@ -289,6 +273,10 @@ html, body {
   .article-image img {
     max-width: 100%;
     max-height: 250px;
+  }
+
+  .hottest-wrapper {
+    padding: 0 16px; /* ✅ un peu plus de marge sur mobile */
   }
 }
 
@@ -308,10 +296,6 @@ html, body {
     overflow-x: visible;
     justify-content: flex-start;
     flex-wrap: wrap;
-
-    margin-left: 0;
-    padding-left: 0;
-    padding-bottom: 0;
   }
 
   .hottest-grid .card {
