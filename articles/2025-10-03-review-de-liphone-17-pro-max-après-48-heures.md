@@ -1,7 +1,7 @@
 ---
 title: Review de l'iPhone 17 Pro Max après 48 heures
 date: 2025-10-03T21:11:52.106Z
-author: Clayton
+author: Pas Clayton
 description: Je teste l'iPhone 17 Pro Max depuis sa sortie, voici un test
   complet et détaillé de l'appareil.
 thumbnail: /img/uploads/img_5359.jpg
