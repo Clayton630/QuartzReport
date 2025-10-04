@@ -33,11 +33,20 @@ html, body {
 }
 
 .logo {
-  font-size: 1.6rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, #3a7bd5, #1d4ed8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-img {
+  height: 28px; /* ✅ Taille réduite pour un look plus premium */
+  width: auto;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
 }
 
 .icons {
@@ -112,13 +121,11 @@ html, body {
   margin: 0 20px 14px 20px;
 }
 
-/* Wrapper externe */
 .hottest-wrapper {
   padding: 0 20px;
   overflow: visible;
 }
 
-/* ✅ Conteneur interne : bien serré en hauteur */
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -126,8 +133,8 @@ html, body {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-  padding: 0;   /* ❌ plus de coussin artificiel */
-  margin: 0;    /* ❌ plus de marge négative */
+  padding: 0;
+  margin: 0;
 }
 .hottest-grid::-webkit-scrollbar {
   display: none;
@@ -244,12 +251,12 @@ html, body {
    Optimisation Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
-  .logo {
-    font-size: 1.8rem;
+  .logo-img {
+    height: 22px; /* ✅ Taille réduite aussi sur mobile */
   }
 
   .icons button {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
 
   .main-nav a {
@@ -337,22 +344,4 @@ html, body {
 .article-header a:hover {
   text-decoration: none;
   color: inherit;
-}
-
-/* ✅ Logo SVG */
-.logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-img {
-  height: 36px;
-  width: auto;
-  display: block;
-  transition: transform 0.2s ease;
-}
-
-.logo-img:hover {
-  transform: scale(1.05);
 }
