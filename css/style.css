@@ -281,6 +281,13 @@ html, body {
   .hottest-wrapper {
     padding: 0 16px;
   }
+  .hottest-grid {
+    padding-bottom: 30px;
+    margin-bottom: -30px;
+    padding-top: 30px;
+    margin-top: -30px;
+  }
+
 }
 
 /* =========================
