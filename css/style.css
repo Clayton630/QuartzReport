@@ -8,7 +8,15 @@ html, body {
   overflow-x: hidden;
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
-  background: linear-gradient(135deg, #f3f6fb, #ffffff);
+  background: linear-gradient(
+      180deg,
+      rgba(58, 123, 213, 0.25) 0%,    /* Bleu doux au sommet */
+      rgba(58, 123, 213, 0.10) 20%,   /* diffusion progressive */
+      rgba(58, 123, 213, 0.03) 40%,   /* quasi invisible */
+      rgba(255,255,255,0) 70%         /* complètement fondu */
+    ),
+    linear-gradient(135deg, #f3f6fb, #ffffff); /* ton fond de base */
+  background-attachment: fixed;
   color: #111;
 }
 
@@ -20,15 +28,12 @@ html, body {
   justify-content: space-between;
   align-items: center;
   padding: 12px 16px;
-
-  /* ✅ suppression du fond et des effets */
   background: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border: none;
   border-radius: 0;
   box-shadow: none;
-
   position: sticky;
   top: 0;
   z-index: 10;
@@ -255,7 +260,7 @@ html, body {
    ========================= */
 @media (max-width: 480px) {
   .logo-img {
-    height: 25px; /* ✅ légèrement plus grand sur mobile */
+    height: 25px;
   }
 
   .icons button {
