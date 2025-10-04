@@ -9,17 +9,19 @@ html, body {
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
 
-  /* 💎 Dégradé indigo (raccourci pour desktop) */
+  /* ✅ Fusion du gradient indigo + fond clair */
   background: linear-gradient(
-      180deg,
-      rgba(67, 97, 238, 0.9) 0%,
-      rgba(67, 97, 238, 0.75) 6%,
-      rgba(67, 97, 238, 0.45) 11%,
-      rgba(67, 97, 238, 0.2) 16%,
-      rgba(255,255,255,0) 22%
-    ),
-    linear-gradient(135deg, #f3f6fb, #ffffff);
-  background-attachment: scroll;
+    180deg,
+    rgba(67, 97, 238, 0.9) 0%,
+    rgba(67, 97, 238, 0.75) 6%,
+    rgba(67, 97, 238, 0.45) 11%,
+    rgba(67, 97, 238, 0.2) 16%,
+    rgba(255,255,255,1) 22%,
+    #ffffff 100%
+  );
+  background-repeat: no-repeat;   /* ✅ pas de bandes multiples */
+  background-size: 100% 100vh;    /* ✅ dégradé limité à la hauteur d’écran */
+  background-attachment: scroll;  /* ✅ évite le décalage sur mobile */
   color: #111;
 }
 
@@ -267,14 +269,16 @@ html, body {
 @media (max-width: 480px) {
   html, body {
     background: linear-gradient(
-        180deg,
-        rgba(67, 97, 238, 0.9) 0%,
-        rgba(67, 97, 238, 0.8) 7%,  
-        rgba(67, 97, 238, 0.55) 13%,  
-        rgba(67, 97, 238, 0.3) 18%,   
-        rgba(255,255,255,0) 26%
-      ),
-      linear-gradient(135deg, #f3f6fb, #ffffff);
+      180deg,
+      rgba(67, 97, 238, 0.9) 0%,
+      rgba(67, 97, 238, 0.8) 5%,
+      rgba(67, 97, 238, 0.55) 10%,
+      rgba(67, 97, 238, 0.25) 14%,
+      rgba(255,255,255,1) 21%,
+      #ffffff 100%
+    );
+    background-repeat: no-repeat;
+    background-size: 100% 100vh;
   }
 
   .logo-img {
@@ -320,54 +324,4 @@ html, body {
     padding-top: 30px;
     margin-top: -30px;
   }
-}
-
-/* =========================
-   Desktop (≥768px)
-   ========================= */
-@media (min-width: 768px) {
-  .site-header {
-    padding: 14px 24px;
-  }
-
-  .main-nav ul {
-    justify-content: center;
-  }
-
-  .hottest-grid {
-    overflow-x: visible;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .hottest-grid .card {
-    flex: 0 0 260px;
-    max-width: 260px;
-  }
-
-  .card-content h3 {
-    font-size: 1rem;
-  }
-}
-
-/* =========================
-   Inline images & titres
-   ========================= */
-.article-body img.inline-image {
-  max-width: 90%;
-  height: auto;
-  display: block;
-  margin: 16px auto;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.article-header a {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-.article-header a:hover {
-  text-decoration: none;
-  color: inherit;
 }
