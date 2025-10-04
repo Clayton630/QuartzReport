@@ -78,15 +78,17 @@ async function loadArticles() {
       const link = document.createElement("a");
       link.href = `article.html?title=${encodeURIComponent(article.title)}`;
       link.className = "card";
-      const date = new Date(article.date).toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      });
+
+      // ✅ Format "04 oct" (mois abrégé sans année)
+      const dateObj = new Date(article.date);
+      const day = dateObj.toLocaleDateString("fr-FR", { day: "2-digit" });
+      const month = dateObj.toLocaleDateString("fr-FR", { month: "short" }).replace(".", "");
+      const formattedDate = `${day} ${month.toLowerCase()}`;
+
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="">
         <div class="card-content">
-          <p class="card-meta">Par ${article.author}, le ${date}</p>
+          <p class="card-meta">par ${article.author}, le ${formattedDate}</p>
           <h3>${article.title}</h3>
         </div>
       `;
@@ -119,6 +121,7 @@ async function loadArticles() {
 
     renderArticles(articles);
 
+    // 🔹 Filtrage catégories
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
