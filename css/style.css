@@ -39,7 +39,7 @@ html, body {
 }
 
 .logo-img {
-  height: 28px; /* ✅ Taille réduite pour un look plus premium */
+  height: 28px; /* ✅ Taille desktop premium */
   width: auto;
   display: block;
   transition: transform 0.2s ease;
@@ -252,7 +252,7 @@ html, body {
    ========================= */
 @media (max-width: 480px) {
   .logo-img {
-    height: 22px; /* ✅ Taille réduite aussi sur mobile */
+    height: 25px; /* ✅ légèrement plus grand sur mobile */
   }
 
   .icons button {
