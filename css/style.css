@@ -4,7 +4,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  max-width: 100%;
+  width: 100%;
   overflow-x: hidden;
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
@@ -13,7 +13,7 @@ html, body {
 }
 
 /* =========================
-   Header
+   Header – dégradé plein écran
    ========================= */
 .site-header {
   display: flex;
@@ -40,10 +40,10 @@ html, body {
   justify-content: center;
 }
 .logo-img {
-  height: 28px; /* un peu plus petit */
+  height: 28px;
   width: auto;
   display: block;
-  filter: brightness(0) invert(1); /* transforme ton logo en blanc pur */
+  filter: brightness(0) invert(1);
   transition: transform 0.2s ease, opacity 0.2s ease;
 }
 .logo-img:hover {
@@ -52,15 +52,15 @@ html, body {
 }
 
 /* =========================
-   Icônes (search / menu)
+   Icônes
    ========================= */
 .icons {
   display: flex;
   gap: 10px;
 }
 .icons button {
-  background: rgba(255, 255, 255, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255,255,255,0.25);
+  border: 1px solid rgba(255,255,255,0.3);
   border-radius: 50%;
   font-size: 1.4rem;
   cursor: pointer;
@@ -68,20 +68,20 @@ html, body {
   color: #fff;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(255,255,255,0.15);
   transition: all 0.3s ease;
 }
 .icons button:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(255,255,255,0.4);
   transform: scale(1.08);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 10px rgba(255,255,255,0.3);
 }
 
 /* =========================
    Navigation (catégories)
    ========================= */
 .main-nav {
-  max-width: 100%;
+  width: 100%;
   overflow-x: auto;
   white-space: nowrap;
   padding: 10px 16px;
@@ -100,7 +100,7 @@ html, body {
   display: inline-block;
   padding: 8px 16px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.85); /* blanc doux */
+  background: rgba(255, 255, 255, 0.85);
   color: #1d4ed8;
   font-weight: 500;
   text-decoration: none;
@@ -126,14 +126,10 @@ html, body {
   font-size: 1.2rem;
   margin: 0 20px 14px 20px;
 }
-
-/* Wrapper externe */
 .hottest-wrapper {
   padding: 0 20px;
   overflow: visible;
 }
-
-/* Conteneur interne */
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -147,7 +143,6 @@ html, body {
 .hottest-grid::-webkit-scrollbar {
   display: none;
 }
-
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -168,7 +163,6 @@ html, body {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
-
 .card img {
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -218,6 +212,12 @@ html, body {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
+  color: #fff;
+  text-decoration: none; /* ✅ garde le style d'avant */
+}
+.article-header h3:hover {
+  color: #fff; /* pas de hover bleu */
+  text-decoration: none;
 }
 .article-meta {
   padding: 14px 20px;
@@ -251,11 +251,11 @@ html, body {
 }
 
 /* =========================
-   Mobile (≤480px)
+   Mobile
    ========================= */
 @media (max-width: 480px) {
   .logo-img {
-    height: 22px; /* plus petit sur mobile */
+    height: 22px;
   }
   .icons button {
     font-size: 1.6rem;
