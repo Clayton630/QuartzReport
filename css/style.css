@@ -4,7 +4,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  width: 100%;
+  max-width: 100%;
   overflow-x: hidden;
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
@@ -13,80 +13,63 @@ html, body {
 }
 
 /* =========================
-   Header – dégradé plein écran
+   Header
    ========================= */
 .site-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 20px;
-  background: linear-gradient(90deg, #6EA8FF 0%, #4178F3 100%);
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  border: none;
-  border-radius: 0 0 22px 22px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.06);
   position: sticky;
   top: 0;
   z-index: 10;
   box-sizing: border-box;
-  color: #fff;
 }
 
-/* ✅ Logo SVG blanc */
 .logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.logo-img {
-  height: 28px;
-  width: auto;
-  display: block;
-  filter: brightness(0) invert(1);
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-.logo-img:hover {
-  transform: scale(1.05);
-  opacity: 0.9;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #3a7bd5, #1d4ed8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* =========================
-   Icônes
-   ========================= */
 .icons {
   display: flex;
   gap: 10px;
 }
 .icons button {
   background: rgba(255,255,255,0.25);
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.4);
   border-radius: 50%;
   font-size: 1.4rem;
   cursor: pointer;
   padding: 8px;
-  color: #fff;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
   transition: all 0.3s ease;
 }
 .icons button:hover {
-  background: rgba(255,255,255,0.4);
-  transform: scale(1.08);
-  box-shadow: 0 0 10px rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.6);
+  box-shadow: 0 0 8px rgba(58,123,213,0.6);
 }
 
 /* =========================
    Navigation (catégories)
    ========================= */
 .main-nav {
-  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   white-space: nowrap;
   padding: 10px 16px;
-  margin: 10px 16px 0 16px;
+  margin: 8px 16px 0 16px;
   background: none;
+  backdrop-filter: none;
 }
 .main-nav ul {
   display: flex;
@@ -99,20 +82,22 @@ html, body {
 .main-nav a {
   display: inline-block;
   padding: 8px 16px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
   color: #1d4ed8;
   font-weight: 500;
   text-decoration: none;
   font-size: 0.9rem;
   flex-shrink: 0;
   white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
 }
 .main-nav a:hover {
-  background: rgba(255, 255, 255, 1);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+  background: #f8faff;
+  color: #111;
+  box-shadow: 0 2px 8px rgba(58,123,213,0.25);
 }
 
 /* =========================
@@ -126,10 +111,14 @@ html, body {
   font-size: 1.2rem;
   margin: 0 20px 14px 20px;
 }
+
+/* Wrapper externe */
 .hottest-wrapper {
   padding: 0 20px;
   overflow: visible;
 }
+
+/* ✅ Conteneur interne : bien serré en hauteur */
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -137,12 +126,13 @@ html, body {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-  padding: 0;
-  margin: 0;
+  padding: 0;   /* ❌ plus de coussin artificiel */
+  margin: 0;    /* ❌ plus de marge négative */
 }
 .hottest-grid::-webkit-scrollbar {
   display: none;
 }
+
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -163,12 +153,14 @@ html, body {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
+
 .card img {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
 }
+
 .card-content {
   flex: 1;
   padding: 16px;
@@ -202,6 +194,7 @@ html, body {
   transform: translateY(-3px);
   box-shadow: 0 12px 35px rgba(0,0,0,0.12);
 }
+
 .article-header {
   background: linear-gradient(120deg, rgba(106,27,154,0.8), rgba(142,36,170,0.8));
   backdrop-filter: blur(8px);
@@ -212,13 +205,8 @@ html, body {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #fff;
-  text-decoration: none; /* ✅ garde le style d'avant */
 }
-.article-header h3:hover {
-  color: #fff; /* pas de hover bleu */
-  text-decoration: none;
-}
+
 .article-meta {
   padding: 14px 20px;
   font-size: 0.9rem;
@@ -231,6 +219,7 @@ html, body {
   color: #555;
   font-weight: 500;
 }
+
 .article-image {
   text-align: center;
   padding: 16px 16px 0 16px;
@@ -243,6 +232,7 @@ html, body {
   border-radius: 12px;
   object-fit: contain;
 }
+
 .article-body {
   padding: 16px 20px;
   font-size: 1rem;
@@ -251,14 +241,118 @@ html, body {
 }
 
 /* =========================
-   Mobile
+   Optimisation Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
-  .logo-img {
-    height: 22px;
+  .logo {
+    font-size: 1.8rem;
   }
+
   .icons button {
-    font-size: 1.6rem;
-    padding: 6px;
+    font-size: 1.8rem;
   }
+
+  .main-nav a {
+    font-size: 1rem;
+    padding: 8px 16px;
+  }
+
+  .hottest h2 {
+    font-size: 1.3rem;
+  }
+
+  .card-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .article-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .article-body {
+    font-size: 0.95rem;
+  }
+
+  .article-image img {
+    max-width: 100%;
+    max-height: 250px;
+  }
+
+  .hottest-wrapper {
+    padding: 0 16px;
+  }
+  .hottest-grid {
+    padding-bottom: 30px;
+    margin-bottom: -30px;
+    padding-top: 30px;
+    margin-top: -30px;
+  }
+}
+
+/* =========================
+   Version Desktop (≥768px)
+   ========================= */
+@media (min-width: 768px) {
+  .site-header {
+    padding: 14px 24px;
+  }
+
+  .main-nav ul {
+    justify-content: center;
+  }
+
+  .hottest-grid {
+    overflow-x: visible;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .hottest-grid .card {
+    flex: 0 0 260px;
+    max-width: 260px;
+  }
+
+  .card-content h3 {
+    font-size: 1rem;
+  }
+}
+
+/* Images inline insérées via l’éditeur */
+.article-body img.inline-image {
+  max-width: 90%;
+  height: auto;
+  display: block;
+  margin: 16px auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* ✅ Liens des titres dans le feed : style neutre, sans hover */
+.article-header a {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.article-header a:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ✅ Logo SVG */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05);
 }
