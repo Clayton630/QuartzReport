@@ -9,14 +9,14 @@ html, body {
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
 
-  /* 💎 Nouveau fond : indigo plus profond, diffusion limitée */
+  /* 💎 Nouveau fond : indigo vif, dégradé concentré */
   background: linear-gradient(
       180deg,
-      rgba(67, 97, 238, 0.8) 0%,     /* indigo vif tout en haut */
-      rgba(67, 97, 238, 0.55) 12%,   /* transition plus courte */
-      rgba(67, 97, 238, 0.25) 25%,   
-      rgba(67, 97, 238, 0.10) 38%,   
-      rgba(255,255,255,0) 52%        /* s'évapore sous les cartes hottest */
+      rgba(67, 97, 238, 0.9) 0%,     /* Indigo intense en haut */
+      rgba(67, 97, 238, 0.75) 10%,  
+      rgba(67, 97, 238, 0.45) 20%,  
+      rgba(67, 97, 238, 0.2) 30%,   
+      rgba(255,255,255,0) 42%       /* 💥 transition nette sous les cartes hottest */
     ),
     linear-gradient(135deg, #f3f6fb, #ffffff);
   background-attachment: fixed;
