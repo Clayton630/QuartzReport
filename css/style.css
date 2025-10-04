@@ -19,13 +19,13 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 14px; /* légerement affiné */
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 0 0 20px 20px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.05);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -40,39 +40,42 @@ html, body {
 }
 
 .logo-img {
-  height: 36px;         /* Taille standard (desktop/tablette) */
+  height: 28px;         /* 🔹 taille plus fine pour desktop */
   width: auto;
   display: block;
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease, filter 0.25s ease;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.05));
 }
 
 .logo-img:hover {
-  transform: scale(1.05); /* Petit effet de zoom subtil */
+  transform: scale(1.05);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
 }
 
+/* Mobile */
 @media (max-width: 480px) {
   .logo-img {
-    height: 28px;       /* Logo réduit sur mobile */
+    height: 22px;       /* 🔹 réduit sur mobile */
   }
 }
 
 .icons {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 .icons button {
   background: rgba(255,255,255,0.25);
   border: 1px solid rgba(255,255,255,0.4);
   border-radius: 50%;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   cursor: pointer;
-  padding: 8px;
+  padding: 6px;
   backdrop-filter: blur(8px);
   transition: all 0.3s ease;
 }
 .icons button:hover {
   background: rgba(255,255,255,0.6);
-  box-shadow: 0 0 8px rgba(58,123,213,0.6);
+  box-shadow: 0 0 8px rgba(58,123,213,0.5);
 }
 
 /* =========================
@@ -97,7 +100,7 @@ html, body {
 }
 .main-nav a {
   display: inline-block;
-  padding: 8px 16px;
+  padding: 7px 14px;
   border-radius: 20px;
   background: #fff;
   border: 1px solid rgba(0,0,0,0.05);
@@ -134,7 +137,6 @@ html, body {
   overflow: visible;
 }
 
-/* ✅ Conteneur interne : bien serré en hauteur */
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -282,20 +284,20 @@ html, body {
    ========================= */
 @media (max-width: 480px) {
   .icons button {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
   }
 
   .main-nav a {
     font-size: 1rem;
-    padding: 8px 16px;
+    padding: 8px 14px;
   }
 
   .hottest h2 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
 
   .card-content h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .article-header h3 {
@@ -328,7 +330,7 @@ html, body {
    ========================= */
 @media (min-width: 768px) {
   .site-header {
-    padding: 14px 24px;
+    padding: 12px 22px;
   }
 
   .main-nav ul {
