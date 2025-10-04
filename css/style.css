@@ -1,15 +1,24 @@
 /* =========================
    Reset & bases
    ========================= */
-html, body {
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: linear-gradient(135deg, #f3f6fb, #ffffff);
+}
+
+body {
   margin: 0;
   padding: 0;
   max-width: 100%;
+  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
+  color: #111;
 
-  /* 💎 Dégradé indigo (raccourci pour desktop) */
+  /* 💎 Dégradé indigo fixé uniquement sur body (évite bandes et doublons) */
   background: linear-gradient(
       180deg,
       rgba(67, 97, 238, 0.9) 0%,
@@ -19,8 +28,9 @@ html, body {
       rgba(255,255,255,0) 22%
     ),
     linear-gradient(135deg, #f3f6fb, #ffffff);
+  background-repeat: no-repeat;
   background-attachment: scroll;
-  color: #111;
+  background-size: 100% auto;
 }
 
 /* =========================
@@ -265,7 +275,7 @@ html, body {
    Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
-  html, body {
+  body {
     background: linear-gradient(
         180deg,
         rgba(67, 97, 238, 0.9) 0%,
@@ -275,6 +285,8 @@ html, body {
         rgba(255,255,255,0) 26%
       ),
       linear-gradient(135deg, #f3f6fb, #ffffff);
+    background-repeat: no-repeat;
+    background-size: 100% auto;
   }
 
   .logo-img {
