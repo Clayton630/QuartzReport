@@ -1,5 +1,3 @@
-ok c'est parfait ! par contre petit bug de l'ordre du détail, quand on recharge la page, ça fait plein de bandes bleues tout le long de la page, et également quand on est sur un article en plein écran, si l'article est court, y'a un second dégradé bleur qui apparait en dessous. regle le souci SANS TOUCHER A RIEN D'autre, parce que je sais que ca t'amuse de modifier des trucs que je t'ai pas demande genre les titres des articles ou la hauteur du dégradé. pour info, mon css actuel c'est ca :
-
 /* =========================
    Reset & bases
    ========================= */
