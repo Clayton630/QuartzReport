@@ -32,12 +32,28 @@ html, body {
   box-sizing: border-box;
 }
 
+/* ✅ Logo SVG */
 .logo {
-  font-size: 1.6rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, #3a7bd5, #1d4ed8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-img {
+  height: 36px;         /* Taille standard (desktop/tablette) */
+  width: auto;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05); /* Petit effet de zoom subtil */
+}
+
+@media (max-width: 480px) {
+  .logo-img {
+    height: 28px;       /* Logo réduit sur mobile */
+  }
 }
 
 .icons {
@@ -126,8 +142,8 @@ html, body {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-  padding: 0;   /* ❌ plus de coussin artificiel */
-  margin: 0;    /* ❌ plus de marge négative */
+  padding: 0;
+  margin: 0;
 }
 .hottest-grid::-webkit-scrollbar {
   display: none;
@@ -207,6 +223,17 @@ html, body {
   font-weight: 600;
 }
 
+/* ✅ Liens neutres sur les titres */
+.article-header a {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+.article-header a:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
 .article-meta {
   padding: 14px 20px;
   font-size: 0.9rem;
@@ -240,14 +267,20 @@ html, body {
   color: #222;
 }
 
+/* Images inline insérées via l’éditeur */
+.article-body img.inline-image {
+  max-width: 90%;
+  height: auto;
+  display: block;
+  margin: 16px auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
 /* =========================
    Optimisation Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
-  .logo {
-    font-size: 1.8rem;
-  }
-
   .icons button {
     font-size: 1.8rem;
   }
@@ -281,13 +314,13 @@ html, body {
   .hottest-wrapper {
     padding: 0 16px;
   }
+
   .hottest-grid {
     padding-bottom: 30px;
     margin-bottom: -30px;
     padding-top: 30px;
     margin-top: -30px;
   }
-
 }
 
 /* =========================
@@ -316,44 +349,4 @@ html, body {
   .card-content h3 {
     font-size: 1rem;
   }
-}
-
-/* Images inline insérées via l’éditeur */
-.article-body img.inline-image {
-  max-width: 90%;
-  height: auto;
-  display: block;
-  margin: 16px auto;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-/* ✅ Liens des titres dans le feed : style neutre, sans hover */
-.article-header a {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer; /* garde l'impression que c'est cliquable */
-}
-
-.article-header a:hover {
-  text-decoration: none;
-  color: inherit;
-}
-
-/* ✅ Logo SVG */
-.logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-img {
-  height: 36px;         /* Ajuste la taille selon ton SVG */
-  width: auto;
-  display: block;
-  transition: transform 0.2s ease;
-}
-
-.logo-img:hover {
-  transform: scale(1.05); /* Petit effet subtil au survol */
 }
