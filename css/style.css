@@ -10,12 +10,12 @@ html, body {
   font-family: 'Inter', Arial, sans-serif;
   background: linear-gradient(
       180deg,
-      rgba(58, 123, 213, 0.25) 0%,    /* Bleu doux au sommet */
-      rgba(58, 123, 213, 0.10) 20%,   /* diffusion progressive */
-      rgba(58, 123, 213, 0.03) 40%,   /* quasi invisible */
-      rgba(255,255,255,0) 70%         /* complètement fondu */
+      rgba(58, 123, 213, 0.5) 0%,    /* plus intense en haut */
+      rgba(58, 123, 213, 0.25) 15%,  /* se dissipe plus vite */
+      rgba(58, 123, 213, 0.08) 30%,  
+      rgba(255,255,255,0) 55%        /* fini avant la moitié de la page */
     ),
-    linear-gradient(135deg, #f3f6fb, #ffffff); /* ton fond de base */
+    linear-gradient(135deg, #f3f6fb, #ffffff); /* fond principal */
   background-attachment: fixed;
   color: #111;
 }
@@ -40,19 +40,19 @@ html, body {
   box-sizing: border-box;
 }
 
+/* ✅ Logo SVG blanc */
 .logo {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .logo-img {
-  height: 28px; /* ✅ Taille desktop premium */
+  height: 28px; /* desktop */
   width: auto;
   display: block;
+  filter: brightness(0) invert(1); /* rend le SVG blanc */
   transition: transform 0.2s ease;
 }
-
 .logo-img:hover {
   transform: scale(1.05);
 }
@@ -128,12 +128,10 @@ html, body {
   font-size: 1.2rem;
   margin: 0 20px 14px 20px;
 }
-
 .hottest-wrapper {
   padding: 0 20px;
   overflow: visible;
 }
-
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -147,7 +145,6 @@ html, body {
 .hottest-grid::-webkit-scrollbar {
   display: none;
 }
-
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -175,7 +172,6 @@ html, body {
   object-fit: cover;
   display: block;
 }
-
 .card-content {
   flex: 1;
   padding: 16px;
@@ -209,7 +205,6 @@ html, body {
   transform: translateY(-3px);
   box-shadow: 0 12px 35px rgba(0,0,0,0.12);
 }
-
 .article-header {
   background: linear-gradient(120deg, rgba(106,27,154,0.8), rgba(142,36,170,0.8));
   backdrop-filter: blur(8px);
@@ -221,7 +216,6 @@ html, body {
   font-size: 1.5rem;
   font-weight: 600;
 }
-
 .article-meta {
   padding: 14px 20px;
   font-size: 0.9rem;
@@ -234,7 +228,6 @@ html, body {
   color: #555;
   font-weight: 500;
 }
-
 .article-image {
   text-align: center;
   padding: 16px 16px 0 16px;
@@ -247,7 +240,6 @@ html, body {
   border-radius: 12px;
   object-fit: contain;
 }
-
 .article-body {
   padding: 16px 20px;
   font-size: 1rem;
@@ -348,7 +340,6 @@ html, body {
   color: inherit;
   cursor: pointer;
 }
-
 .article-header a:hover {
   text-decoration: none;
   color: inherit;
