@@ -1,24 +1,17 @@
+ok c'est parfait ! par contre petit bug de l'ordre du détail, quand on recharge la page, ça fait plein de bandes bleues tout le long de la page, et également quand on est sur un article en plein écran, si l'article est court, y'a un second dégradé bleur qui apparait en dessous. regle le souci SANS TOUCHER A RIEN D'autre, parce que je sais que ca t'amuse de modifier des trucs que je t'ai pas demande genre les titres des articles ou la hauteur du dégradé. pour info, mon css actuel c'est ca :
+
 /* =========================
    Reset & bases
    ========================= */
-html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: linear-gradient(135deg, #f3f6fb, #ffffff);
-}
-
-body {
+html, body {
   margin: 0;
   padding: 0;
   max-width: 100%;
-  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
-  color: #111;
 
-  /* 💎 Dégradé indigo fixé uniquement sur body (évite bandes et doublons) */
+  /* 💎 Dégradé indigo (raccourci pour desktop) */
   background: linear-gradient(
       180deg,
       rgba(67, 97, 238, 0.9) 0%,
@@ -28,9 +21,8 @@ body {
       rgba(255,255,255,0) 22%
     ),
     linear-gradient(135deg, #f3f6fb, #ffffff);
-  background-repeat: no-repeat;
   background-attachment: scroll;
-  background-size: 100% auto;
+  color: #111;
 }
 
 /* =========================
@@ -164,7 +156,6 @@ body {
   display: none;
 }
 
-/* ✅ NOUVEAU STYLE pour les cartes Hottest */
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -173,60 +164,37 @@ body {
   color: inherit;
   display: flex;
   flex-direction: column;
-
-  /* Fond pur, sans flou */
-  background: #fff;
-  border: none;
-  border-radius: 24px;
-
-  /* Nouvelle ombre douce Apple-like */
+  border-radius: 20px;
+  background: rgba(255,255,255,0.35);
+  border: 1px solid rgba(255,255,255,0.5);
+  backdrop-filter: blur(12px);
   box-shadow: 0 8px 20px rgba(0,0,0,0.08);
   transition: all 0.3s ease;
   overflow: hidden;
 }
+.hottest-grid .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
+}
 
-/* Image avec coins supérieurs arrondis uniquement */
-.hottest-grid .card img {
+.card img {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
-  border-radius: 24px 24px 0 0;
 }
 
-/* Contenu texte sous l’image */
 .card-content {
   flex: 1;
   padding: 16px;
 }
 .card-content h3 {
   font-size: 1rem;
-  margin: 8px 0 0;
+  margin: 0;
   color: #111;
   text-align: left;
   font-weight: 600;
 }
-
-/* Petite ligne auteur + catégorie */
-.card-meta {
-  font-size: 0.85rem;
-  color: #666;
-  margin-bottom: 6px;
-}
-
-/* Badges catégories stylés */
-.badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.75rem;
-  color: #fff;
-  margin-left: 6px;
-}
-.badge.apple { background: #ff8c00; }
-.badge.review { background: #3a7bd5; }
-.badge.comparatif { background: #8e24aa; }
-.badge.autre { background: #999; }
 
 /* =========================
    Articles du feed
@@ -299,7 +267,7 @@ body {
    Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
-  body {
+  html, body {
     background: linear-gradient(
         180deg,
         rgba(67, 97, 238, 0.9) 0%,
@@ -309,8 +277,6 @@ body {
         rgba(255,255,255,0) 26%
       ),
       linear-gradient(135deg, #f3f6fb, #ffffff);
-    background-repeat: no-repeat;
-    background-size: 100% auto;
   }
 
   .logo-img {
