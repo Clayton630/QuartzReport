@@ -8,14 +8,17 @@ html, body {
   overflow-x: hidden;
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
+
+  /* 💎 Nouveau fond : indigo plus profond, diffusion limitée */
   background: linear-gradient(
       180deg,
-      rgba(58, 123, 213, 0.5) 0%,    /* plus intense en haut */
-      rgba(58, 123, 213, 0.25) 15%,  /* se dissipe plus vite */
-      rgba(58, 123, 213, 0.08) 30%,  
-      rgba(255,255,255,0) 55%        /* fini avant la moitié de la page */
+      rgba(67, 97, 238, 0.8) 0%,     /* indigo vif tout en haut */
+      rgba(67, 97, 238, 0.55) 12%,   /* transition plus courte */
+      rgba(67, 97, 238, 0.25) 25%,   
+      rgba(67, 97, 238, 0.10) 38%,   
+      rgba(255,255,255,0) 52%        /* s'évapore sous les cartes hottest */
     ),
-    linear-gradient(135deg, #f3f6fb, #ffffff); /* fond principal */
+    linear-gradient(135deg, #f3f6fb, #ffffff);
   background-attachment: fixed;
   color: #111;
 }
@@ -47,10 +50,10 @@ html, body {
   justify-content: center;
 }
 .logo-img {
-  height: 28px; /* desktop */
+  height: 28px;
   width: auto;
   display: block;
-  filter: brightness(0) invert(1); /* rend le SVG blanc */
+  filter: brightness(0) invert(1);
   transition: transform 0.2s ease;
 }
 .logo-img:hover {
@@ -73,7 +76,7 @@ html, body {
 }
 .icons button:hover {
   background: rgba(255,255,255,0.6);
-  box-shadow: 0 0 8px rgba(58,123,213,0.6);
+  box-shadow: 0 0 8px rgba(67,97,238,0.6);
 }
 
 /* =========================
@@ -114,7 +117,7 @@ html, body {
 .main-nav a:hover {
   background: #f8faff;
   color: #111;
-  box-shadow: 0 2px 8px rgba(58,123,213,0.25);
+  box-shadow: 0 2px 8px rgba(67,97,238,0.25);
 }
 
 /* =========================
@@ -128,10 +131,12 @@ html, body {
   font-size: 1.2rem;
   margin: 0 20px 14px 20px;
 }
+
 .hottest-wrapper {
   padding: 0 20px;
   overflow: visible;
 }
+
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -145,6 +150,7 @@ html, body {
 .hottest-grid::-webkit-scrollbar {
   display: none;
 }
+
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -163,7 +169,7 @@ html, body {
 }
 .hottest-grid .card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(67,97,238,0.3);
 }
 
 .card img {
@@ -248,43 +254,35 @@ html, body {
 }
 
 /* =========================
-   Optimisation Mobile (≤480px)
+   Mobile
    ========================= */
 @media (max-width: 480px) {
   .logo-img {
     height: 25px;
   }
-
   .icons button {
     font-size: 1.6rem;
   }
-
   .main-nav a {
     font-size: 1rem;
     padding: 8px 16px;
   }
-
   .hottest h2 {
     font-size: 1.3rem;
   }
-
   .card-content h3 {
     font-size: 1.1rem;
   }
-
   .article-header h3 {
     font-size: 1.3rem;
   }
-
   .article-body {
     font-size: 0.95rem;
   }
-
   .article-image img {
     max-width: 100%;
     max-height: 250px;
   }
-
   .hottest-wrapper {
     padding: 0 16px;
   }
@@ -297,34 +295,32 @@ html, body {
 }
 
 /* =========================
-   Version Desktop (≥768px)
+   Desktop
    ========================= */
 @media (min-width: 768px) {
   .site-header {
     padding: 14px 24px;
   }
-
   .main-nav ul {
     justify-content: center;
   }
-
   .hottest-grid {
     overflow-x: visible;
     justify-content: flex-start;
     flex-wrap: wrap;
   }
-
   .hottest-grid .card {
     flex: 0 0 260px;
     max-width: 260px;
   }
-
   .card-content h3 {
     font-size: 1rem;
   }
 }
 
-/* Images inline insérées via l’éditeur */
+/* =========================
+   Détails article
+   ========================= */
 .article-body img.inline-image {
   max-width: 90%;
   height: auto;
@@ -333,8 +329,6 @@ html, body {
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-
-/* ✅ Liens des titres dans le feed : style neutre, sans hover */
 .article-header a {
   text-decoration: none;
   color: inherit;
