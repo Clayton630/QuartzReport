@@ -9,14 +9,14 @@ html, body {
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
 
-  /* 💎 Dégradé indigo élégant (remonté) */
+  /* 💎 Dégradé indigo (raccourci pour desktop) */
   background: linear-gradient(
       180deg,
       rgba(67, 97, 238, 0.9) 0%,
-      rgba(67, 97, 238, 0.75) 8%,
-      rgba(67, 97, 238, 0.45) 15%,
-      rgba(67, 97, 238, 0.2) 22%,
-      rgba(255,255,255,0) 30%
+      rgba(67, 97, 238, 0.75) 6%,
+      rgba(67, 97, 238, 0.45) 11%,
+      rgba(67, 97, 238, 0.2) 16%,
+      rgba(255,255,255,0) 22%
     ),
     linear-gradient(135deg, #f3f6fb, #ffffff);
   background-attachment: scroll;
@@ -262,20 +262,19 @@ html, body {
 }
 
 /* =========================
-   Optimisation Mobile (≤480px)
+   Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
   html, body {
     background: linear-gradient(
         180deg,
         rgba(67, 97, 238, 0.9) 0%,
-        rgba(67, 97, 238, 0.75) 5%,  
-        rgba(67, 97, 238, 0.45) 10%,  
-        rgba(67, 97, 238, 0.2) 15%,   
-        rgba(255,255,255,0) 22%
+        rgba(67, 97, 238, 0.8) 7%,  
+        rgba(67, 97, 238, 0.55) 13%,  
+        rgba(67, 97, 238, 0.3) 18%,   
+        rgba(255,255,255,0) 26%
       ),
       linear-gradient(135deg, #f3f6fb, #ffffff);
-    background-attachment: scroll;
   }
 
   .logo-img {
@@ -324,7 +323,7 @@ html, body {
 }
 
 /* =========================
-   Version Desktop (≥768px)
+   Desktop (≥768px)
    ========================= */
 @media (min-width: 768px) {
   .site-header {
@@ -352,7 +351,7 @@ html, body {
 }
 
 /* =========================
-   Inline images
+   Inline images & titres
    ========================= */
 .article-body img.inline-image {
   max-width: 90%;
@@ -363,9 +362,6 @@ html, body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-/* =========================
-   Liens des titres dans le feed
-   ========================= */
 .article-header a {
   text-decoration: none;
   color: inherit;
