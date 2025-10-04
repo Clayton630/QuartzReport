@@ -339,3 +339,21 @@ html, body {
   text-decoration: none;
   color: inherit;
 }
+
+/* ✅ Logo SVG */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-img {
+  height: 36px;         /* Ajuste la taille selon ton SVG */
+  width: auto;
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.logo-img:hover {
+  transform: scale(1.05); /* Petit effet subtil au survol */
+}
