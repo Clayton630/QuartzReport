@@ -11,18 +11,21 @@ async function loadArticle() {
   const branch = "main";
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
+  // ✅ on récupère le slug (et plus "file")
   const params = new URLSearchParams(window.location.search);
-  const file = params.get("file");
-  if (!file) {
+  const slug = params.get("slug");
+  if (!slug) {
     container.innerHTML = "<p>Aucun article trouvé.</p>";
     return;
   }
 
   try {
+    // ✅ On va chercher le fichier Markdown correspondant
     const apiResp = await fetch(
-      `${workerBase}/repos/${repo}/contents/articles/${file}?ref=${branch}&_=${Date.now()}`,
+      `${workerBase}/repos/${repo}/contents/articles/${slug}.md?ref=${branch}&_=${Date.now()}`,
       { cache: "no-store" }
     );
+
     if (!apiResp.ok) {
       container.innerHTML = "<p>Impossible de charger l’article.</p>";
       return;
@@ -31,7 +34,7 @@ async function loadArticle() {
     const apiData = await apiResp.json();
     const text = base64ToUtf8(apiData.content);
 
-    // Extraire front matter YAML
+    // ✅ Extraction du front matter YAML
     const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
     let meta = {}, body = text;
     if (match) {
@@ -43,16 +46,17 @@ async function loadArticle() {
       });
     }
 
-    // Image de couverture
+    // ✅ Couverture : image front matter ou 1ère image inline
     let cover = meta.thumbnail || "img/article-placeholder.jpg";
     const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
     if (!meta.thumbnail && firstImg) {
       cover = firstImg[1];
     }
 
-    // Rendu markdown -> HTML
+    // ✅ Rendu Markdown → HTML
     const htmlBody = marked.parse(body);
 
+    // ✅ Insertion dans la page
     container.innerHTML = `
       <article class="article-block">
         <div class="article-header">
