@@ -88,15 +88,14 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.25);
 
-  /* ⚡️ Double contour net — reflets précis */
+  /* 💎 Reflets nets internes pour garder la rondeur */
   box-shadow:
-    1px 1px 0 rgba(255,255,255,0.9),   /* reflet net bas-droite */
-   -1px -1px 0 rgba(255,255,255,0.8);  /* reflet net haut-gauche */
+    inset 1px 1px 0 rgba(255,255,255,0.9),   /* haut-gauche */
+    inset -1px -1px 0 rgba(255,255,255,0.85); /* bas-droite */
     
   transition: all 0.3s ease;
   overflow: hidden;
 }
-
 /* ✅ Reflet diagonal propre */
 .icons i::after {
   content: "";
