@@ -88,11 +88,11 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.25);
 
-  /* 💎 Reflets nets internes pour garder la rondeur */
+  /* 💎 Reflets nets mais adoucis */
   box-shadow:
-    inset 1px 1px 0 rgba(255,255,255,0.9),   /* haut-gauche */
-    inset -1px -1px 0 rgba(255,255,255,0.85); /* bas-droite */
-    
+    inset 1px 1px 0 rgba(255,255,255,0.55),   /* haut-gauche */
+    inset -1px -1px 0 rgba(255,255,255,0.45); /* bas-droite */
+
   transition: all 0.3s ease;
   overflow: hidden;
 }
