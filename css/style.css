@@ -70,7 +70,7 @@ body {
 }
 
 /* =========================
-   Icônes header — 💧 Liquid Glass finalisé
+   Icônes header — 💧 Liquid Glass avec ombre noire diffuse
    ========================= */
 .icons {
   display: flex;
@@ -88,12 +88,12 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.25);
 
-  /* 💎 Halo doux, uniforme et centré */
+  /* 💎 Halo noir doux et centré */
   box-shadow:
-    inset 1px 1px 2px rgba(255, 255, 255, 0.5),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.4),
     inset -1px -1px 2px rgba(67, 97, 238, 0.3),
-    0 0 20px rgba(67, 97, 238, 0.25),
-    0 0 10px rgba(255, 255, 255, 0.35);
+    0 0 18px rgba(0, 0, 0, 0.25),
+    0 0 8px rgba(0, 0, 0, 0.2);
   
   transition: all 0.3s ease;
   overflow: hidden;
@@ -107,7 +107,7 @@ body {
   left: -40%;
   width: 180%;
   height: 180%;
-  background: linear-gradient(45deg, rgba(255,255,255,0.15), transparent 60%);
+  background: linear-gradient(45deg, rgba(255,255,255,0.1), transparent 60%);
   pointer-events: none;
   mix-blend-mode: screen;
 }
@@ -115,10 +115,10 @@ body {
 .icons i:hover {
   background: rgba(255,255,255,0.25);
   box-shadow:
-    inset 1px 1px 2px rgba(255, 255, 255, 0.6),
-    inset -1px -1px 2px rgba(67, 97, 238, 0.4),
-    0 0 25px rgba(67, 97, 238, 0.35),
-    0 0 14px rgba(255, 255, 255, 0.45);
+    inset 1px 1px 2px rgba(255, 255, 255, 0.5),
+    inset -1px -1px 2px rgba(67, 97, 238, 0.3),
+    0 0 24px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(0, 0, 0, 0.25);
   transform: scale(1.08);
 }
 
@@ -312,118 +312,8 @@ body {
    Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
-  body {
-    background: linear-gradient(
-        180deg,
-        rgba(67, 97, 238, 0.9) 0%,
-        rgba(67, 97, 238, 0.8) 5%,
-        rgba(67, 97, 238, 0.55) 10%,
-        rgba(67, 97, 238, 0.3) 15%,
-        rgba(255,255,255,0) 20%
-      ),
-      linear-gradient(135deg, #f3f6fb, #ffffff);
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-  }
-
-  .logo-img {
-    height: 25px;
-  }
-
   .icons i {
     font-size: 1.4rem;
     padding: 10px;
   }
-
-  .main-nav a {
-    font-size: 1rem;
-    padding: 8px 16px;
-  }
-
-  .hottest h2 {
-    font-size: 1.3rem;
-  }
-
-  .hottest-grid .card {
-    flex: 0 0 65%;
-    max-width: 260px;
-  }
-
-  .card-content h3 {
-    font-size: 1.05rem;
-  }
-
-  .article-header h3 {
-    font-size: 1.3rem;
-  }
-
-  .article-body {
-    font-size: 0.95rem;
-  }
-
-  .article-image img {
-    max-width: 100%;
-    max-height: 250px;
-  }
-
-  .hottest-wrapper {
-    padding: 0 16px;
-  }
-
-  .hottest-grid {
-    padding-bottom: 30px;
-    margin-bottom: -30px;
-    padding-top: 30px;
-    margin-top: -30px;
-  }
-}
-
-/* =========================
-   Desktop (≥768px)
-   ========================= */
-@media (min-width: 768px) {
-  .site-header {
-    padding: 14px 24px;
-  }
-
-  .main-nav ul {
-    justify-content: center;
-  }
-
-  .hottest-grid {
-    overflow-x: visible;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .hottest-grid .card {
-    flex: 0 0 260px;
-    max-width: 260px;
-  }
-
-  .card-content h3 {
-    font-size: 1.05rem;
-  }
-}
-
-/* =========================
-   Inline images & titres
-   ========================= */
-.article-body img.inline-image {
-  max-width: 90%;
-  height: auto;
-  display: block;
-  margin: 16px auto;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.article-header a {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-.article-header a:hover {
-  text-decoration: none;
-  color: inherit;
 }
