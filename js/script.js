@@ -47,11 +47,16 @@ async function loadArticles() {
         });
       }
 
+      // ✅ meilleure gestion de la couverture
       let cover = meta.thumbnail || "img/article-placeholder.jpg";
       const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
       if (!meta.thumbnail && firstImg) cover = firstImg[1];
 
+      // ✅ Ajout du slug (basé sur le nom du fichier)
+      const slug = file.name.replace(".md", "");
+
       articles.push({
+        slug,
         title: meta.title || "Sans titre",
         date: meta.date || "",
         author: meta.author || "Inconnu",
@@ -59,30 +64,33 @@ async function loadArticles() {
         thumbnail: cover,
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
-        file: `https://github.com/${repo}/blob/${branch}/articles/${file.name}`,
         body: body
       });
     }
 
+    // ✅ tri
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+    // ✅ catégories
     const uniqueCategories = [...new Set(articles.map(a => a.category))];
     categoriesContainer.innerHTML = uniqueCategories
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
-    // 🔥 Hottest articles
+    // ✅ hottest section
     hottestContainer.innerHTML = "";
     const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
       const link = document.createElement("a");
-      link.href = `article.html?title=${encodeURIComponent(article.title)}`;
+      link.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
       link.className = "card";
+
       const date = new Date(article.date).toLocaleDateString("fr-FR", {
         day: "2-digit",
         month: "long",
         year: "numeric"
       });
+
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="">
         <div class="card-content">
@@ -93,7 +101,7 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // ✅ Feed principal
+    // ✅ feed principal
     function renderArticles(list) {
       container.innerHTML = "";
       list.forEach(article => {
@@ -101,7 +109,9 @@ async function loadArticles() {
         el.className = "article-block";
         el.innerHTML = `
           <div class="article-header">
-            <h3>${article.title}</h3>
+            <a href="article.html?slug=${encodeURIComponent(article.slug)}">
+              <h3>${article.title}</h3>
+            </a>
           </div>
           <div class="article-meta">
             <p><em>Le ${new Date(article.date).toLocaleDateString("fr-FR")} à ${new Date(article.date).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })} par ${article.author}</em></p>
@@ -119,6 +129,7 @@ async function loadArticles() {
 
     renderArticles(articles);
 
+    // ✅ filtrage par catégorie
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
