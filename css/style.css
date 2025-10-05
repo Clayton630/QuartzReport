@@ -203,6 +203,11 @@ body {
   text-align: left;
   font-weight: 600;
 }
+.card-content p {
+   margin-top: 0px;
+   font-size: 14px;
+   color: #0000009c;
+}   
 
 /* =========================
    Articles du feed
