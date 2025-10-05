@@ -172,7 +172,7 @@ body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: 28px; /* ✅ plus arrondi */
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(12px);
@@ -197,15 +197,15 @@ body {
   padding: 14px 16px 16px;
 }
 .card-content h3 {
-  font-size: 1rem;
-  margin: 6px 0 0; /* ✅ petit espace réajusté */
+  font-size: 1.05rem;
+  margin: 6px 0 0;
   color: #111;
   text-align: left;
-  font-weight: 500;
+  font-weight: 650; /* ✅ un peu plus bold */
 }
 .card-content p {
   margin: 0;
-  font-size: 13px; /* ✅ un peu plus petit */
+  font-size: 13px;
   color: #0000008a;
   font-weight: 400;
   line-height: 1.3;
@@ -283,6 +283,7 @@ body {
    ========================= */
 @media (max-width: 480px) {
   body {
+    /* 💎 Dégradé mobile plus court */
     background: linear-gradient(
         180deg,
         rgba(67, 97, 238, 0.9) 0%,
@@ -314,7 +315,7 @@ body {
   }
 
   .card-content h3 {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
   }
 
   .article-header h3 {
@@ -365,7 +366,7 @@ body {
   }
 
   .card-content h3 {
-    font-size: 1rem;
+    font-size: 1.05rem;
   }
 }
 
