@@ -79,7 +79,7 @@ body {
 
 .icons i {
   position: relative;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.22); /* ⬆️ avant : 0.15 → un peu plus opaque */
   border-radius: 50%;
   font-size: 1.5rem;
   cursor: pointer;
@@ -88,7 +88,7 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.25);
 
-  /* 💎 Reflets nets mais adoucis */
+  /* 💎 Reflets nets */
   box-shadow:
     inset 1px 1px 0 rgba(255,255,255,0.55),   /* haut-gauche */
     inset -1px -1px 0 rgba(255,255,255,0.45); /* bas-droite */
