@@ -85,11 +85,11 @@ async function loadArticles() {
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
       link.className = "card";
 
+      // ✅ Nouveau format de date abrégé : "4 oct"
       const date = new Date(article.date).toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric"
-      });
+        day: "numeric",
+        month: "short"
+      }).replace('.', ''); // supprime le point après le mois
 
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="">
