@@ -172,7 +172,7 @@ body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 28px; /* ✅ plus arrondi */
+  border-radius: 28px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(12px);
@@ -201,7 +201,7 @@ body {
   margin: 6px 0 0;
   color: #111;
   text-align: left;
-  font-weight: 650; /* ✅ un peu plus bold */
+  font-weight: 600; /* ✅ moins bold qu’avant */
 }
 .card-content p {
   margin: 0;
@@ -283,7 +283,6 @@ body {
    ========================= */
 @media (max-width: 480px) {
   body {
-    /* 💎 Dégradé mobile plus court */
     background: linear-gradient(
         180deg,
         rgba(67, 97, 238, 0.9) 0%,
@@ -314,8 +313,14 @@ body {
     font-size: 1.3rem;
   }
 
+  /* ✅ cartes plus petites sur mobile */
+  .hottest-grid .card {
+    flex: 0 0 70%;
+    max-width: 280px;
+  }
+
   .card-content h3 {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
 
   .article-header h3 {
@@ -334,6 +339,7 @@ body {
   .hottest-wrapper {
     padding: 0 16px;
   }
+
   .hottest-grid {
     padding-bottom: 30px;
     margin-bottom: -30px;
