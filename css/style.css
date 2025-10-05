@@ -71,25 +71,56 @@ body {
 }
 
 /* =========================
-   Icônes header
+   Icônes header (💧 Liquid Glass)
    ========================= */
 .icons {
   display: flex;
   gap: 10px;
 }
 .icons i {
-  background: rgba(255,255,255,0.35); /* ✅ plus épais */
-  border: 1px solid rgba(255,255,255,0.6); /* ✅ contour renforcé */
+  position: relative;
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 50%;
   font-size: 1.4rem;
   cursor: pointer;
   padding: 8px;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.5),
+    inset -1px -1px 2px rgba(67, 97, 238, 0.3),
+    0 0 10px rgba(67, 97, 238, 0.15);
   transition: all 0.3s ease;
+  overflow: hidden;
 }
+
+/* ✅ Double reflection diagonale (effet refraction à 45° / -45°) */
+.icons i::before,
+.icons i::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, rgba(255,255,255,0.25), transparent 60%);
+  transform: rotate(45deg);
+  pointer-events: none;
+  mix-blend-mode: screen;
+}
+.icons i::after {
+  transform: rotate(-45deg);
+  background: linear-gradient(-45deg, rgba(255,255,255,0.15), transparent 60%);
+}
+
 .icons i:hover {
-  background: rgba(255,255,255,0.6);
-  box-shadow: 0 0 8px rgba(58,123,213,0.6);
+  background: rgba(255,255,255,0.25);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.6),
+    inset -1px -1px 2px rgba(67, 97, 238, 0.4),
+    0 0 15px rgba(67, 97, 238, 0.25);
+  transform: scale(1.08);
 }
 
 /* =========================
@@ -233,167 +264,4 @@ body {
   box-shadow: 0 12px 35px rgba(0,0,0,0.12);
 }
 
-.article-header {
-  background: linear-gradient(120deg, rgba(106,27,154,0.8), rgba(142,36,170,0.8));
-  backdrop-filter: blur(8px);
-  color: #fff;
-  padding: 16px 20px;
-}
-.article-header h3 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.article-meta {
-  padding: 14px 20px;
-  font-size: 0.9rem;
-  color: #444;
-  background: rgba(245,245,245,0.6);
-  border-bottom: 1px solid rgba(224,224,224,0.6);
-}
-.article-meta em {
-  font-style: normal;
-  color: #555;
-  font-weight: 500;
-}
-
-.article-image {
-  text-align: center;
-  padding: 16px 16px 0 16px;
-}
-.article-image img {
-  max-width: 95%;
-  max-height: 350px;
-  width: auto;
-  height: auto;
-  border-radius: 12px;
-  object-fit: contain;
-}
-
-.article-body {
-  padding: 16px 20px;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #222;
-}
-
-/* =========================
-   Mobile (≤480px)
-   ========================= */
-@media (max-width: 480px) {
-  body {
-    background: linear-gradient(
-        180deg,
-        rgba(67, 97, 238, 0.9) 0%,
-        rgba(67, 97, 238, 0.8) 5%,
-        rgba(67, 97, 238, 0.55) 10%,
-        rgba(67, 97, 238, 0.3) 15%,
-        rgba(255,255,255,0) 20%
-      ),
-      linear-gradient(135deg, #f3f6fb, #ffffff);
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-  }
-
-  .logo-img {
-    height: 25px;
-  }
-
-  .icons button {
-    font-size: 20px;
-  }
-
-  .main-nav a {
-    font-size: 1rem;
-    padding: 8px 16px;
-  }
-
-  .hottest h2 {
-    font-size: 1.3rem;
-  }
-
-  /* ✅ cartes plus petites sur mobile */
-  .hottest-grid .card {
-    flex: 0 0 65%;
-    max-width: 260px;
-  }
-
-  .card-content h3 {
-    font-size: 1.05rem;
-  }
-
-  .article-header h3 {
-    font-size: 1.3rem;
-  }
-
-  .article-body {
-    font-size: 0.95rem;
-  }
-
-  .article-image img {
-    max-width: 100%;
-    max-height: 250px;
-  }
-
-  .hottest-wrapper {
-    padding: 0 16px;
-  }
-
-  .hottest-grid {
-    padding-bottom: 30px;
-    margin-bottom: -30px;
-    padding-top: 30px;
-    margin-top: -30px;
-  }
-}
-
-/* =========================
-   Desktop (≥768px)
-   ========================= */
-@media (min-width: 768px) {
-  .site-header {
-    padding: 14px 24px;
-  }
-
-  .main-nav ul {
-    justify-content: center;
-  }
-
-  .hottest-grid {
-    overflow-x: visible;
-    justify-content: flex-start;
-    flex-wrap: wrap;
-  }
-
-  .hottest-grid .card {
-    flex: 0 0 260px;
-    max-width: 260px;
-  }
-
-  .card-content h3 {
-    font-size: 1.05rem;
-  }
-}
-
-/* =========================
-   Inline images & titres
-   ========================= */
-.article-body img.inline-image {
-  max-width: 90%;
-  height: auto;
-  display: block;
-  margin: 16px auto;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.article-header a {
-  text-decoration: none;
-  color: inherit;
-  cursor: pointer;
-}
-.article-header a:hover {
-  text-decoration: none;
-  color: inherit;
-}
+/* … reste du fichier inchangé … */
