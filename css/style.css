@@ -18,14 +18,14 @@ body {
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
 
-  /* 💎 Dégradé indigo fixé uniquement sur body (évite bandes et doublons) */
+  /* 💎 Dégradé indigo raccourci */
   background: linear-gradient(
       180deg,
       rgba(67, 97, 238, 0.9) 0%,
-      rgba(67, 97, 238, 0.75) 6%,
-      rgba(67, 97, 238, 0.45) 11%,
-      rgba(67, 97, 238, 0.2) 16%,
-      rgba(255,255,255,0) 22%
+      rgba(67, 97, 238, 0.75) 4%,
+      rgba(67, 97, 238, 0.45) 8%,
+      rgba(67, 97, 238, 0.2) 13%,
+      rgba(255,255,255,0) 18%
     ),
     linear-gradient(135deg, #f3f6fb, #ffffff);
   background-repeat: no-repeat;
@@ -203,12 +203,6 @@ body {
   text-align: left;
   font-weight: 600;
 }
-.card-meta {
-  font-size: 0.85rem;
-  color: #555;
-  font-weight: 400;
-  margin-bottom: 6px;
-}
 
 /* =========================
    Articles du feed
@@ -282,13 +276,14 @@ body {
    ========================= */
 @media (max-width: 480px) {
   body {
+    /* 💎 Dégradé mobile plus court */
     background: linear-gradient(
         180deg,
         rgba(67, 97, 238, 0.9) 0%,
-        rgba(67, 97, 238, 0.8) 7%,  
-        rgba(67, 97, 238, 0.55) 13%,  
-        rgba(67, 97, 238, 0.3) 18%,   
-        rgba(255,255,255,0) 26%
+        rgba(67, 97, 238, 0.8) 5%,
+        rgba(67, 97, 238, 0.55) 10%,
+        rgba(67, 97, 238, 0.3) 15%,
+        rgba(255,255,255,0) 20%
       ),
       linear-gradient(135deg, #f3f6fb, #ffffff);
     background-repeat: no-repeat;
