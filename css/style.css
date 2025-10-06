@@ -9,6 +9,15 @@ html {
 }
 
 body {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: visible;
+  font-family: 'Inter', Arial, sans-serif;
+  color: #111;
+
   background: linear-gradient(
       180deg,
       rgba(150,160,255,0.7) 0%,  /* bleu lavande plus doux */
