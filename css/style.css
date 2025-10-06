@@ -17,18 +17,16 @@ body {
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
-
   background: linear-gradient(
       180deg,
-      rgba(75,115,250,0.95) 0%,  /* un peu moins intense que précédemment */
-      rgba(75,115,250,0.8) 4%,
-      rgba(75,115,250,0.55) 8%,
-      rgba(75,115,250,0.3) 13%,
-      rgba(255,255,255,0) 18%
+      rgba(75,115,250,0.9) 0%,
+      rgba(75,115,250,0.75) 4%,
+      rgba(75,115,250,0.5) 8%,
+      rgba(75,115,250,0.25) 13%,
+      rgba(255,255,255,0) 20%
     ),
     linear-gradient(135deg, #f3f6fb, #ffffff);
   background-repeat: no-repeat;
-  background-attachment: scroll;
   background-size: 100% auto;
 }
 
