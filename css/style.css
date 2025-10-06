@@ -341,30 +341,19 @@ body {
 }
 
 /* =========================
-   Mobile (≤480px)
+   Mobile (≤480px) ajusté
    ========================= */
 @media (max-width: 480px) {
-  body {
-    background: linear-gradient(
-      180deg,
-      rgba(75,115,250,0.88) 0%,
-      rgba(75,115,250,0.73) 4%,
-      rgba(75,115,250,0.48) 8%,
-      rgba(75,115,250,0.23) 13%,
-      rgba(255,255,255,0) 20%
-    ),
-    linear-gradient(135deg, #f3f6fb, #ffffff);
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-  }
 
+  /* Logo */
   .logo-img {
     height: 25px;
   }
 
+  /* ✅ Icônes Recherche/Menu agrandies */
   .icons i {
-    font-size: 1.4rem;
-    padding: 10px;
+    font-size: 1.6rem;        /* plus grand */
+    padding: 14px;            /* plus de zone cliquable */
     background: 
       radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%),
       radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
@@ -379,12 +368,14 @@ body {
       0 0 12px rgba(0,0,0,0.09);
   }
 
+  /* ✅ Catégories mobiles agrandies */
   .main-nav a {
-    font-size: 1rem;
-    padding: 8px 14px;
-    border-radius: 50px;
+    font-size: 1.15rem;   /* plus lisible */
+    padding: 10px 16px;   /* zone cliquable plus large */
+    border-radius: 50px;  /* fully rounded */
   }
 
+  /* Sections restantes restent inchangées */
   .hottest h2 {
     font-size: 1.3rem;
   }
@@ -422,6 +413,7 @@ body {
     margin-top: -30px;
   }
 }
+
 
 /* =========================
    Desktop (≥768px)
