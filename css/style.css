@@ -1,35 +1,23 @@
 /* =========================
    Reset & bases
    ========================= */
-html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  background: linear-gradient(135deg, #f3f6fb, #ffffff);
-}
-
-body {
+html, body {
   margin: 0;
   padding: 0;
   max-width: 100%;
-  min-height: 100vh;
   overflow-x: hidden;
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
-  color: #111;
-
   background: linear-gradient(
       180deg,
-      rgba(67, 97, 238, 0.9) 0%,
-      rgba(67, 97, 238, 0.75) 4%,
-      rgba(67, 97, 238, 0.45) 8%,
-      rgba(67, 97, 238, 0.2) 13%,
-      rgba(255,255,255,0) 18%
+      rgba(58, 123, 213, 0.25) 0%,    /* Bleu doux au sommet */
+      rgba(58, 123, 213, 0.10) 20%,   /* diffusion progressive */
+      rgba(58, 123, 213, 0.03) 40%,   /* quasi invisible */
+      rgba(255,255,255,0) 70%         /* complètement fondu */
     ),
-    linear-gradient(135deg, #f3f6fb, #ffffff);
-  background-repeat: no-repeat;
-  background-attachment: scroll;
-  background-size: 100% auto;
+    linear-gradient(135deg, #f3f6fb, #ffffff); /* ton fond de base */
+  background-attachment: fixed;
+  color: #111;
 }
 
 /* =========================
@@ -52,75 +40,40 @@ body {
   box-sizing: border-box;
 }
 
-/* ✅ Logo SVG blanc */
 .logo {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .logo-img {
-  height: 28px;
+  height: 28px; /* ✅ Taille desktop premium */
   width: auto;
   display: block;
-  filter: brightness(0) invert(1);
   transition: transform 0.2s ease;
 }
+
 .logo-img:hover {
   transform: scale(1.05);
 }
 
-/* =========================
-   Icônes header — 💧 Liquid Glass finalisé
-   ========================= */
 .icons {
   display: flex;
-  gap: 14px;
+  gap: 10px;
 }
-
-.icons i {
-  position: relative;
-  background: rgba(255, 255, 255, 0.36); /* ⬆️ fond légèrement plus opaque */
-  border-radius: 50%;
-  font-size: 1.5rem;
-  cursor: pointer;
-  padding: 12px;
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-
-  /* 💎 Reflets nets + halo noir adouci */
-  box-shadow:
-    0 0 12px rgba(0, 0, 0, 0.12),   /* ⬇️ un poil moins opaque */
-    0 0 24px rgba(0, 0, 0, 0.06),
-    inset 1px 1px 0 rgba(255,255,255,0.55),
-    inset -1px -1px 0 rgba(255,255,255,0.45);
-
-  transition: all 0.3s ease;
-  overflow: hidden;
-}
-/* ✅ Reflet diagonal propre */
-.icons i::after {
-  content: "";
-  position: absolute;
-  top: -25%;
-  left: -25%;
-  width: 180%;
-  height: 180%;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  background:
-    linear-gradient(45deg, rgba(255,255,255,0.18), transparent 65%),
-    linear-gradient(-45deg, rgba(255,255,255,0.12), transparent 65%);
-}
-
-.icons i:hover {
+.icons button {
   background: rgba(255,255,255,0.25);
-  box-shadow:
-    inset 1px 1px 2px rgba(255, 255, 255, 0.6),
-    inset -1px -1px 2px rgba(67, 97, 238, 0.4),
-    0 0 25px rgba(67, 97, 238, 0.35),
-    0 0 14px rgba(255, 255, 255, 0.45);
-  transform: scale(1.08);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 8px;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+.icons button:hover {
+  background: rgba(255,255,255,0.6);
+  box-shadow: 0 0 8px rgba(58,123,213,0.6);
 }
 
 /* =========================
@@ -203,7 +156,7 @@ body {
   color: inherit;
   display: flex;
   flex-direction: column;
-  border-radius: 28px;
+  border-radius: 20px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(12px);
@@ -225,21 +178,14 @@ body {
 
 .card-content {
   flex: 1;
-  padding: 14px 16px 16px;
+  padding: 16px;
 }
 .card-content h3 {
-  font-size: 1.05rem;
-  margin: 6px 0 0;
+  font-size: 1rem;
+  margin: 0;
   color: #111;
   text-align: left;
   font-weight: 600;
-}
-.card-content p {
-  margin: 0;
-  font-size: 13px;
-  color: #0000008a;
-  font-weight: 400;
-  line-height: 1.3;
 }
 
 /* =========================
@@ -310,30 +256,15 @@ body {
 }
 
 /* =========================
-   Mobile (≤480px)
+   Optimisation Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
-  body {
-    background: linear-gradient(
-        180deg,
-        rgba(67, 97, 238, 0.9) 0%,
-        rgba(67, 97, 238, 0.8) 5%,
-        rgba(67, 97, 238, 0.55) 10%,
-        rgba(67, 97, 238, 0.3) 15%,
-        rgba(255,255,255,0) 20%
-      ),
-      linear-gradient(135deg, #f3f6fb, #ffffff);
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-  }
-
   .logo-img {
     height: 25px;
   }
 
-  .icons i {
-    font-size: 1.4rem;
-    padding: 10px;
+  .icons button {
+    font-size: 1.6rem;
   }
 
   .main-nav a {
@@ -345,13 +276,8 @@ body {
     font-size: 1.3rem;
   }
 
-  .hottest-grid .card {
-    flex: 0 0 65%;
-    max-width: 260px;
-  }
-
   .card-content h3 {
-    font-size: 1.05rem;
+    font-size: 1.1rem;
   }
 
   .article-header h3 {
@@ -370,7 +296,6 @@ body {
   .hottest-wrapper {
     padding: 0 16px;
   }
-
   .hottest-grid {
     padding-bottom: 30px;
     margin-bottom: -30px;
@@ -380,7 +305,7 @@ body {
 }
 
 /* =========================
-   Desktop (≥768px)
+   Version Desktop (≥768px)
    ========================= */
 @media (min-width: 768px) {
   .site-header {
@@ -403,13 +328,11 @@ body {
   }
 
   .card-content h3 {
-    font-size: 1.05rem;
+    font-size: 1rem;
   }
 }
 
-/* =========================
-   Inline images & titres
-   ========================= */
+/* Images inline insérées via l’éditeur */
 .article-body img.inline-image {
   max-width: 90%;
   height: auto;
@@ -419,11 +342,13 @@ body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
+/* ✅ Liens des titres dans le feed : style neutre, sans hover */
 .article-header a {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
 }
+
 .article-header a:hover {
   text-decoration: none;
   color: inherit;
