@@ -59,12 +59,18 @@ async function loadArticles() {
       });
     }
 
-    // Tri par date décroissante
+    // ✅ tri
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // --- Hottest ---
-    const hottestArticles = articles.filter(a => a.important).slice(0, 3);
+    // ✅ catégories (réintégré)
+    const uniqueCategories = [...new Set(articles.map(a => a.category))];
+    categoriesContainer.innerHTML = uniqueCategories
+      .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
+      .join("");
+
+    // ✅ hottest
     hottestContainer.innerHTML = "";
+    const hottestArticles = articles.filter(a => a.important).slice(0, 3);
     hottestArticles.forEach(article => {
       const link = document.createElement("a");
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
@@ -85,13 +91,13 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // --- Feed regroupé par jour ---
+    // ✅ regroupement par jour
     container.innerHTML = "";
     const grouped = {};
 
     articles.forEach(article => {
       const d = new Date(article.date);
-      const key = d.toISOString().split("T")[0]; // format YYYY-MM-DD
+      const key = d.toISOString().split("T")[0];
       if (!grouped[key]) grouped[key] = [];
       grouped[key].push(article);
     });
@@ -124,7 +130,6 @@ async function loadArticles() {
           `;
           dayBlock.appendChild(el);
 
-          // ligne de séparation sauf dernier
           if (index < grouped[dateKey].length - 1) {
             const sep = document.createElement("div");
             sep.className = "day-separator";
@@ -135,8 +140,17 @@ async function loadArticles() {
         container.appendChild(dayBlock);
       });
 
+    // ✅ filtrage catégories
+    categoriesContainer.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        const cat = link.getAttribute("data-category");
+        const filtered = cat === "Tous" ? articles : articles.filter(a => a.category === cat);
+        renderArticles(filtered);
+      });
+    });
   } catch (err) {
-    console.error("Erreur lors du chargement des articles :", err);
+    console.error("Erreur lors du chargement :", err);
     container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
