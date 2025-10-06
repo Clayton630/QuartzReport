@@ -9,21 +9,12 @@ html {
 }
 
 body {
-  margin: 0;
-  padding: 0;
-  max-width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: visible;
-  font-family: 'Inter', Arial, sans-serif;
-  color: #111;
-
   background: linear-gradient(
       180deg,
-      rgba(67, 97, 238, 0.9) 0%,
-      rgba(67, 97, 238, 0.75) 4%,
-      rgba(67, 97, 238, 0.45) 8%,
-      rgba(67, 97, 238, 0.2) 13%,
+      rgba(150,160,255,0.7) 0%,  /* bleu lavande plus doux */
+      rgba(150,160,255,0.55) 4%,
+      rgba(150,160,255,0.3) 8%,
+      rgba(150,160,255,0.15) 13%,
       rgba(255,255,255,0) 18%
     ),
     linear-gradient(135deg, #f3f6fb, #ffffff);
@@ -91,11 +82,11 @@ body {
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   border: 0.5px solid rgba(255, 255, 255, 0.2);
 
-  /* Halo léger tout autour */
+  /* Halo externe un peu plus visible */
   box-shadow:
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 0 12px rgba(0,0,0,0.05); /* halo externe très léger, diffuse */
+    0 0 12px rgba(0,0,0,0.08); /* opacité légèrement augmentée */
 
   transition: all 0.3s ease;
   overflow: hidden;
@@ -118,11 +109,11 @@ body {
 }
 
 .icons i:hover {
-  background: rgba(255,255,255,1); /* blanc pur 100% */
+  background: rgba(255,255,255,1); /* blanc pur */
   box-shadow:
     inset 1px 1px 2px rgba(255, 255, 255, 0.7),
     inset -1px -1px 2px rgba(255,255,255,0.6),
-    0 0 12px rgba(0,0,0,0.05); /* conserve halo léger externe */
+    0 0 12px rgba(0,0,0,0.08); /* conserve halo plus visible */
   transform: scale(1.08);
 }
 
