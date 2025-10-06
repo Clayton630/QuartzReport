@@ -104,7 +104,7 @@ body {
   position: absolute;
   top: -25%;
   left: -25%;
-  width: 50%;
+  width: 180%;
   height: 180%;
   pointer-events: none;
   mix-blend-mode: screen;
