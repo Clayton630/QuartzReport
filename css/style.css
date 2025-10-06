@@ -339,21 +339,17 @@ body {
   line-height: 1.6;
   color: #222;
 }
-
-/* =========================
-   Mobile (≤480px) ajusté
-   ========================= */
 @media (max-width: 480px) {
 
-  /* Logo */
+  /* Logo légèrement plus grand */
   .logo-img {
-    height: 25px;
+    height: 28px;
   }
 
-  /* ✅ Icônes Recherche/Menu agrandies */
+  /* Icônes Recherche/Menu un peu plus petites */
   .icons i {
-    font-size: 1.6rem;        /* plus grand */
-    padding: 14px;            /* plus de zone cliquable */
+    font-size: 1.5rem;        /* ajusté */
+    padding: 12px;            /* ajusté */
     background: 
       radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%),
       radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
@@ -368,52 +364,23 @@ body {
       0 0 12px rgba(0,0,0,0.09);
   }
 
-  /* ✅ Catégories mobiles agrandies */
+  /* Catégories mobile légèrement réduites */
   .main-nav a {
-    font-size: 1.15rem;   /* plus lisible */
-    padding: 10px 16px;   /* zone cliquable plus large */
-    border-radius: 50px;  /* fully rounded */
+    font-size: 1.1rem;
+    padding: 9px 14px;
+    border-radius: 50px;
   }
 
-  /* Sections restantes restent inchangées */
-  .hottest h2 {
-    font-size: 1.3rem;
-  }
-
-  .hottest-grid .card {
-    flex: 0 0 65%;
-    max-width: 260px;
-  }
-
-  .card-content h3 {
-    font-size: 1.05rem;
-  }
-
-  .article-header h3 {
-    font-size: 1.3rem;
-  }
-
-  .article-body {
-    font-size: 0.95rem;
-  }
-
-  .article-image img {
-    max-width: 100%;
-    max-height: 250px;
-  }
-
-  .hottest-wrapper {
-    padding: 0 16px;
-  }
-
-  .hottest-grid {
-    padding-bottom: 30px;
-    margin-bottom: -30px;
-    padding-top: 30px;
-    margin-top: -30px;
-  }
+  /* Sections restantes inchangées */
+  .hottest h2 { font-size: 1.3rem; }
+  .hottest-grid .card { flex: 0 0 65%; max-width: 260px; }
+  .card-content h3 { font-size: 1.05rem; }
+  .article-header h3 { font-size: 1.3rem; }
+  .article-body { font-size: 0.95rem; }
+  .article-image img { max-width: 100%; max-height: 250px; }
+  .hottest-wrapper { padding: 0 16px; }
+  .hottest-grid { padding-bottom: 30px; margin-bottom: -30px; padding-top: 30px; margin-top: -30px; }
 }
-
 
 /* =========================
    Desktop (≥768px)
