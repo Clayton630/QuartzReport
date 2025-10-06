@@ -68,7 +68,7 @@ body {
 }
 
 /* =========================
-   Icônes header — 💧 Liquid Glass
+   Icônes header — 💧 Liquid Glass finalisé
    ========================= */
 .icons {
   display: flex;
@@ -78,7 +78,7 @@ body {
 .icons i {
   position: relative;
   background: 
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%),
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), rgba(255,255,255,0) 70%), /* coin diffus */
     radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
     rgba(255, 255, 255, 0.36);
   border-radius: 50%;
@@ -88,13 +88,10 @@ body {
   backdrop-filter: blur(14px) saturate(200%);
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   border: 0.5px solid rgba(255, 255, 255, 0.2);
-
-  /* Halo externe légèrement visible */
   box-shadow:
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
     0 0 12px rgba(0,0,0,0.09);
-
   transition: all 0.3s ease;
   overflow: hidden;
 }
@@ -109,12 +106,12 @@ body {
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    linear-gradient(45deg, rgba(255,255,255,0.04), transparent 65%),
+    linear-gradient(45deg, rgba(255,255,255,0.08), transparent 65%),
     linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
 }
 
 .icons i:hover {
-  background: rgba(255,255,255,1); /* blanc pur */
+  background: rgba(255,255,255,1);
   box-shadow:
     inset 1px 1px 2px rgba(255, 255, 255, 0.7),
     inset -1px -1px 2px rgba(255,255,255,0.6),
@@ -147,9 +144,9 @@ body {
   position: relative;
   display: inline-block;
   padding: 8px 16px;
-  border-radius: 50px; /* fully rounded */
+  border-radius: 50px;
   background: 
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%),
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), rgba(255,255,255,0) 70%), /* coin diffus */
     radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
     rgba(255, 255, 255, 0.36);
   border: 0.5px solid rgba(255, 255, 255, 0.2);
@@ -162,8 +159,6 @@ body {
   flex-shrink: 0;
   white-space: nowrap;
   transition: all 0.3s ease;
-
-  /* Halo externe */
   box-shadow:
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
@@ -181,12 +176,12 @@ body {
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    linear-gradient(45deg, rgba(255,255,255,0.04), transparent 65%),
+    linear-gradient(45deg, rgba(255,255,255,0.08), transparent 65%),
     linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
 }
 
 .main-nav a:hover {
-  background: rgba(255,255,255,1); /* blanc pur */
+  background: rgba(255,255,255,1);
   box-shadow:
     inset 1px 1px 2px rgba(255, 255, 255, 0.7),
     inset -1px -1px 2px rgba(255,255,255,0.6),
@@ -339,6 +334,7 @@ body {
   line-height: 1.6;
   color: #222;
 }
+
 /* =========================
    Mobile (≤480px)
    ========================= */
@@ -358,15 +354,14 @@ body {
   }
 
   .logo-img {
-    height: 30px; /* un chouia plus grand */
+    height: 30px;
   }
 
-  /* ✅ Icônes Recherche/Menu reprennent leur style desktop */
   .icons i {
-    font-size: 1.45rem; /* légèrement plus grand */
+    font-size: 1.45rem;
     padding: 11px;
     background: 
-      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), rgba(255,255,255,0) 70%),
       radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
       rgba(255, 255, 255, 0.36);
     border-radius: 50%;
@@ -379,12 +374,11 @@ body {
       0 0 12px rgba(0,0,0,0.09);
   }
 
-  /* ✅ Catégories mobile */
   .main-nav {
     max-width: 100%;
     overflow-x: auto;
     white-space: nowrap;
-    padding: 10px 0; /* juste vertical */
+    padding: 10px 0;
     margin: 0;
   }
 
@@ -392,64 +386,17 @@ body {
     display: flex;
     gap: 12px;
     list-style: none;
-    padding-left: 0; /* enlever padding gauche par défaut */
-    margin-left: 16px; /* alignement avec le reste de la page */
+    padding-left: 0;
+    margin-left: 16px; 
   }
 
   .main-nav a {
-    position: relative;
-    display: inline-block;
-    padding: 10px 16px; /* un peu plus grand */
-    border-radius: 50px; /* fully rounded */
-    background: 
-      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
-      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
-      rgba(255, 255, 255, 0.36);
-    border: 0.5px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(14px) saturate(200%);
-    -webkit-backdrop-filter: blur(14px) saturate(200%);
-    font-weight: 500;
-    color: #111;
-    text-decoration: none;
-    font-size: 1.05rem; /* légèrement plus grand */
-    flex-shrink: 0;
-    white-space: nowrap;
-    transition: all 0.3s ease;
-
-    /* Halo externe */
-    box-shadow:
-      inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-      inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-      0 0 12px rgba(0,0,0,0.09);
-    overflow: hidden;
+    padding: 10px 16px;
+    font-size: 1.05rem;
   }
 
   .main-nav a:first-child {
-    margin-left: 0; /* premier bouton collé */
-  }
-
-  .main-nav a::after {
-    content: "";
-    position: absolute;
-    top: -25%;
-    left: -25%;
-    width: 180%;
-    height: 180%;
-    pointer-events: none;
-    mix-blend-mode: screen;
-    background:
-      linear-gradient(45deg, rgba(255,255,255,0.08), transparent 65%),
-      linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
-  }
-
-  .main-nav a:hover {
-    background: rgba(255,255,255,1); /* blanc pur */
-    box-shadow:
-      inset 1px 1px 2px rgba(255, 255, 255, 0.7),
-      inset -1px -1px 2px rgba(255,255,255,0.6),
-      0 0 12px rgba(0,0,0,0.09);
-    color: #111;
-    transform: scale(1.05);
+    margin-left: 0;
   }
 
   .hottest h2 {
@@ -489,7 +436,6 @@ body {
     margin-top: -30px;
   }
 }
-
 
 /* =========================
    Desktop (≥768px)
