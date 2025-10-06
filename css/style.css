@@ -357,15 +357,14 @@ body {
     background-size: 100% auto;
   }
 
-  /* Logo un peu plus grand */
   .logo-img {
-    height: 30px;
+    height: 30px; /* un chouia plus grand */
   }
 
-  /* Icônes Recherche/Menu */
+  /* ✅ Icônes Recherche/Menu reprennent leur style desktop */
   .icons i {
-    font-size: 1.5rem;
-    padding: 12px;
+    font-size: 1.45rem; /* légèrement plus grand */
+    padding: 11px;
     background: 
       radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
       radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
@@ -380,32 +379,27 @@ body {
       0 0 12px rgba(0,0,0,0.09);
   }
 
-  /* Catégories */
+  /* ✅ Catégories mobile */
   .main-nav {
     max-width: 100%;
     overflow-x: auto;
     white-space: nowrap;
-    padding: 10px 0 10px 0; /* padding réduit pour alignement */
-    margin: 8px 16px 0 16px; /* margin général pour mobile */
+    padding: 10px 0; /* juste vertical */
+    margin: 0;
   }
 
   .main-nav ul {
     display: flex;
     gap: 12px;
     list-style: none;
-    padding-left: 16px; /* réduit pour aligner le premier bouton */
-    margin: 0;
-    flex-wrap: nowrap;
-  }
-
-  .main-nav a:first-child {
-    margin-left: 0; /* premier bouton collé au bord */
+    padding-left: 0; /* enlever padding gauche par défaut */
+    margin-left: 16px; /* alignement avec le reste de la page */
   }
 
   .main-nav a {
     position: relative;
     display: inline-block;
-    padding: 10px 16px; /* un peu plus gros */
+    padding: 10px 16px; /* un peu plus grand */
     border-radius: 50px; /* fully rounded */
     background: 
       radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
@@ -417,7 +411,7 @@ body {
     font-weight: 500;
     color: #111;
     text-decoration: none;
-    font-size: 1.05rem;
+    font-size: 1.05rem; /* légèrement plus grand */
     flex-shrink: 0;
     white-space: nowrap;
     transition: all 0.3s ease;
@@ -428,6 +422,10 @@ body {
       inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
       0 0 12px rgba(0,0,0,0.09);
     overflow: hidden;
+  }
+
+  .main-nav a:first-child {
+    margin-left: 0; /* premier bouton collé */
   }
 
   .main-nav a::after {
@@ -445,7 +443,7 @@ body {
   }
 
   .main-nav a:hover {
-    background: rgba(255,255,255,1);
+    background: rgba(255,255,255,1); /* blanc pur */
     box-shadow:
       inset 1px 1px 2px rgba(255, 255, 255, 0.7),
       inset -1px -1px 2px rgba(255,255,255,0.6),
@@ -491,6 +489,7 @@ body {
     margin-top: -30px;
   }
 }
+
 
 /* =========================
    Desktop (≥768px)
