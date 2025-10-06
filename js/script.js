@@ -1,6 +1,5 @@
 // ---------- Utils dates (local, sans UTC) ----------
 function parseYMDLocal(str) {
-  // Parse "YYYY-MM-DD" en locale (pas UTC)
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
   if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0, 0);
   const d = new Date(str);
@@ -16,13 +15,9 @@ function ymdKeyLocal(d) {
 
 function getMondayLocal(date) {
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const day = d.getDay() || 7; // lun=1..dim=7
+  const day = d.getDay() || 7;
   d.setDate(d.getDate() - (day - 1));
   return d;
-}
-
-function sameDay(a, b) {
-  return ymdKeyLocal(a) === ymdKeyLocal(b);
 }
 
 function addDays(d, n) {
@@ -36,8 +31,9 @@ function formatWeekLabel(weekStart) {
   const thisMonday = getMondayLocal(today);
   const lastMonday = addDays(thisMonday, -7);
 
-  if (sameDay(weekStart, thisMonday)) return "Cette semaine";
-  if (sameDay(weekStart, lastMonday)) return "La semaine dernière";
+  // ✅ comparaison par clés pour éviter les décalages UTC
+  if (ymdKeyLocal(weekStart) === ymdKeyLocal(thisMonday)) return "Cette semaine";
+  if (ymdKeyLocal(weekStart) === ymdKeyLocal(lastMonday)) return "La semaine dernière";
 
   const weekEnd = addDays(weekStart, 6);
   const opt = { day: "numeric", month: "short" };
@@ -105,7 +101,7 @@ async function loadArticles() {
       all.push({
         slug,
         title: meta.title || "Sans titre",
-        date: dateObj, // ✅ Date locale fiable
+        date: dateObj,
         author: meta.author || "Inconnu",
         description: meta.description || "",
         thumbnail: cover,
@@ -142,7 +138,7 @@ async function loadArticles() {
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
-    // ====== Fonction de rendu (mobile vs desktop) ======
+    // ====== Fonction de rendu ======
     function render(list) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       container.innerHTML = "";
@@ -191,7 +187,7 @@ async function loadArticles() {
 
       } else {
         // ---- DESKTOP : regroupé par semaine ----
-        const weeks = {}; // { mondayKey: { dayKey: [articles...] } }
+        const weeks = {};
 
         list.forEach(article => {
           const monday = getMondayLocal(article.date);
@@ -253,7 +249,6 @@ async function loadArticles() {
       }
     }
 
-    // Premier rendu
     render(all);
 
     // Filtrage catégories
