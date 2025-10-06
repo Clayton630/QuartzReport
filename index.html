@@ -3,27 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>QuartzReport</title>
-  <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7-icons/css/framework7-icons.css">
+  <title>Quartz Report</title>
 
-  <!-- ✅ Couleur de la barre de statut -->
+  <!-- Barre de statut iOS / PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#4b73fa">
-</head>
 
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7-icons/css/framework7-icons.css">
+</head>
+<body>
 
   <!-- Header -->
-<header class="site-header">
-  <div class="logo">
-    <img src="img/logo.svg" alt="Quartz Report" class="logo-img">
-  </div>
-  <div class="icons">
-    <i class="f7-icons">search</i>
-    <i class="f7-icons">menu</i>
-  </div>
-</header>
+  <header class="site-header">
+    <div class="logo">
+      <img src="img/logo.svg" alt="Quartz Report" class="logo-img">
+    </div>
+    <div class="icons">
+      <i class="f7-icons">search</i>
+      <i class="f7-icons">menu</i>
+    </div>
+  </header>
 
   <!-- Navigation (catégories dynamiques) -->
   <nav class="main-nav">
@@ -43,7 +44,22 @@
 
   <!-- ✅ Ajout de marked.js -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <!-- Ton script -->
   <script src="js/script.js"></script>
+
+  <!-- Scroll header JS -->
+  <script>
+    let lastScroll = 0;
+    const header = document.querySelector('.site-header');
+    window.addEventListener('scroll', () => {
+      const currentScroll = window.pageYOffset;
+      if (currentScroll > lastScroll) {
+        header.style.transform = 'translateY(-100%)';
+      } else {
+        header.style.transform = 'translateY(0)';
+      }
+      lastScroll = currentScroll;
+    });
+  </script>
+
 </body>
 </html>
