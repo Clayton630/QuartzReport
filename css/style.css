@@ -82,7 +82,7 @@ body {
   background: 
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
     radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
-    rgba(255, 255, 255, 0.36); /* fond translucide principal */
+    rgba(255, 255, 255, 0.36);
   border-radius: 50%;
   font-size: 1.5rem;
   cursor: pointer;
@@ -91,9 +91,10 @@ body {
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   border: 0.5px solid rgba(255, 255, 255, 0.2);
 
+  /* Reflets + ombre subtile */
   box-shadow:
-    0 0 12px rgba(0,0,0,0.12),
-    0 0 24px rgba(0,0,0,0.06),
+    0 0 12px rgba(0,0,0,0.08),          /* halo externe léger */
+    0 2px 4px rgba(0,0,0,0.06),          /* petite ombre bas-droite */
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75);
 
