@@ -359,13 +359,13 @@ body {
 
   /* Logo un peu plus grand */
   .logo-img {
-    height: 27px;
+    height: 30px;
   }
 
   /* Icônes Recherche/Menu */
   .icons i {
-    font-size: 1.45rem;
-    padding: 11px;
+    font-size: 1.5rem;
+    padding: 12px;
     background: 
       radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
       radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
@@ -380,19 +380,86 @@ body {
       0 0 12px rgba(0,0,0,0.09);
   }
 
-  /* Navigation catégories */
+  /* Catégories */
   .main-nav {
-    padding-left: 12px; /* aligné avec le reste */
-    padding-right: 12px;
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding: 10px 0 10px 0; /* padding réduit pour alignement */
+    margin: 8px 16px 0 16px; /* margin général pour mobile */
   }
+
+  .main-nav ul {
+    display: flex;
+    gap: 12px;
+    list-style: none;
+    padding-left: 16px; /* réduit pour aligner le premier bouton */
+    margin: 0;
+    flex-wrap: nowrap;
+  }
+
+  .main-nav a:first-child {
+    margin-left: 0; /* premier bouton collé au bord */
+  }
+
   .main-nav a {
-    font-size: 1.05rem; /* un peu plus grand */
-    padding: 10px 16px;
+    position: relative;
+    display: inline-block;
+    padding: 10px 16px; /* un peu plus gros */
     border-radius: 50px; /* fully rounded */
+    background: 
+      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
+      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
+      rgba(255, 255, 255, 0.36);
+    border: 0.5px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(14px) saturate(200%);
+    -webkit-backdrop-filter: blur(14px) saturate(200%);
+    font-weight: 500;
+    color: #111;
+    text-decoration: none;
+    font-size: 1.05rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+
+    /* Halo externe */
+    box-shadow:
+      inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
+      inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
+      0 0 12px rgba(0,0,0,0.09);
+    overflow: hidden;
+  }
+
+  .main-nav a::after {
+    content: "";
+    position: absolute;
+    top: -25%;
+    left: -25%;
+    width: 180%;
+    height: 180%;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    background:
+      linear-gradient(45deg, rgba(255,255,255,0.08), transparent 65%),
+      linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
+  }
+
+  .main-nav a:hover {
+    background: rgba(255,255,255,1);
+    box-shadow:
+      inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+      inset -1px -1px 2px rgba(255,255,255,0.6),
+      0 0 12px rgba(0,0,0,0.09);
+    color: #111;
+    transform: scale(1.05);
   }
 
   .hottest h2 {
     font-size: 1.3rem;
+  }
+
+  .hottest-wrapper {
+    padding: 0 16px;
   }
 
   .hottest-grid .card {
@@ -417,10 +484,6 @@ body {
     max-height: 250px;
   }
 
-  .hottest-wrapper {
-    padding: 0 16px;
-  }
-
   .hottest-grid {
     padding-bottom: 30px;
     margin-bottom: -30px;
@@ -428,7 +491,6 @@ body {
     margin-top: -30px;
   }
 }
-
 
 /* =========================
    Desktop (≥768px)
