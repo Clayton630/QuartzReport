@@ -91,16 +91,17 @@ body {
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   border: 0.5px solid rgba(255, 255, 255, 0.2);
 
-  /* Reflets + ombre subtile */
+  /* Ombre style Over subtile */
   box-shadow:
-    0 0 12px rgba(0,0,0,0.08),          /* halo externe léger */
-    0 2px 4px rgba(0,0,0,0.06),          /* petite ombre bas-droite */
-    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-    inset -0.8px -0.8px 0 rgba(255,255,255,0.75);
+    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),   /* reflets internes */
+    inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
+    0 4px 8px rgba(0,0,0,0.08),                  /* ombre externe douce bas-droite */
+    0 2px 6px rgba(0,0,0,0.04);                  /* diffuse supplémentaire pour adoucir */
 
   transition: all 0.3s ease;
   overflow: hidden;
 }
+
 
 /* ✅ Reflet diagonal propre */
 .icons i::after {
