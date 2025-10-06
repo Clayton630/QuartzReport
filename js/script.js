@@ -4,6 +4,33 @@ function base64ToUtf8(base64) {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
+function getMonday(d) {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = date.getDate() - (day === 0 ? 6 : day - 1); // lundi = 1, dimanche = 0
+  return new Date(date.setDate(diff));
+}
+
+function formatWeekLabel(weekStart) {
+  const now = new Date();
+  const currentMonday = getMonday(now);
+  const lastMonday = new Date(currentMonday);
+  lastMonday.setDate(currentMonday.getDate() - 7);
+
+  const diff = weekStart.getTime() - currentMonday.getTime();
+
+  if (diff === 0) return "Cette semaine";
+  if (diff === lastMonday.getTime() - currentMonday.getTime()) return "La semaine dernière";
+
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+
+  const options = { day: "numeric", month: "short" };
+  const startStr = weekStart.toLocaleDateString("fr-FR", options);
+  const endStr = weekEnd.toLocaleDateString("fr-FR", options);
+  return `Semaine du ${startStr} au ${endStr}`;
+}
+
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
@@ -59,10 +86,10 @@ async function loadArticles() {
       });
     }
 
-    // ✅ tri
+    // ✅ tri par date décroissante
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-    // ✅ catégories (réintégré)
+    // ✅ catégories
     const uniqueCategories = [...new Set(articles.map(a => a.category))];
     categoriesContainer.innerHTML = uniqueCategories
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
@@ -75,12 +102,7 @@ async function loadArticles() {
       const link = document.createElement("a");
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
       link.className = "card";
-
-      const date = new Date(article.date).toLocaleDateString("fr-FR", {
-        day: "2-digit",
-        month: "short"
-      });
-
+      const date = new Date(article.date).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="">
         <div class="card-content">
@@ -91,64 +113,69 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // ✅ regroupement par jour
+    // ✅ regroupement par semaine
     container.innerHTML = "";
-    const grouped = {};
+    const groupedWeeks = {};
 
     articles.forEach(article => {
       const d = new Date(article.date);
-      const key = d.toISOString().split("T")[0];
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(article);
+      const monday = getMonday(d).toISOString().split("T")[0];
+      if (!groupedWeeks[monday]) groupedWeeks[monday] = {};
+      const dayKey = d.toISOString().split("T")[0];
+      if (!groupedWeeks[monday][dayKey]) groupedWeeks[monday][dayKey] = [];
+      groupedWeeks[monday][dayKey].push(article);
     });
 
-    Object.keys(grouped)
+    Object.keys(groupedWeeks)
       .sort((a, b) => new Date(b) - new Date(a))
-      .forEach(dateKey => {
-        const dayBlock = document.createElement("div");
-        dayBlock.className = "day-block";
+      .forEach(weekKey => {
+        const weekBlock = document.createElement("div");
+        weekBlock.className = "week-block";
 
-        const dateObj = new Date(dateKey);
-        const formattedDate = dateObj.toLocaleDateString("fr-FR", {
-          day: "numeric",
-          month: "short"
-        });
+        const weekStart = new Date(weekKey);
+        const weekLabel = formatWeekLabel(weekStart);
+        weekBlock.innerHTML = `<h3 class="week-title">${weekLabel}</h3>`;
 
-        dayBlock.innerHTML = `<h3 class="day-title">${formattedDate}</h3>`;
+        const carousel = document.createElement("div");
+        carousel.className = "week-carousel";
 
-        grouped[dateKey].forEach((article, index) => {
-          const el = document.createElement("div");
-          el.className = "day-article";
-          el.innerHTML = `
-            <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
-              <img src="${article.thumbnail}" alt="${article.title}">
-              <div class="day-article-info">
-                <p class="day-meta">Par ${article.author}, le ${formattedDate}.</p>
-                <h4>${article.title}</h4>
-              </div>
-            </a>
-          `;
-          dayBlock.appendChild(el);
+        const days = groupedWeeks[weekKey];
+        Object.keys(days)
+          .sort((a, b) => new Date(a) - new Date(b))
+          .forEach(dayKey => {
+            const dayBlock = document.createElement("div");
+            dayBlock.className = "day-block";
 
-          if (index < grouped[dateKey].length - 1) {
-            const sep = document.createElement("div");
-            sep.className = "day-separator";
-            dayBlock.appendChild(sep);
-          }
-        });
+            const dateObj = new Date(dayKey);
+            const formattedDate = dateObj.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+            dayBlock.innerHTML = `<h3 class="day-title">${formattedDate}</h3>`;
 
-        container.appendChild(dayBlock);
+            days[dayKey].forEach((article, index) => {
+              const el = document.createElement("div");
+              el.className = "day-article";
+              el.innerHTML = `
+                <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
+                  <img src="${article.thumbnail}" alt="${article.title}">
+                  <div class="day-article-info">
+                    <p class="day-meta">Par ${article.author}, le ${formattedDate}.</p>
+                    <h4>${article.title}</h4>
+                  </div>
+                </a>
+              `;
+              dayBlock.appendChild(el);
+              if (index < days[dayKey].length - 1) {
+                const sep = document.createElement("div");
+                sep.className = "day-separator";
+                dayBlock.appendChild(sep);
+              }
+            });
+            carousel.appendChild(dayBlock);
+          });
+
+        weekBlock.appendChild(carousel);
+        container.appendChild(weekBlock);
       });
 
-    // ✅ filtrage catégories
-    categoriesContainer.querySelectorAll("a").forEach(link => {
-      link.addEventListener("click", e => {
-        e.preventDefault();
-        const cat = link.getAttribute("data-category");
-        const filtered = cat === "Tous" ? articles : articles.filter(a => a.category === cat);
-        renderArticles(filtered);
-      });
-    });
   } catch (err) {
     console.error("Erreur lors du chargement :", err);
     container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
