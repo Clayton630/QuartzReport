@@ -79,7 +79,7 @@ body {
 
 .icons i {
   position: relative;
-  background: rgba(255, 255, 255, 0.36); /* ⬆️ fond légèrement plus opaque */
+  background: rgba(255, 255, 255, 0.36);
   border-radius: 50%;
   font-size: 1.5rem;
   cursor: pointer;
@@ -88,15 +88,16 @@ body {
   -webkit-backdrop-filter: blur(12px) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.25);
 
-  /* 💎 Reflets nets + halo noir adouci */
-    box-shadow:
+  /* 💎 Reflets nets + double contour blanc opaque */
+  box-shadow:
     0 0 12px rgba(0, 0, 0, 0.12),
     0 0 24px rgba(0, 0, 0, 0.06),
-    inset 0.5px 0.5px 0 rgba(255,255,255,0.4),
-    inset -0.5px -0.5px 0 rgba(255,255,255,0.3);
+    inset 0.5px 0.5px 0 rgba(255,255,255,1),
+    inset -0.5px -0.5px 0 rgba(255,255,255,1);
   transition: all 0.3s ease;
   overflow: hidden;
 }
+
 /* ✅ Reflet diagonal propre */
 .icons i::after {
   content: "";
@@ -108,17 +109,17 @@ body {
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    linear-gradient(45deg, rgba(255,255,255,0.08), transparent 65%),
-    linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
+    linear-gradient(45deg, rgba(255,255,255,0.18), transparent 65%),
+    linear-gradient(-45deg, rgba(255,255,255,0.12), transparent 65%);
 }
 
 .icons i:hover {
   background: rgba(255,255,255,0.25);
   box-shadow:
-    inset 1px 1px 2px rgba(255, 255, 255, 0.6),
-    inset -1px -1px 2px rgba(67, 97, 238, 0.4),
+    inset 1px 1px 2px rgba(255, 255, 255, 1),
+    inset -1px -1px 2px rgba(255, 255, 255, 1),
     0 0 25px rgba(67, 97, 238, 0.35),
-    0 0 14px rgba(255, 255, 255, 0.45);
+    0 0 14px rgba(255, 255, 255, 0.6);
   transform: scale(1.08);
 }
 
