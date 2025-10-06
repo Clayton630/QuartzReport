@@ -102,16 +102,17 @@ body {
 .icons i::after {
   content: "";
   position: absolute;
-  top: -25%;
-  left: -25%;
-  width: 180%;
-  height: 180%;
+  top: -10%;
+  left: -10%;
+  width: 120%;
+  height: 120%;
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    linear-gradient(45deg, rgba(255,255,255,0.18), transparent 90%),
-    linear-gradient(-45deg, rgba(255,255,255,0.12), transparent 90%);
+    linear-gradient(45deg, rgba(255,255,255,0.18), transparent 80%),
+    linear-gradient(-45deg, rgba(255,255,255,0.12), transparent 80%);
 }
+
 
 .icons i:hover {
   background: rgba(255,255,255,0.25);
