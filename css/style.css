@@ -109,8 +109,8 @@ body {
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    linear-gradient(45deg, rgba(255,255,255,0.18), transparent 65%),
-    linear-gradient(-45deg, rgba(255,255,255,0.12), transparent 65%);
+    linear-gradient(45deg, rgba(255,255,255,0.18), transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.12), transparent 25%);
 }
 
 .icons i:hover {
