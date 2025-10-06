@@ -88,13 +88,10 @@ body {
   backdrop-filter: blur(14px) saturate(200%);
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   border: 0.5px solid rgba(255, 255, 255, 0.2);
-
-  /* Halo externe légèrement visible */
   box-shadow:
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
     0 0 12px rgba(0,0,0,0.09);
-
   transition: all 0.3s ease;
   overflow: hidden;
 }
@@ -114,7 +111,7 @@ body {
 }
 
 .icons i:hover {
-  background: rgba(255,255,255,1); /* blanc pur */
+  background: rgba(255,255,255,1);
   box-shadow:
     inset 1px 1px 2px rgba(255, 255, 255, 0.7),
     inset -1px -1px 2px rgba(255,255,255,0.6),
@@ -147,7 +144,7 @@ body {
   position: relative;
   display: inline-block;
   padding: 8px 16px;
-  border-radius: 50px; /* fully rounded */
+  border-radius: 50px;
   background: 
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%),
     radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
@@ -155,15 +152,13 @@ body {
   border: 0.5px solid rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(14px) saturate(200%);
   -webkit-backdrop-filter: blur(14px) saturate(200%);
-  font-weight: 500;
+  font-weight: 500; /* légèrement plus gras */
   color: #111;
   text-decoration: none;
   font-size: 0.95rem;
   flex-shrink: 0;
   white-space: nowrap;
   transition: all 0.3s ease;
-
-  /* Halo externe */
   box-shadow:
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
@@ -186,7 +181,7 @@ body {
 }
 
 .main-nav a:hover {
-  background: rgba(255,255,255,1); /* blanc pur */
+  background: rgba(255,255,255,1);
   box-shadow:
     inset 1px 1px 2px rgba(255, 255, 255, 0.7),
     inset -1px -1px 2px rgba(255,255,255,0.6),
@@ -295,94 +290,26 @@ body {
   box-shadow: 0 12px 35px rgba(0,0,0,0.12);
 }
 
-.article-header {
-  background: linear-gradient(120deg, rgba(106,27,154,0.8), rgba(142,36,170,0.8));
-  backdrop-filter: blur(8px);
-  color: #fff;
-  padding: 16px 20px;
-}
-.article-header h3 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-.article-meta {
-  padding: 14px 20px;
-  font-size: 0.9rem;
-  color: #444;
-  background: rgba(245,245,245,0.6);
-  border-bottom: 1px solid rgba(224,224,224,0.6);
-}
-.article-meta em {
-  font-style: normal;
-  color: #555;
-  font-weight: 500;
-}
-
-.article-image {
-  text-align: center;
-  padding: 16px 16px 0 16px;
-}
-.article-image img {
-  max-width: 95%;
-  max-height: 350px;
-  width: auto;
-  height: auto;
-  border-radius: 12px;
-  object-fit: contain;
-}
-
-.article-body {
-  padding: 16px 20px;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #222;
-}
-
 /* =========================
    Mobile (≤480px)
    ========================= */
 @media (max-width: 480px) {
-  body {
-    background: linear-gradient(
-      180deg,
-      rgba(75,115,250,0.88) 0%,
-      rgba(75,115,250,0.73) 4%,
-      rgba(75,115,250,0.48) 8%,
-      rgba(75,115,250,0.23) 13%,
-      rgba(255,255,255,0) 20%
-    ),
-    linear-gradient(135deg, #f3f6fb, #ffffff);
-    background-repeat: no-repeat;
-    background-size: 100% auto;
-  }
-
   .logo-img {
     height: 25px;
   }
 
+  /* ✅ Icônes agrandies */
   .icons i {
-    font-size: 1.4rem;
-    padding: 10px;
-    background: 
-      radial-gradient(circle at 30% 30%, rgba(255,255,255,0.22), rgba(255,255,255,0) 70%),
-      radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
-      rgba(255, 255, 255, 0.36);
-    border-radius: 50%;
-    border: 0.5px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(14px) saturate(200%);
-    -webkit-backdrop-filter: blur(14px) saturate(200%);
-    box-shadow:
-      inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-      inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-      0 0 12px rgba(0,0,0,0.09);
+    font-size: 1.6rem;
+    padding: 14px;
   }
 
+  /* ✅ Catégories agrandies */
   .main-nav a {
-    font-size: 1rem;
-    padding: 8px 14px;
+    font-size: 1.05rem;
+    padding: 10px 18px;
     border-radius: 50px;
+    font-weight: 500;
   }
 
   .hottest h2 {
@@ -437,6 +364,7 @@ body {
 
   .main-nav a {
     font-size: 1.1rem;
+    font-weight: 500;
   }
 
   .hottest-grid {
