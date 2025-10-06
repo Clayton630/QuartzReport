@@ -4,13 +4,15 @@ function base64ToUtf8(base64) {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
+// Obtenir le lundi d'une semaine
 function getMonday(d) {
   const date = new Date(d);
   const day = date.getDay();
-  const diff = date.getDate() - (day === 0 ? 6 : day - 1); // lundi = 1, dimanche = 0
+  const diff = date.getDate() - (day === 0 ? 6 : day - 1);
   return new Date(date.setDate(diff));
 }
 
+// Formater un label de semaine
 function formatWeekLabel(weekStart) {
   const now = new Date();
   const currentMonday = getMonday(now);
@@ -86,7 +88,7 @@ async function loadArticles() {
       });
     }
 
-    // ✅ tri par date décroissante
+    // Tri par date décroissante
     articles.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     // ✅ catégories
@@ -113,68 +115,122 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // ✅ regroupement par semaine
+    // ✅ Détection mobile / desktop
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+
     container.innerHTML = "";
-    const groupedWeeks = {};
 
-    articles.forEach(article => {
-      const d = new Date(article.date);
-      const monday = getMonday(d).toISOString().split("T")[0];
-      if (!groupedWeeks[monday]) groupedWeeks[monday] = {};
-      const dayKey = d.toISOString().split("T")[0];
-      if (!groupedWeeks[monday][dayKey]) groupedWeeks[monday][dayKey] = [];
-      groupedWeeks[monday][dayKey].push(article);
-    });
+    if (isMobile) {
+      // === MOBILE : regroupement par jour ===
+      const grouped = {};
+      articles.forEach(article => {
+        const d = new Date(article.date);
+        const key = d.toISOString().split("T")[0];
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(article);
+      });
 
-    Object.keys(groupedWeeks)
-      .sort((a, b) => new Date(b) - new Date(a))
-      .forEach(weekKey => {
-        const weekBlock = document.createElement("div");
-        weekBlock.className = "week-block";
+      Object.keys(grouped)
+        .sort((a, b) => new Date(b) - new Date(a))
+        .forEach(dateKey => {
+          const dayBlock = document.createElement("div");
+          dayBlock.className = "day-block";
 
-        const weekStart = new Date(weekKey);
-        const weekLabel = formatWeekLabel(weekStart);
-        weekBlock.innerHTML = `<h3 class="week-title">${weekLabel}</h3>`;
-
-        const carousel = document.createElement("div");
-        carousel.className = "week-carousel";
-
-        const days = groupedWeeks[weekKey];
-        Object.keys(days)
-          .sort((a, b) => new Date(a) - new Date(b))
-          .forEach(dayKey => {
-            const dayBlock = document.createElement("div");
-            dayBlock.className = "day-block";
-
-            const dateObj = new Date(dayKey);
-            const formattedDate = dateObj.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-            dayBlock.innerHTML = `<h3 class="day-title">${formattedDate}</h3>`;
-
-            days[dayKey].forEach((article, index) => {
-              const el = document.createElement("div");
-              el.className = "day-article";
-              el.innerHTML = `
-                <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
-                  <img src="${article.thumbnail}" alt="${article.title}">
-                  <div class="day-article-info">
-                    <p class="day-meta">Par ${article.author}, le ${formattedDate}.</p>
-                    <h4>${article.title}</h4>
-                  </div>
-                </a>
-              `;
-              dayBlock.appendChild(el);
-              if (index < days[dayKey].length - 1) {
-                const sep = document.createElement("div");
-                sep.className = "day-separator";
-                dayBlock.appendChild(sep);
-              }
-            });
-            carousel.appendChild(dayBlock);
+          const dateObj = new Date(dateKey);
+          const formattedDate = dateObj.toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "short"
           });
 
-        weekBlock.appendChild(carousel);
-        container.appendChild(weekBlock);
+          dayBlock.innerHTML = `<h3 class="day-title">${formattedDate}</h3>`;
+
+          grouped[dateKey].forEach((article, index) => {
+            const el = document.createElement("div");
+            el.className = "day-article";
+            el.innerHTML = `
+              <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
+                <img src="${article.thumbnail}" alt="${article.title}">
+                <div class="day-article-info">
+                  <p class="day-meta">Par ${article.author}, le ${formattedDate}.</p>
+                  <h4>${article.title}</h4>
+                </div>
+              </a>
+            `;
+            dayBlock.appendChild(el);
+
+            if (index < grouped[dateKey].length - 1) {
+              const sep = document.createElement("div");
+              sep.className = "day-separator";
+              dayBlock.appendChild(sep);
+            }
+          });
+
+          container.appendChild(dayBlock);
+        });
+
+    } else {
+      // === DESKTOP : regroupement par semaine ===
+      const groupedWeeks = {};
+
+      articles.forEach(article => {
+        const d = new Date(article.date);
+        const monday = getMonday(d).toISOString().split("T")[0];
+        if (!groupedWeeks[monday]) groupedWeeks[monday] = {};
+        const dayKey = d.toISOString().split("T")[0];
+        if (!groupedWeeks[monday][dayKey]) groupedWeeks[monday][dayKey] = [];
+        groupedWeeks[monday][dayKey].push(article);
       });
+
+      Object.keys(groupedWeeks)
+        .sort((a, b) => new Date(b) - new Date(a))
+        .forEach(weekKey => {
+          const weekBlock = document.createElement("div");
+          weekBlock.className = "week-block";
+
+          const weekStart = new Date(weekKey);
+          const weekLabel = formatWeekLabel(weekStart);
+          weekBlock.innerHTML = `<h3 class="week-title">${weekLabel}</h3>`;
+
+          const carousel = document.createElement("div");
+          carousel.className = "week-carousel";
+
+          const days = groupedWeeks[weekKey];
+          Object.keys(days)
+            .sort((a, b) => new Date(a) - new Date(b))
+            .forEach(dayKey => {
+              const dayBlock = document.createElement("div");
+              dayBlock.className = "day-block";
+
+              const dateObj = new Date(dayKey);
+              const formattedDate = dateObj.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+              dayBlock.innerHTML = `<h3 class="day-title">${formattedDate}</h3>`;
+
+              days[dayKey].forEach((article, index) => {
+                const el = document.createElement("div");
+                el.className = "day-article";
+                el.innerHTML = `
+                  <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
+                    <img src="${article.thumbnail}" alt="${article.title}">
+                    <div class="day-article-info">
+                      <p class="day-meta">Par ${article.author}, le ${formattedDate}.</p>
+                      <h4>${article.title}</h4>
+                    </div>
+                  </a>
+                `;
+                dayBlock.appendChild(el);
+                if (index < days[dayKey].length - 1) {
+                  const sep = document.createElement("div");
+                  sep.className = "day-separator";
+                  dayBlock.appendChild(sep);
+                }
+              });
+              carousel.appendChild(dayBlock);
+            });
+
+          weekBlock.appendChild(carousel);
+          container.appendChild(weekBlock);
+        });
+    }
 
   } catch (err) {
     console.error("Erreur lors du chargement :", err);
