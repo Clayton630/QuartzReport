@@ -3,7 +3,7 @@ function parseYMDLocal(str) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
   if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0, 0);
   const d = new Date(str);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0);
 }
 
 function ymdKeyLocal(d) {
@@ -15,15 +15,22 @@ function ymdKeyLocal(d) {
 
 function getMondayLocal(date) {
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-  const day = d.getDay() || 7;
+  const day = d.getDay() || 7; // lun=1..dim=7
   d.setDate(d.getDate() - (day - 1));
+  d.setHours(0, 0, 0, 0);
   return d;
 }
 
 function addDays(d, n) {
-  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const x = new Date(d);
   x.setDate(x.getDate() + n);
   return x;
+}
+
+function sameDay(a, b) {
+  return a.getFullYear() === b.getFullYear() &&
+         a.getMonth() === b.getMonth() &&
+         a.getDate() === b.getDate();
 }
 
 function formatWeekLabel(weekStart) {
@@ -31,12 +38,12 @@ function formatWeekLabel(weekStart) {
   const thisMonday = getMondayLocal(today);
   const lastMonday = addDays(thisMonday, -7);
 
-  // ✅ comparaison par clés pour éviter les décalages UTC
-  if (ymdKeyLocal(weekStart) === ymdKeyLocal(thisMonday)) return "Cette semaine";
-  if (ymdKeyLocal(weekStart) === ymdKeyLocal(lastMonday)) return "La semaine dernière";
+  // ✅ Correction fiable
+  if (sameDay(weekStart, thisMonday)) return "Cette semaine";
+  if (sameDay(weekStart, lastMonday)) return "La semaine dernière";
 
   const weekEnd = addDays(weekStart, 6);
-  const opt = { day: "numeric", month: "short" };
+  const opt = { day: "numeric", month: "long" };
   const startStr = weekStart.toLocaleDateString("fr-FR", opt);
   const endStr = weekEnd.toLocaleDateString("fr-FR", opt);
   return `Semaine du ${startStr} au ${endStr}`;
@@ -59,10 +66,7 @@ async function loadArticles() {
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
-    const resp = await fetch(
-      `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
-      { cache: "no-store" }
-    );
+    const resp = await fetch(`${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`, { cache: "no-store" });
     if (!resp.ok) {
       container.innerHTML = "<p>Impossible de charger les articles.</p>";
       return;
@@ -74,10 +78,7 @@ async function loadArticles() {
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      const apiResp = await fetch(
-        `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`,
-        { cache: "no-store" }
-      );
+      const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`, { cache: "no-store" });
       const apiData = await apiResp.json();
       const text = base64ToUtf8(apiData.content);
 
@@ -121,7 +122,7 @@ async function loadArticles() {
       const link = document.createElement("a");
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
       link.className = "card";
-      const date = article.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+      const date = article.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" });
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="">
         <div class="card-content">
@@ -138,7 +139,7 @@ async function loadArticles() {
       .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
       .join("");
 
-    // ====== Fonction de rendu ======
+    // ====== Rendu (mobile vs desktop) ======
     function render(list) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       container.innerHTML = "";
@@ -156,20 +157,21 @@ async function loadArticles() {
           .sort((a, b) => new Date(b) - new Date(a))
           .forEach(dateKey => {
             const d = parseYMDLocal(dateKey);
-            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
 
             const dayBlock = document.createElement("div");
             dayBlock.className = "day-block";
             dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
 
             grouped[dateKey].forEach((article, index) => {
+              const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
               const el = document.createElement("div");
               el.className = "day-article";
               el.innerHTML = `
                 <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
                   <img src="${article.thumbnail}" alt="${article.title}">
                   <div class="day-article-info">
-                    <p class="day-meta">Par ${article.author}, le ${label}.</p>
+                    <p class="day-meta">Par ${article.author}, à ${time}</p>
                     <h4>${article.title}</h4>
                   </div>
                 </a>
@@ -213,7 +215,7 @@ async function loadArticles() {
               .sort((a, b) => (parseYMDLocal(a) - parseYMDLocal(b)))
               .forEach(dayKey => {
                 const d = parseYMDLocal(dayKey);
-                const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+                const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
 
                 const dayBlock = document.createElement("div");
                 dayBlock.className = "day-block";
@@ -221,13 +223,14 @@ async function loadArticles() {
 
                 const items = weeks[mondayKey][dayKey];
                 items.forEach((article, index) => {
+                  const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
                   const el = document.createElement("div");
                   el.className = "day-article";
                   el.innerHTML = `
                     <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
                       <img src="${article.thumbnail}" alt="${article.title}">
                       <div class="day-article-info">
-                        <p class="day-meta">Par ${article.author}, le ${label}.</p>
+                        <p class="day-meta">Par ${article.author}, à ${time}</p>
                         <h4>${article.title}</h4>
                       </div>
                     </a>
