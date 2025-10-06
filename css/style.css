@@ -102,8 +102,8 @@ body {
 .icons i::after {
   content: "";
   position: absolute;
-  top: -85%;
-  left: -85%;
+  top: -25%;
+  left: -25%;
   width: 180%;
   height: 180%;
   pointer-events: none;
