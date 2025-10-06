@@ -102,10 +102,10 @@ body {
 .icons i::after {
   content: "";
   position: absolute;
-  top: -40%;
-  left: -40%;
-  width: 180%;
-  height: 180%;
+  top: -25%;
+  left: -25%;
+  width: 150%;
+  height: 150%;
   pointer-events: none;
   mix-blend-mode: screen;
   background:
