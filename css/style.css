@@ -352,3 +352,54 @@ body {
   .hottest-grid .card { flex: 0 0 260px; max-width: 260px; }
   .card-content h3 { font-size: 1.05rem; }
 }
+
+/* =========================
+   Feed regroupé par semaine (desktop)
+   ========================= */
+.week-block {
+  margin-bottom: 40px;
+}
+
+.week-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111;
+  margin: 0 0 14px 8px;
+  text-transform: capitalize;
+}
+
+.week-carousel {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0 4px;
+}
+
+.week-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.week-carousel .day-block {
+  scroll-snap-align: start;
+  flex: 0 0 280px;
+  max-width: 280px;
+}
+
+/* Mobile : redevient vertical */
+@media (max-width: 768px) {
+  .week-carousel {
+    flex-direction: column;
+    overflow-x: visible;
+    gap: 20px;
+  }
+
+  .week-carousel .day-block {
+    flex: 1;
+    max-width: 100%;
+  }
+
+  .week-title {
+    margin-left: 4px;
+  }
+}
