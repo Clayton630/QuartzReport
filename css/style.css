@@ -91,12 +91,11 @@ body {
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   border: 0.5px solid rgba(255, 255, 255, 0.2);
 
-  /* Ombre style Over subtile */
+  /* Halo léger tout autour */
   box-shadow:
-    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),   /* reflets internes */
+    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 4px 8px rgba(0,0,0,0.08),                  /* ombre externe douce bas-droite */
-    0 2px 6px rgba(0,0,0,0.04);                  /* diffuse supplémentaire pour adoucir */
+    0 0 12px rgba(0,0,0,0.05); /* halo externe très léger, diffuse */
 
   transition: all 0.3s ease;
   overflow: hidden;
@@ -119,12 +118,11 @@ body {
 }
 
 .icons i:hover {
-  background: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,1); /* blanc pur 100% */
   box-shadow:
-    inset 1px 1px 2px rgba(255, 255, 255, 0.6),
-    inset -1px -1px 2px rgba(67, 97, 238, 0.4),
-    0 0 25px rgba(67, 97, 238, 0.35),
-    0 0 14px rgba(255, 255, 255, 0.45);
+    inset 1px 1px 2px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 2px rgba(255,255,255,0.6),
+    0 0 12px rgba(0,0,0,0.05); /* conserve halo léger externe */
   transform: scale(1.08);
 }
 
