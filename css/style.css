@@ -20,10 +20,10 @@ body {
 
   background: linear-gradient(
       180deg,
-      rgba(100,130,255,0.9) 0%,  /* bleu plus franc et un peu plus intense */
-      rgba(100,130,255,0.75) 4%,
-      rgba(100,130,255,0.5) 8%,
-      rgba(100,130,255,0.25) 13%,
+      rgba(80,120,255,0.95) 0%,  /* bleu plus intense et visible */
+      rgba(80,120,255,0.8) 4%,
+      rgba(80,120,255,0.55) 8%,
+      rgba(80,120,255,0.3) 13%,
       rgba(255,255,255,0) 18%
     ),
     linear-gradient(135deg, #f3f6fb, #ffffff);
