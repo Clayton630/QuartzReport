@@ -357,13 +357,14 @@ body {
    Feed regroupé par jour / semaine
    ========================= */
 
-/* Bloc de jour commun */
+/* Bloc de jour commun (mobile & desktop) */
 .day-block {
   background: #fff;
   border-radius: 23px;
   padding: 14px 14px 8px 14px;
   margin-bottom: 26px;
   box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+  box-sizing: border-box; /* ✅ pour largeur fixe en desktop */
 }
 .day-title {
   font-size: 1.1rem;
@@ -393,9 +394,7 @@ body {
   object-fit: cover;
   flex-shrink: 0;
 }
-.day-article-info {
-  flex: 1;
-}
+.day-article-info { flex: 1; }
 .day-meta {
   margin: 0;
   font-size: 0.85rem;
@@ -419,7 +418,6 @@ body {
   .week-block {
     margin-bottom: 36px;
   }
-
   .week-title {
     font-size: 1.2rem;
     font-weight: 600;
@@ -427,35 +425,27 @@ body {
     margin: 0 0 16px 4px;
     text-transform: capitalize;
   }
-
   .week-carousel {
+    --day-card-w: 320px;          /* ⬅️ largeur fixe paramétrable */
     display: flex;
     gap: 18px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     padding: 0 4px;
-    align-items: flex-start; /* ✅ empêche l’étirement vertical */
+    align-items: flex-start;      /* ✅ empêche l’étirement vertical */
   }
-
   .week-carousel .day-block {
+    flex: 0 0 var(--day-card-w);  /* ✅ largeur fixe */
+    width: var(--day-card-w);     /* ✅ largeur fixe */
+    max-width: var(--day-card-w);
+    height: auto;                 /* ✅ hauteur dynamique */
     scroll-snap-align: start;
-    flex: 0 0 auto;
-    max-width: 280px;
-    height: auto; /* ✅ hauteur naturelle */
   }
 }
 
 /* Mobile */
 @media (max-width: 480px) {
-  .day-article img {
-    width: 64px;
-    height: 64px;
-  }
-  .day-title {
-    font-size: 1rem;
-    margin-bottom: 8px;
-  }
-  .day-article-info h4 {
-    font-size: 0.95rem;
-  }
+  .day-article img { width: 64px; height: 64px; }
+  .day-title { font-size: 1rem; margin-bottom: 8px; }
+  .day-article-info h4 { font-size: 0.95rem; }
 }
