@@ -488,3 +488,39 @@ body {
   -webkit-transform: translate3d(0,0,0);
   will-change: scroll-position;
 }
+
+/* ... tes autres styles et correctifs précédents ... */
+
+/* =========================
+   🩹 Fix final flicker iOS au rechargement
+   ========================= */
+body {
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  -webkit-overflow-scrolling: touch;
+  overflow-y: scroll;
+}
+
+.day-article img,
+.hottest-grid img,
+.article-image img {
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
+  isolation: isolate;
+  contain: strict;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.icons i,
+.main-nav a {
+  -webkit-backdrop-filter: blur(14px) saturate(200%);
+  backdrop-filter: blur(14px) saturate(200%);
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  contain: paint;
+}
