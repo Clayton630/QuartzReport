@@ -63,13 +63,14 @@ async function loadArticles() {
       }
 
       const dateObj = parseDate(meta.date || "");
-      const slug = file.name.replace(".md", "");
+      const slug = file.name.replace(/\.md$/i, "");
       let cover = meta.thumbnail || "img/article-placeholder.jpg";
       const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
       if (!meta.thumbnail && firstImg) cover = firstImg[1];
 
       all.push({
-        slug,
+        filename: file.name,             // ⬅️ ajouté
+        slug,                            // ⬅️ déjà présent
         title: meta.title || "Sans titre",
         date: dateObj,
         author: meta.author || "Inconnu",
@@ -91,7 +92,8 @@ async function loadArticles() {
     const hottest = all.filter(a => a.important).slice(0, 3);
     hottest.forEach(article => {
       const link = document.createElement("a");
-      link.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
+      // ⬇️ on passe slug + file pour compat totale
+      link.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
       link.className = "card";
       const date = article.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" });
       link.innerHTML = `
@@ -119,46 +121,40 @@ async function loadArticles() {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       container.innerHTML = "";
 
-      // === MOBILE : regroupement par jour (corrigé) ===
+      // === MOBILE : regroupement par jour ===
       if (isMobile) {
         const byDay = {};
         list.forEach(a => {
-          const d = normalizeDate(a.date); // ✅ Corrige le décalage de fuseau
-          const key = ymdKey(d);
-          (byDay[key] ||= []).push(a);
+          const key = ymdKey(a.date);
+          if (!byDay[key]) byDay[key] = [];
+          byDay[key].push(a);
         });
 
-        Object.keys(byDay)
-          .sort((a, b) => new Date(b) - new Date(a))
-          .forEach(k => {
-            const d = new Date(k);
-            const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-            const block = document.createElement("div");
-            block.className = "day-block";
-            block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
+        Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a)).forEach(k => {
+          const d = new Date(k);
+          const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+          const block = document.createElement("div");
+          block.className = "day-block";
+          block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
 
-            byDay[k]
-              .sort((a, b) => b.date - a.date)
-              .forEach((article, i, arr) => {
-                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-                const el = document.createElement("div");
-                el.className = "day-article";
-                el.innerHTML = `
-                  <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
-                    <img src="${article.thumbnail}" alt="${article.title}">
-                    <div class="day-article-info">
-                      <p class="day-meta">Par ${article.author}, à ${time}</p>
-                      <h4>${article.title}</h4>
-                    </div>
-                  </a>`;
-                block.appendChild(el);
-                if (i < arr.length - 1)
-                  block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
-              });
-
-            container.appendChild(block);
+          byDay[k].sort((a, b) => b.date - a.date).forEach((article, i, arr) => {
+            const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+            const el = document.createElement("div");
+            el.className = "day-article";
+            el.innerHTML = `
+              <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                <img src="${article.thumbnail}" alt="${article.title}">
+                <div class="day-article-info">
+                  <p class="day-meta">Par ${article.author}, à ${time}</p>
+                  <h4>${article.title}</h4>
+                </div>
+              </a>`;
+            block.appendChild(el);
+            if (i < arr.length - 1) block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
           });
 
+          container.appendChild(block);
+        });
         return;
       }
 
@@ -172,8 +168,6 @@ async function loadArticles() {
       list.forEach(article => {
         const d = normalizeDate(article.date);
         const dayKey = ymdKey(d);
-        
-        // Comparer les timestamps pour éviter les problèmes de fuseaux horaires
         const dTime = d.getTime();
         const mondayThisTime = mondayThis.getTime();
         const mondayNextTime = mondayNext.getTime();
@@ -216,7 +210,7 @@ async function loadArticles() {
                 const el = document.createElement("div");
                 el.className = "day-article";
                 el.innerHTML = `
-                  <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
+                  <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
                     <img src="${article.thumbnail}" alt="${article.title}">
                     <div class="day-article-info">
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
@@ -224,8 +218,7 @@ async function loadArticles() {
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
-                if (i < arr.length - 1)
-                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+                if (i < arr.length - 1) dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
               });
 
             carousel.appendChild(dayBlock);
