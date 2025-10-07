@@ -119,40 +119,46 @@ async function loadArticles() {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       container.innerHTML = "";
 
-      // === MOBILE : regroupement par jour ===
+      // === MOBILE : regroupement par jour (corrigé) ===
       if (isMobile) {
         const byDay = {};
         list.forEach(a => {
-          const key = ymdKey(a.date);
-          if (!byDay[key]) byDay[key] = [];
-          byDay[key].push(a);
+          const d = normalizeDate(a.date); // ✅ Corrige le décalage de fuseau
+          const key = ymdKey(d);
+          (byDay[key] ||= []).push(a);
         });
 
-        Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a)).forEach(k => {
-          const d = new Date(k);
-          const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-          const block = document.createElement("div");
-          block.className = "day-block";
-          block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
+        Object.keys(byDay)
+          .sort((a, b) => new Date(b) - new Date(a))
+          .forEach(k => {
+            const d = new Date(k);
+            const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+            const block = document.createElement("div");
+            block.className = "day-block";
+            block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
 
-          byDay[k].forEach((article, i, arr) => {
-            const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-            const el = document.createElement("div");
-            el.className = "day-article";
-            el.innerHTML = `
-              <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
-                <img src="${article.thumbnail}" alt="${article.title}">
-                <div class="day-article-info">
-                  <p class="day-meta">Par ${article.author}, à ${time}</p>
-                  <h4>${article.title}</h4>
-                </div>
-              </a>`;
-            block.appendChild(el);
-            if (i < arr.length - 1) block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+            byDay[k]
+              .sort((a, b) => b.date - a.date)
+              .forEach((article, i, arr) => {
+                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+                const el = document.createElement("div");
+                el.className = "day-article";
+                el.innerHTML = `
+                  <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
+                    <img src="${article.thumbnail}" alt="${article.title}">
+                    <div class="day-article-info">
+                      <p class="day-meta">Par ${article.author}, à ${time}</p>
+                      <h4>${article.title}</h4>
+                    </div>
+                  </a>`;
+                block.appendChild(el);
+                if (i < arr.length - 1)
+                  block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+              });
+
+            container.appendChild(block);
           });
 
-          container.appendChild(block);
-        });
         return;
       }
 
@@ -218,7 +224,8 @@ async function loadArticles() {
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
-                if (i < arr.length - 1) dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+                if (i < arr.length - 1)
+                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
               });
 
             carousel.appendChild(dayBlock);
