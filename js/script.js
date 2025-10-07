@@ -1,12 +1,18 @@
-// ========= Dates (local, robustes) =========
+// ========= Utils dates (local, robustes) =========
 function normalizeDate(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
 }
-function parseYMDLocal(str) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(str);
-  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), 12, 0, 0, 0);
-  const d = new Date(str);
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), d.getHours(), d.getMinutes(), 0, 0);
+function addDays(d, n) {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+function startOfWeekMonday(d) {
+  const x = normalizeDate(d);
+  const dow = x.getDay() || 7; // 1..7 (lundi..dimanche)
+  x.setDate(x.getDate() - (dow - 1));
+  x.setHours(12, 0, 0, 0);
+  return x;
 }
 function ymdKeyLocal(d) {
   const y = d.getFullYear();
@@ -14,17 +20,25 @@ function ymdKeyLocal(d) {
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}-${m}-${day}`;
 }
-function getMondayLocal(date) {
-  const d = normalizeDate(date);
-  const day = d.getDay() || 7;
-  d.setDate(d.getDate() - (day - 1));
-  d.setHours(12, 0, 0, 0);
-  return d;
-}
-function addDays(d, n) {
-  const x = new Date(d);
-  x.setDate(x.getDate() + n);
-  return x;
+// Parse très tolérant (évite décalages de fuseau)
+function parseDateFlexible(input) {
+  if (!input) return new Date(NaN);
+  if (input instanceof Date) return input;
+  const s = String(input).trim();
+
+  // ISO avec Z / offset -> laisse le moteur gérer
+  if (/[T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?([+-]\d{2}:?\d{2}|Z)$/i.test(s)) {
+    const d = new Date(s);
+    if (!isNaN(d)) return d;
+  }
+  // YYYY-MM-DD[ HH[:mm[:ss]]], interprété en LOCAL
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2})(?::(\d{2}))?(?::(\d{2}))?)?/.exec(s);
+  if (m) {
+    const [, Y, Mo, D, H = "12", Mi = "0", S = "0"] = m;
+    return new Date(+Y, +Mo - 1, +D, +H, +Mi, +S, 0);
+  }
+  const d2 = new Date(s);
+  return new Date(isNaN(d2) ? NaN : d2.getTime());
 }
 
 // ========= Décodage GitHub =========
@@ -72,7 +86,7 @@ async function loadArticles() {
       }
 
       const slug = file.name.replace(".md", "");
-      const dateObj = parseYMDLocal(meta.date || "");
+      const dateObj = parseDateFlexible(meta.date || "");
       let cover = meta.thumbnail || "img/article-placeholder.jpg";
       const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
       if (!meta.thumbnail && firstImg) cover = firstImg[1];
@@ -90,7 +104,7 @@ async function loadArticles() {
       });
     }
 
-    // Tri global décroissant
+    // Tri global (plus récent d'abord)
     all.sort((a, b) => b.date - a.date);
 
     // ====== Hottest ======
@@ -124,27 +138,84 @@ async function loadArticles() {
 
       if (isMobile) {
         // ---- MOBILE : regroupé par jour ----
-        const grouped = {};
-        list.forEach(article => {
-          const key = ymdKeyLocal(article.date);
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(article);
+        const byDay = {};
+        list.forEach(a => {
+          const k = ymdKeyLocal(a.date);
+          (byDay[k] ||= []).push(a);
         });
 
-        Object.keys(grouped)
-          .sort((a, b) => new Date(b) - new Date(a))
-          .forEach(dateKey => {
-            const d = parseYMDLocal(dateKey);
-            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+        Object.keys(byDay).sort((a,b)=>new Date(b)-new Date(a)).forEach(k=>{
+          const d = parseDateFlexible(k);
+          const label = d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
+          const block = document.createElement("div");
+          block.className = "day-block";
+          block.innerHTML = `<h3 class="day-title">${label}</h3>`;
+          byDay[k].sort((a,b)=>b.date-a.date).forEach((article,i,arr)=>{
+            const time = article.date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+            const el = document.createElement("div");
+            el.className = "day-article";
+            el.innerHTML = `
+              <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
+                <img src="${article.thumbnail}" alt="${article.title}">
+                <div class="day-article-info">
+                  <p class="day-meta">Par ${article.author}, à ${time}</p>
+                  <h4>${article.title}</h4>
+                </div>
+              </a>`;
+            block.appendChild(el);
+            if (i < arr.length-1) block.appendChild(Object.assign(document.createElement("div"),{className:"day-separator"}));
+          });
+          container.appendChild(block);
+        });
 
-            const dayBlock = document.createElement("div");
-            dayBlock.className = "day-block";
-            dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
+      } else {
+        // ---- DESKTOP : regroupé par semaine avec bornes fixes ----
+        const mondayThis = startOfWeekMonday(new Date());
+        const mondayNext = addDays(mondayThis, 7);
+        const mondayPrev = addDays(mondayThis, -7);
 
-            grouped[dateKey]
-              .sort((a, b) => b.date - a.date)
-              .forEach((article, index, arr) => {
-                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+        const currentWeek = {};   // jours -> []
+        const previousWeek = {};  // jours -> []
+        const olderWeeks = {};    // mondayKey -> { jours -> [] }
+
+        function pushInDay(map, date, article) {
+          const k = ymdKeyLocal(new Date(date.getFullYear(),date.getMonth(),date.getDate(),12,0,0,0));
+          (map[k] ||= []).push(article);
+        }
+
+        list.forEach(article => {
+          const d = article.date;
+          if (d >= mondayThis && d < mondayNext) {
+            pushInDay(currentWeek, d, article);
+          } else if (d >= mondayPrev && d < mondayThis) {
+            pushInDay(previousWeek, d, article);
+          } else {
+            const wk = startOfWeekMonday(d);
+            const wkKey = ymdKeyLocal(wk);
+            olderWeeks[wkKey] ||= {};
+            pushInDay(olderWeeks[wkKey], d, article);
+          }
+        });
+
+        function renderWeekBlock(title, daysMap) {
+          if (!daysMap || Object.keys(daysMap).length === 0) return;
+          const weekBlock = document.createElement("div");
+          weekBlock.className = "week-block";
+          weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
+          const carousel = document.createElement("div");
+          carousel.className = "week-carousel";
+
+          Object.keys(daysMap)
+            .sort((a,b)=>parseDateFlexible(b)-parseDateFlexible(a)) // gauche = plus récent
+            .forEach(dayKey => {
+              const d = parseDateFlexible(dayKey);
+              const label = d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
+              const dayCard = document.createElement("div");
+              dayCard.className = "day-block"; // on garde le style actuel
+              dayCard.innerHTML = `<h3 class="day-title">${label}</h3>`;
+
+              daysMap[dayKey].sort((a,b)=>b.date-a.date).forEach((article,i,arr)=>{
+                const time = article.date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
                 const el = document.createElement("div");
                 el.className = "day-article";
                 el.innerHTML = `
@@ -154,100 +225,32 @@ async function loadArticles() {
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
                       <h4>${article.title}</h4>
                     </div>
-                  </a>
-                `;
-                dayBlock.appendChild(el);
-                if (index < arr.length - 1) {
-                  const sep = document.createElement("div");
-                  sep.className = "day-separator";
-                  dayBlock.appendChild(sep);
-                }
+                  </a>`;
+                dayCard.appendChild(el);
+                if (i < arr.length-1) dayCard.appendChild(Object.assign(document.createElement("div"),{className:"day-separator"}));
               });
 
-            container.appendChild(dayBlock);
-          });
+              carousel.appendChild(dayCard);
+            });
 
-      } else {
-        // ---- DESKTOP : regroupé par semaine ----
-        const weeks = {};
-        const currentMonday = getMondayLocal(new Date());
-        const currentKey = ymdKeyLocal(currentMonday);
+          weekBlock.appendChild(carousel);
+          container.appendChild(weekBlock);
+        }
 
-        // ⚙️ Crée au moins une clé pour la semaine actuelle
-        weeks[currentKey] = weeks[currentKey] || {};
+        // 1) Cette semaine
+        renderWeekBlock("Cette semaine", currentWeek);
 
-        list.forEach(article => {
-          const monday = getMondayLocal(article.date);
-          const mondayKey = ymdKeyLocal(monday);
-          if (!weeks[mondayKey]) weeks[mondayKey] = {};
-          const dayKey = ymdKeyLocal(article.date);
-          if (!weeks[mondayKey][dayKey]) weeks[mondayKey][dayKey] = [];
-          weeks[mondayKey][dayKey].push(article);
-        });
+        // 2) La semaine dernière
+        renderWeekBlock("La semaine dernière", previousWeek);
 
-        const todayMondayKey = ymdKeyLocal(getMondayLocal(new Date()));
-        const prevMondayKey  = ymdKeyLocal(addDays(getMondayLocal(new Date()), -7));
-
-        Object.keys(weeks)
-          .sort((a, b) => parseYMDLocal(b) - parseYMDLocal(a))
+        // 3) Anciennes semaines (du … au …)
+        Object.keys(olderWeeks)
+          .sort((a,b)=>parseDateFlexible(b)-parseDateFlexible(a))
           .forEach(mondayKey => {
-            let displayLabel;
-            if (mondayKey === todayMondayKey) {
-              displayLabel = "Cette semaine";
-            } else if (mondayKey === prevMondayKey) {
-              displayLabel = "La semaine dernière";
-            } else {
-              const start = parseYMDLocal(mondayKey);
-              const end   = addDays(start, 6);
-              const opt   = { day: "numeric", month: "long" };
-              displayLabel = `Semaine du ${start.toLocaleDateString("fr-FR", opt)} au ${end.toLocaleDateString("fr-FR", opt)}`;
-            }
-
-            const weekBlock = document.createElement("div");
-            weekBlock.className = "week-block";
-            weekBlock.innerHTML = `<h3 class="week-title">${displayLabel}</h3>`;
-
-            const carousel = document.createElement("div");
-            carousel.className = "week-carousel";
-
-            Object.keys(weeks[mondayKey])
-              .sort((a, b) => parseYMDLocal(b) - parseYMDLocal(a))
-              .forEach(dayKey => {
-                const d = parseYMDLocal(dayKey);
-                const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-
-                const dayBlock = document.createElement("div");
-                dayBlock.className = "day-block";
-                dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
-
-                weeks[mondayKey][dayKey]
-                  .sort((a, b) => b.date - a.date)
-                  .forEach((article, index, arr) => {
-                    const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-                    const el = document.createElement("div");
-                    el.className = "day-article";
-                    el.innerHTML = `
-                      <a href="article.html?slug=${encodeURIComponent(article.slug)}" class="day-article-link">
-                        <img src="${article.thumbnail}" alt="${article.title}">
-                        <div class="day-article-info">
-                          <p class="day-meta">Par ${article.author}, à ${time}</p>
-                          <h4>${article.title}</h4>
-                        </div>
-                      </a>
-                    `;
-                    dayBlock.appendChild(el);
-                    if (index < arr.length - 1) {
-                      const sep = document.createElement("div");
-                      sep.className = "day-separator";
-                      dayBlock.appendChild(sep);
-                    }
-                  });
-
-                carousel.appendChild(dayBlock);
-              });
-
-            weekBlock.appendChild(carousel);
-            container.appendChild(weekBlock);
+            const start = parseDateFlexible(mondayKey);
+            const end = addDays(start, 6);
+            const title = `Semaine du ${start.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})} au ${end.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`;
+            renderWeekBlock(title, olderWeeks[mondayKey]);
           });
       }
     }
@@ -264,6 +267,7 @@ async function loadArticles() {
       });
     });
 
+    // Re-render on resize to switch layout
     window.addEventListener("resize", () => render(all));
 
   } catch (err) {
