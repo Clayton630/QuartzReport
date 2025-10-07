@@ -27,20 +27,6 @@ function addDays(d, n) {
   return x;
 }
 
-// ✅ Nouveau : labels basés sur les clés (plus fiable)
-function labelWeek(mondayKey) {
-  const todayMondayKey = ymdKeyLocal(getMondayLocal(new Date()));
-  const prevMondayKey  = ymdKeyLocal(addDays(getMondayLocal(new Date()), -7));
-
-  if (mondayKey === todayMondayKey) return "Cette semaine";
-  if (mondayKey === prevMondayKey)  return "La semaine dernière";
-
-  const start = parseYMDLocal(mondayKey);
-  const end   = addDays(start, 6);
-  const opt   = { day: "numeric", month: "long" };
-  return `Semaine du ${start.toLocaleDateString("fr-FR", opt)} au ${end.toLocaleDateString("fr-FR", opt)}`;
-}
-
 // ========= Décodage GitHub =========
 function base64ToUtf8(base64) {
   const binary = atob(base64.replace(/\n/g, ""));
@@ -190,7 +176,6 @@ async function loadArticles() {
       } else {
         // ---- DESKTOP : regroupé par semaine ----
         const weeks = {};
-
         list.forEach(article => {
           const monday = getMondayLocal(article.date);
           const mondayKey = ymdKeyLocal(monday);
@@ -200,13 +185,27 @@ async function loadArticles() {
           weeks[mondayKey][dayKey].push(article);
         });
 
+        const todayMondayKey = ymdKeyLocal(getMondayLocal(new Date()));
+        const prevMondayKey  = ymdKeyLocal(addDays(getMondayLocal(new Date()), -7));
+
         Object.keys(weeks)
           .sort((a, b) => parseYMDLocal(b) - parseYMDLocal(a))
           .forEach(mondayKey => {
-            const weekStart = parseYMDLocal(mondayKey);
+            let displayLabel;
+            if (mondayKey === todayMondayKey) {
+              displayLabel = "Cette semaine";
+            } else if (mondayKey === prevMondayKey) {
+              displayLabel = "La semaine dernière";
+            } else {
+              const start = parseYMDLocal(mondayKey);
+              const end   = addDays(start, 6);
+              const opt   = { day: "numeric", month: "long" };
+              displayLabel = `Semaine du ${start.toLocaleDateString("fr-FR", opt)} au ${end.toLocaleDateString("fr-FR", opt)}`;
+            }
+
             const weekBlock = document.createElement("div");
             weekBlock.className = "week-block";
-            weekBlock.innerHTML = `<h3 class="week-title">${labelWeek(mondayKey)}</h3>`;
+            weekBlock.innerHTML = `<h3 class="week-title">${displayLabel}</h3>`;
 
             const carousel = document.createElement("div");
             carousel.className = "week-carousel";
