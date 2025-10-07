@@ -166,10 +166,16 @@ async function loadArticles() {
       list.forEach(article => {
         const d = normalizeDate(article.date);
         const dayKey = ymdKey(d);
+        
+        // Comparer les timestamps pour éviter les problèmes de fuseaux horaires
+        const dTime = d.getTime();
+        const mondayThisTime = mondayThis.getTime();
+        const mondayNextTime = mondayNext.getTime();
+        const mondayPrevTime = mondayPrev.getTime();
 
-        if (d >= mondayThis && d < mondayNext) {
+        if (dTime >= mondayThisTime && dTime < mondayNextTime) {
           (weeks.current[dayKey] ||= []).push(article);
-        } else if (d >= mondayPrev && d < mondayThis) {
+        } else if (dTime >= mondayPrevTime && dTime < mondayThisTime) {
           (weeks.previous[dayKey] ||= []).push(article);
         } else {
           const wk = startOfWeekMonday(d);
