@@ -102,16 +102,17 @@ body {
 .icons i::after {
   content: "";
   position: absolute;
-  top: -25%;
-  left: -25%;
-  width: 180%;
-  height: 180%;
+  top: -35%;              /* ↓ plus large et plus flou */
+  left: -35%;
+  width: 190%;
+  height: 190%;
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    linear-gradient(45deg, rgba(255,255,255,0.08), transparent 65%),
-    linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
+    linear-gradient(45deg, rgba(255,255,255,0.04), transparent 70%),  /* ↓ opacité et diffusion */
+    linear-gradient(-45deg, rgba(255,255,255,0.025), transparent 70%);
 }
+
 .icons i:hover {
   background: rgba(255,255,255,1);
   box-shadow:
