@@ -1,4 +1,4 @@
-// ========= Utils dates (local, robustes) =========
+// ========= Fonctions utilitaires de date =========
 function normalizeDate(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
 }
@@ -9,36 +9,16 @@ function addDays(d, n) {
 }
 function startOfWeekMonday(d) {
   const x = normalizeDate(d);
-  const dow = x.getDay() || 7; // 1..7 (lundi..dimanche)
-  x.setDate(x.getDate() - (dow - 1));
-  x.setHours(12, 0, 0, 0);
-  return x;
+  const day = x.getDay() || 7;
+  x.setDate(x.getDate() - (day - 1));
+  return normalizeDate(x);
 }
-function ymdKeyLocal(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
+function ymdKey(d) {
+  return d.toISOString().split("T")[0];
 }
-// Parse très tolérant (évite décalages de fuseau)
-function parseDateFlexible(input) {
-  if (!input) return new Date(NaN);
-  if (input instanceof Date) return input;
-  const s = String(input).trim();
-
-  // ISO avec Z / offset -> laisse le moteur gérer
-  if (/[T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?([+-]\d{2}:?\d{2}|Z)$/i.test(s)) {
-    const d = new Date(s);
-    if (!isNaN(d)) return d;
-  }
-  // YYYY-MM-DD[ HH[:mm[:ss]]], interprété en LOCAL
-  const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2})(?::(\d{2}))?(?::(\d{2}))?)?/.exec(s);
-  if (m) {
-    const [, Y, Mo, D, H = "12", Mi = "0", S = "0"] = m;
-    return new Date(+Y, +Mo - 1, +D, +H, +Mi, +S, 0);
-  }
-  const d2 = new Date(s);
-  return new Date(isNaN(d2) ? NaN : d2.getTime());
+function parseDate(str) {
+  const d = new Date(str);
+  return isNaN(d) ? new Date() : d;
 }
 
 // ========= Décodage GitHub =========
@@ -58,19 +38,16 @@ async function loadArticles() {
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
-    const resp = await fetch(`${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`, { cache: "no-store" });
-    if (!resp.ok) {
-      container.innerHTML = "<p>Impossible de charger les articles.</p>";
-      return;
-    }
+    const resp = await fetch(`${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`);
+    if (!resp.ok) throw new Error("Erreur chargement liste articles");
 
     const files = await resp.json();
     const all = [];
 
-    for (let file of files) {
+    for (const file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`, { cache: "no-store" });
+      const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}`);
       const apiData = await apiResp.json();
       const text = base64ToUtf8(apiData.content);
 
@@ -85,8 +62,8 @@ async function loadArticles() {
         });
       }
 
+      const dateObj = parseDate(meta.date || "");
       const slug = file.name.replace(".md", "");
-      const dateObj = parseDateFlexible(meta.date || "");
       let cover = meta.thumbnail || "img/article-placeholder.jpg";
       const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
       if (!meta.thumbnail && firstImg) cover = firstImg[1];
@@ -104,13 +81,15 @@ async function loadArticles() {
       });
     }
 
-    // Tri global (plus récent d'abord)
+    // Tri global (plus récent en premier)
     all.sort((a, b) => b.date - a.date);
 
-    // ====== Hottest ======
+    // ======================
+    // SECTION HOTTEST
+    // ======================
     hottestContainer.innerHTML = "";
-    const hottestArticles = all.filter(a => a.important).slice(0, 3);
-    hottestArticles.forEach(article => {
+    const hottest = all.filter(a => a.important).slice(0, 3);
+    hottest.forEach(article => {
       const link = document.createElement("a");
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}`;
       link.className = "card";
@@ -125,33 +104,39 @@ async function loadArticles() {
       hottestContainer.appendChild(link);
     });
 
-    // ====== Catégories ======
-    const uniqueCategories = [...new Set(all.map(a => a.category))];
-    categoriesContainer.innerHTML = uniqueCategories
-      .map(cat => `<li><a href="#" data-category="${cat}">${cat}</a></li>`)
+    // ======================
+    // SECTION CATÉGORIES
+    // ======================
+    const categories = [...new Set(all.map(a => a.category))];
+    categoriesContainer.innerHTML = categories
+      .map(c => `<li><a href="#" data-category="${c}">${c}</a></li>`)
       .join("");
 
-    // ====== Rendu (mobile vs desktop) ======
+    // ======================
+    // FEED ARTICLES
+    // ======================
     function render(list) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       container.innerHTML = "";
 
+      // === MOBILE : regroupement par jour ===
       if (isMobile) {
-        // ---- MOBILE : regroupé par jour ----
         const byDay = {};
         list.forEach(a => {
-          const k = ymdKeyLocal(a.date);
-          (byDay[k] ||= []).push(a);
+          const key = ymdKey(a.date);
+          if (!byDay[key]) byDay[key] = [];
+          byDay[key].push(a);
         });
 
-        Object.keys(byDay).sort((a,b)=>new Date(b)-new Date(a)).forEach(k=>{
-          const d = parseDateFlexible(k);
-          const label = d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
+        Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a)).forEach(k => {
+          const d = new Date(k);
+          const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
           const block = document.createElement("div");
           block.className = "day-block";
-          block.innerHTML = `<h3 class="day-title">${label}</h3>`;
-          byDay[k].sort((a,b)=>b.date-a.date).forEach((article,i,arr)=>{
-            const time = article.date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+          block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
+
+          byDay[k].forEach((article, i, arr) => {
+            const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
             const el = document.createElement("div");
             el.className = "day-article";
             el.innerHTML = `
@@ -163,59 +148,59 @@ async function loadArticles() {
                 </div>
               </a>`;
             block.appendChild(el);
-            if (i < arr.length-1) block.appendChild(Object.assign(document.createElement("div"),{className:"day-separator"}));
+            if (i < arr.length - 1) block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
           });
+
           container.appendChild(block);
         });
+        return;
+      }
 
-      } else {
-        // ---- DESKTOP : regroupé par semaine avec bornes fixes ----
-        const mondayThis = startOfWeekMonday(new Date());
-        const mondayNext = addDays(mondayThis, 7);
-        const mondayPrev = addDays(mondayThis, -7);
+      // === DESKTOP : regroupement par semaine ===
+      const mondayThis = startOfWeekMonday(new Date());
+      const mondayNext = addDays(mondayThis, 7);
+      const mondayPrev = addDays(mondayThis, -7);
 
-        const currentWeek = {};   // jours -> []
-        const previousWeek = {};  // jours -> []
-        const olderWeeks = {};    // mondayKey -> { jours -> [] }
+      const weeks = { current: {}, previous: {}, others: {} };
 
-        function pushInDay(map, date, article) {
-          const k = ymdKeyLocal(new Date(date.getFullYear(),date.getMonth(),date.getDate(),12,0,0,0));
-          (map[k] ||= []).push(article);
+      list.forEach(article => {
+        const d = normalizeDate(article.date);
+        const dayKey = ymdKey(d);
+
+        if (d >= mondayThis && d < mondayNext) {
+          (weeks.current[dayKey] ||= []).push(article);
+        } else if (d >= mondayPrev && d < mondayThis) {
+          (weeks.previous[dayKey] ||= []).push(article);
+        } else {
+          const wk = startOfWeekMonday(d);
+          const wkKey = ymdKey(wk);
+          (weeks.others[wkKey] ||= {});
+          (weeks.others[wkKey][dayKey] ||= []).push(article);
         }
+      });
 
-        list.forEach(article => {
-          const d = article.date;
-          if (d >= mondayThis && d < mondayNext) {
-            pushInDay(currentWeek, d, article);
-          } else if (d >= mondayPrev && d < mondayThis) {
-            pushInDay(previousWeek, d, article);
-          } else {
-            const wk = startOfWeekMonday(d);
-            const wkKey = ymdKeyLocal(wk);
-            olderWeeks[wkKey] ||= {};
-            pushInDay(olderWeeks[wkKey], d, article);
-          }
-        });
+      function renderWeek(title, daysMap) {
+        if (!Object.keys(daysMap).length) return;
+        const weekBlock = document.createElement("div");
+        weekBlock.className = "week-block";
+        weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
 
-        function renderWeekBlock(title, daysMap) {
-          if (!daysMap || Object.keys(daysMap).length === 0) return;
-          const weekBlock = document.createElement("div");
-          weekBlock.className = "week-block";
-          weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
-          const carousel = document.createElement("div");
-          carousel.className = "week-carousel";
+        const carousel = document.createElement("div");
+        carousel.className = "week-carousel";
 
-          Object.keys(daysMap)
-            .sort((a,b)=>parseDateFlexible(b)-parseDateFlexible(a)) // gauche = plus récent
-            .forEach(dayKey => {
-              const d = parseDateFlexible(dayKey);
-              const label = d.toLocaleDateString("fr-FR",{day:"numeric",month:"long"});
-              const dayCard = document.createElement("div");
-              dayCard.className = "day-block"; // on garde le style actuel
-              dayCard.innerHTML = `<h3 class="day-title">${label}</h3>`;
+        Object.keys(daysMap)
+          .sort((a, b) => new Date(b) - new Date(a))
+          .forEach(dayKey => {
+            const d = new Date(dayKey);
+            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+            const dayBlock = document.createElement("div");
+            dayBlock.className = "day-block";
+            dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
 
-              daysMap[dayKey].sort((a,b)=>b.date-a.date).forEach((article,i,arr)=>{
-                const time = article.date.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+            daysMap[dayKey]
+              .sort((a, b) => b.date - a.date)
+              .forEach((article, i, arr) => {
+                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
                 const el = document.createElement("div");
                 el.className = "day-article";
                 el.innerHTML = `
@@ -226,38 +211,35 @@ async function loadArticles() {
                       <h4>${article.title}</h4>
                     </div>
                   </a>`;
-                dayCard.appendChild(el);
-                if (i < arr.length-1) dayCard.appendChild(Object.assign(document.createElement("div"),{className:"day-separator"}));
+                dayBlock.appendChild(el);
+                if (i < arr.length - 1) dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
               });
 
-              carousel.appendChild(dayCard);
-            });
-
-          weekBlock.appendChild(carousel);
-          container.appendChild(weekBlock);
-        }
-
-        // 1) Cette semaine
-        renderWeekBlock("Cette semaine", currentWeek);
-
-        // 2) La semaine dernière
-        renderWeekBlock("La semaine dernière", previousWeek);
-
-        // 3) Anciennes semaines (du … au …)
-        Object.keys(olderWeeks)
-          .sort((a,b)=>parseDateFlexible(b)-parseDateFlexible(a))
-          .forEach(mondayKey => {
-            const start = parseDateFlexible(mondayKey);
-            const end = addDays(start, 6);
-            const title = `Semaine du ${start.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})} au ${end.toLocaleDateString("fr-FR",{day:"numeric",month:"long"})}`;
-            renderWeekBlock(title, olderWeeks[mondayKey]);
+            carousel.appendChild(dayBlock);
           });
+
+        weekBlock.appendChild(carousel);
+        container.appendChild(weekBlock);
       }
+
+      // Cette semaine
+      renderWeek("Cette semaine", weeks.current);
+      // La semaine dernière
+      renderWeek("La semaine dernière", weeks.previous);
+      // Anciennes semaines
+      Object.keys(weeks.others)
+        .sort((a, b) => new Date(b) - new Date(a))
+        .forEach(wkKey => {
+          const start = new Date(wkKey);
+          const end = addDays(start, 6);
+          const title = `Semaine du ${start.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
+          renderWeek(title, weeks.others[wkKey]);
+        });
     }
 
     render(all);
 
-    // Filtrage catégories
+    // ✅ Filtrage catégories
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
@@ -267,11 +249,10 @@ async function loadArticles() {
       });
     });
 
-    // Re-render on resize to switch layout
     window.addEventListener("resize", () => render(all));
 
   } catch (err) {
-    console.error("Erreur lors du chargement :", err);
+    console.error(err);
     container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
