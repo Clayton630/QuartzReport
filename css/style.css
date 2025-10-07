@@ -450,3 +450,17 @@ body {
   .day-title { font-size: 1rem; margin-bottom: 8px; }
   .day-article-info h4 { font-size: 0.95rem; }
 }
+
+
+/* =========================
+   🩹 Correctif clignotement images sur iOS
+   ========================= */
+.day-article img,
+.hottest-grid img,
+.article-image img {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
