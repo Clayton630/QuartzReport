@@ -44,10 +44,7 @@ async function loadArticles() {
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
-    const resp = await fetch(
-      `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
-      { cache: "no-store" }
-    );
+    const resp = await fetch(`${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`, { cache: "no-store" });
     if (!resp.ok) {
       container.innerHTML = "<p>Impossible de charger les articles.</p>";
       return;
@@ -59,10 +56,7 @@ async function loadArticles() {
     for (let file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      const apiResp = await fetch(
-        `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`,
-        { cache: "no-store" }
-      );
+      const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}&_=${Date.now()}`, { cache: "no-store" });
       const apiData = await apiResp.json();
       const text = base64ToUtf8(apiData.content);
 
@@ -176,6 +170,12 @@ async function loadArticles() {
       } else {
         // ---- DESKTOP : regroupé par semaine ----
         const weeks = {};
+        const currentMonday = getMondayLocal(new Date());
+        const currentKey = ymdKeyLocal(currentMonday);
+
+        // ⚙️ Crée au moins une clé pour la semaine actuelle
+        weeks[currentKey] = weeks[currentKey] || {};
+
         list.forEach(article => {
           const monday = getMondayLocal(article.date);
           const mondayKey = ymdKeyLocal(monday);
