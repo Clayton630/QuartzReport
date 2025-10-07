@@ -111,6 +111,8 @@ body {
   background:
     linear-gradient(45deg, rgba(255,255,255,0.02), transparent 70%),  /* ↓ opacité et diffusion */
     linear-gradient(-45deg, rgba(255,255,255,0.012), transparent 70%);
+   filter: blur(10px);
+   opacity: 0.8;
 }
 
 .icons i:hover {
