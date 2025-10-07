@@ -453,14 +453,38 @@ body {
 
 
 /* =========================
-   🩹 Correctif clignotement images sur iOS
+   🧩 Correctif GPU — Safari iOS flicker fix
    ========================= */
+
+/* Force les cartes à être rendues dans leur propre layer GPU */
+.day-block,
+.hottest-grid .card,
+.article-block {
+  isolation: isolate;
+  contain: layout paint;
+  will-change: transform;
+  transform: translate3d(0,0,0);
+  -webkit-transform: translate3d(0,0,0);
+}
+
+/* Stabilise les images internes pour éviter le “repaint” */
 .day-article img,
 .hottest-grid img,
 .article-image img {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
+  display: block;
+  contain: strict;
+  -webkit-transform: translate3d(0,0,0);
+  transform: translate3d(0,0,0);
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Évite que le scroll déclenche un repaint sur la couche principale */
+body {
+  position: relative;
+  transform: translate3d(0,0,0);
+  -webkit-transform: translate3d(0,0,0);
+  will-change: scroll-position;
 }
