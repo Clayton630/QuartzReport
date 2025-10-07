@@ -1,6 +1,5 @@
 // ========= Dates (local, robustes) =========
 function normalizeDate(d) {
-  // milieu de journée pour éviter toute bizarrerie DST
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
 }
 function parseYMDLocal(str) {
@@ -17,7 +16,7 @@ function ymdKeyLocal(d) {
 }
 function getMondayLocal(date) {
   const d = normalizeDate(date);
-  const day = d.getDay() || 7; // lun=1..dim=7
+  const day = d.getDay() || 7;
   d.setDate(d.getDate() - (day - 1));
   d.setHours(12, 0, 0, 0);
   return d;
@@ -27,27 +26,19 @@ function addDays(d, n) {
   x.setDate(x.getDate() + n);
   return x;
 }
-function sameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() &&
-         a.getMonth() === b.getMonth() &&
-         a.getDate() === b.getDate();
-}
-function formatWeekLabel(weekStart) {
-  const weekEnd = addDays(weekStart, 6);
-  const today = normalizeDate(new Date());
 
-  // ✅ si "today" dans l'intervalle [weekStart, weekEnd] => Cette semaine
-  if (today >= weekStart && today <= weekEnd) return "Cette semaine";
+// ✅ Nouveau : labels basés sur les clés (plus fiable)
+function labelWeek(mondayKey) {
+  const todayMondayKey = ymdKeyLocal(getMondayLocal(new Date()));
+  const prevMondayKey  = ymdKeyLocal(addDays(getMondayLocal(new Date()), -7));
 
-  const lastStart = addDays(weekStart, 7); // semaineStart + 7 = début de la semaine suivante
-  const prevStart = addDays(weekStart, -7);
-  // si la semaine suivante contient today => la semaine courante est "la semaine dernière"
-  if (today >= prevStart && today <= addDays(prevStart, 6)) return "La semaine dernière";
+  if (mondayKey === todayMondayKey) return "Cette semaine";
+  if (mondayKey === prevMondayKey)  return "La semaine dernière";
 
-  const opt = { day: "numeric", month: "long" };
-  const startStr = weekStart.toLocaleDateString("fr-FR", opt);
-  const endStr = weekEnd.toLocaleDateString("fr-FR", opt);
-  return `Semaine du ${startStr} au ${endStr}`;
+  const start = parseYMDLocal(mondayKey);
+  const end   = addDays(start, 6);
+  const opt   = { day: "numeric", month: "long" };
+  return `Semaine du ${start.toLocaleDateString("fr-FR", opt)} au ${end.toLocaleDateString("fr-FR", opt)}`;
 }
 
 // ========= Décodage GitHub =========
@@ -152,7 +143,7 @@ async function loadArticles() {
       container.innerHTML = "";
 
       if (isMobile) {
-        // ---- MOBILE : regroupé par jour (inchangé) ----
+        // ---- MOBILE : regroupé par jour ----
         const grouped = {};
         list.forEach(article => {
           const key = ymdKeyLocal(article.date);
@@ -170,7 +161,6 @@ async function loadArticles() {
             dayBlock.className = "day-block";
             dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
 
-            // articles du jour : décroissant + heure
             grouped[dateKey]
               .sort((a, b) => b.date - a.date)
               .forEach((article, index, arr) => {
@@ -211,17 +201,16 @@ async function loadArticles() {
         });
 
         Object.keys(weeks)
-          .sort((a, b) => parseYMDLocal(b) - parseYMDLocal(a)) // semaines récentes d'abord
+          .sort((a, b) => parseYMDLocal(b) - parseYMDLocal(a))
           .forEach(mondayKey => {
             const weekStart = parseYMDLocal(mondayKey);
             const weekBlock = document.createElement("div");
             weekBlock.className = "week-block";
-            weekBlock.innerHTML = `<h3 class="week-title">${formatWeekLabel(weekStart)}</h3>`;
+            weekBlock.innerHTML = `<h3 class="week-title">${labelWeek(mondayKey)}</h3>`;
 
             const carousel = document.createElement("div");
             carousel.className = "week-carousel";
 
-            // ✅ jours : du plus récent (gauche) au plus ancien (droite)
             Object.keys(weeks[mondayKey])
               .sort((a, b) => parseYMDLocal(b) - parseYMDLocal(a))
               .forEach(dayKey => {
@@ -232,7 +221,6 @@ async function loadArticles() {
                 dayBlock.className = "day-block";
                 dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
 
-                // articles dans la journée : du plus récent au plus ancien
                 weeks[mondayKey][dayKey]
                   .sort((a, b) => b.date - a.date)
                   .forEach((article, index, arr) => {
@@ -277,7 +265,6 @@ async function loadArticles() {
       });
     });
 
-    // Re-render on resize to switch mobile/desktop layouts if needed
     window.addEventListener("resize", () => render(all));
 
   } catch (err) {
