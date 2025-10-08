@@ -17,33 +17,54 @@ body {
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
+
+  /* ✨ Reflet iridescent en haut de page (remplace le dégradé bleu) */
   background:
-    /* 💎 Reflet arc-en-ciel iridescent */
+    /* couche principale : reflet blanc iridescent de la même taille que l'ancien bleu */
     linear-gradient(
       180deg,
-      rgba(255,255,255,0.85) 0%,
-      rgba(255,255,255,0.8) 8%,
-      rgba(255,255,255,0.7) 14%,
-      rgba(255,255,255,0.6) 20%,
-      rgba(255,255,255,0.45) 27%,
-      rgba(255,255,255,0.3) 34%,
-      rgba(255,255,255,0.15) 40%,
-      rgba(255,255,255,0) 48%
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.92) 5%,
+      rgba(255, 255, 255, 0.85) 10%,
+      rgba(255, 255, 255, 0.7) 16%,
+      rgba(255, 255, 255, 0.5) 22%,
+      rgba(255, 255, 255, 0.3) 28%,
+      rgba(255, 255, 255, 0.15) 35%,
+      rgba(255, 255, 255, 0) 46%
     ),
-    /* 🌈 diffraction nacrée subtile */
+    /* diffraction colorée subtile façon verre */
     linear-gradient(
-      120deg,
-      rgba(255, 182, 193, 0.12) 0%,     /* rose pâle */
-      rgba(173, 216, 230, 0.12) 20%,    /* bleu clair */
-      rgba(152, 251, 152, 0.12) 40%,    /* vert menthe */
-      rgba(255, 255, 224, 0.12) 60%,    /* jaune doux */
-      rgba(221, 160, 221, 0.12) 80%,    /* lilas */
-      rgba(255, 182, 193, 0.12) 100%
+      100deg,
+      rgba(255, 183, 197, 0.20) 0%,     /* rose pâle */
+      rgba(173, 216, 230, 0.20) 20%,    /* bleu clair */
+      rgba(152, 251, 152, 0.18) 40%,    /* vert menthe */
+      rgba(255, 255, 224, 0.18) 60%,    /* jaune clair */
+      rgba(221, 160, 221, 0.20) 80%,    /* lilas */
+      rgba(255, 183, 197, 0.20) 100%
     ),
     linear-gradient(135deg, #f5f7fa, #ffffff);
   background-repeat: no-repeat;
   background-size: 100% auto;
   padding-top: env(safe-area-inset-top);
+}
+
+/* ✨ Optionnelle : légères paillettes prismatiques, réalistes et douces */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 350px; /* même hauteur que ton ancien dégradé bleu */
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.25) 0%, transparent 60%),
+    radial-gradient(circle at 80% 25%, rgba(255,255,255,0.18) 0%, transparent 70%),
+    radial-gradient(circle at 50% 80%, rgba(255,255,255,0.15) 0%, transparent 60%);
+  mix-blend-mode: overlay;
+  filter: blur(18px);
+  opacity: 0.5;
+  z-index: 0;
 }
 
 /* =========================
@@ -55,18 +76,14 @@ body {
   align-items: center;
   padding: calc(12px + env(safe-area-inset-top)) 16px 12px 16px;
   background: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
   border: none;
-  border-radius: 0;
-  box-shadow: none;
   position: sticky;
   top: 0;
   z-index: 10;
   box-sizing: border-box;
 }
 
-/* ✅ Logo SVG blanc */
+/* ✅ Logo */
 .logo {
   display: flex;
   align-items: center;
@@ -84,7 +101,7 @@ body {
 }
 
 /* =========================
-   Icônes header — 💧 Liquid Glass finalisé
+   Icônes header — 💧 Liquid Glass
    ========================= */
 .icons {
   display: flex;
@@ -124,13 +141,8 @@ body {
     linear-gradient(45deg, rgba(255,255,255,0.02), transparent 70%),
     linear-gradient(-45deg, rgba(255,255,255,0.012), transparent 70%);
 }
-
 .icons i:hover {
   background: rgba(255,255,255,1);
-  box-shadow:
-    inset 1px 1px 2px rgba(255,255,255,0.7),
-    inset -1px -1px 2px rgba(255,255,255,0.6),
-    0 0 12px rgba(0,0,0,0.09);
   transform: scale(1.08);
 }
 
