@@ -87,6 +87,7 @@ body::before {
   top: 0;
   z-index: 10;
   box-sizing: border-box;
+  overflow: visible; /* ✅ éviter les ombres coupées */
 }
 
 /* =========================
@@ -117,6 +118,7 @@ body::before {
 .icons {
   display: flex;
   gap: 14px;
+  overflow: visible; /* ✅ éviter les ombres coupées */
 }
 
 .icons i,
@@ -127,11 +129,12 @@ body::before {
   justify-content: center;
 
   border-radius: 50px;
+  margin: 2px; /* ✅ laisse respirer l’ombre */
 
   background:
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
     radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
-    rgba(255,255,255,0.65); /* ✅ plus opaque */
+    rgba(255,255,255,0.65);
   border: 0.5px solid rgba(255,255,255,0.35);
   backdrop-filter: blur(14px) saturate(200%);
   -webkit-backdrop-filter: blur(14px) saturate(200%);
@@ -144,7 +147,7 @@ body::before {
   box-shadow:
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 0 15px rgba(0,0,0,0.1);
+    0 0 20px rgba(0,0,0,0.1); /* ✅ halo plus diffus et plus visible */
   overflow: hidden;
 }
 
@@ -166,7 +169,7 @@ body::before {
   }
 }
 
-/* Mobile : encore plus grand (préférences finales) */
+/* Mobile : préférences finales */
 @media (max-width: 768px) {
   .icons i {
     width: 45px;
@@ -176,7 +179,22 @@ body::before {
   }
 }
 
-/* Catégories (différences de style par rapport aux icônes) */
+/* Catégories */
+.main-nav {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px 16px;
+  margin: 8px 16px 0 16px;
+  overflow: visible; /* ✅ éviter les ombres coupées */
+}
+.main-nav ul {
+  display: flex;
+  gap: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 .main-nav a {
   display: inline-block;
   padding: 8px 16px;
@@ -204,24 +222,6 @@ body::before {
 .main-nav a:hover {
   background: rgba(255,255,255,1);
   transform: scale(1.05);
-}
-
-/* =========================
-   Navigation container
-   ========================= */
-.main-nav {
-  max-width: 100%;
-  overflow-x: auto;
-  white-space: nowrap;
-  padding: 10px 16px;
-  margin: 8px 16px 0 16px;
-}
-.main-nav ul {
-  display: flex;
-  gap: 12px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
 }
 
 /* =========================
@@ -398,7 +398,7 @@ body::before {
   border-radius: 23px;
   padding: 14px 14px 8px 14px;
   margin-bottom: 26px;
-  : 0 3px 12px rgba(0,0,0,0.04);
+  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
   box-sizing: border-box;
 }
 .day-title {
