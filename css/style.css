@@ -80,22 +80,22 @@ body::before {
   );
 }
 
-/* 🖥️ Version desktop ajustée : un peu moins étendue vers le bas */
+/* 🖥️ Version desktop ajustée : intermédiaire (66 vh) */
 @media (min-width: 769px) {
   body::before {
-    height: 60vh; /* légèrement réduit */
+    height: 66vh; /* 🌈 juste ce qu’il faut de moins */
     mask-image: linear-gradient(to bottom,
       rgba(0,0,0,1) 0%,
-      rgba(0,0,0,0.95) 65%,
-      rgba(0,0,0,0.6) 80%,
-      rgba(0,0,0,0.25) 90%,
+      rgba(0,0,0,0.95) 68%,
+      rgba(0,0,0,0.6) 83%,
+      rgba(0,0,0,0.25) 92%,
       rgba(0,0,0,0) 100%
     );
     -webkit-mask-image: linear-gradient(to bottom,
       rgba(0,0,0,1) 0%,
-      rgba(0,0,0,0.95) 65%,
-      rgba(0,0,0,0.6) 80%,
-      rgba(0,0,0,0.25) 90%,
+      rgba(0,0,0,0.95) 68%,
+      rgba(0,0,0,0.6) 83%,
+      rgba(0,0,0,0.25) 92%,
       rgba(0,0,0,0) 100%
     );
   }
