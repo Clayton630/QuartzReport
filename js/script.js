@@ -86,7 +86,7 @@ async function loadArticles() {
     all.sort((a, b) => b.date - a.date);
 
     // ======================
-    // SECTION HOTTEST
+    // SECTION HOTTEST (conserve <img>)
     // ======================
     hottestContainer.innerHTML = "";
     const hottest = all.filter(a => a.important).slice(0, 3);
@@ -114,8 +114,10 @@ async function loadArticles() {
       .join("");
 
     // ======================
-    // FEED ARTICLES
+    // FEED ARTICLES (utilise .thumb en background-image)
     // ======================
+    function escUrl(u) { return String(u).replace(/"/g, '\\"'); }
+
     function render(list) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       container.innerHTML = "";
@@ -142,10 +144,11 @@ async function loadArticles() {
             el.className = "day-article";
             el.innerHTML = `
               <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                <div class="thumb" style="background-image:url(\\"${escUrl(article.thumbnail)}\\")"></div>
                 <div class="day-article-info">
                   <p class="day-meta">Par ${article.author}, à ${time}</p>
                   <h4>${article.title}</h4>
+                  <p class="day-desc">${article.description}</p>
                 </div>
               </a>`;
             block.appendChild(el);
@@ -210,10 +213,11 @@ async function loadArticles() {
                 el.className = "day-article";
                 el.innerHTML = `
                   <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                    <div class="thumb" style="background-image:url(\\"${escUrl(article.thumbnail)}\\")"></div>
                     <div class="day-article-info">
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
                       <h4>${article.title}</h4>
+                      <p class="day-desc">${article.description}</p>
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
@@ -261,7 +265,7 @@ async function loadArticles() {
 document.addEventListener("DOMContentLoaded", loadArticles);
 
 // ==============================
-// 🩹 Patch anti-flicker iOS Safari (final)
+// 🩹 Patch anti-flicker iOS Safari (feed en .thumb)
 // ==============================
 (function () {
   const isiOS =
@@ -270,7 +274,7 @@ document.addEventListener("DOMContentLoaded", loadArticles);
 
   if (!isiOS) return;
 
-  function stabilizeImages() {
+  function stabilize() {
     document.querySelectorAll(
       ".day-article .thumb, .hottest-grid img, .article-image img"
     ).forEach(el => {
@@ -282,8 +286,6 @@ document.addEventListener("DOMContentLoaded", loadArticles);
   window.addEventListener("pageshow", e => {
     const nav = performance.getEntriesByType("navigation")[0];
     const isReload = nav && nav.type === "reload";
-    if (e.persisted || isReload) {
-      requestAnimationFrame(stabilizeImages);
-    }
+    if (e.persisted || isReload) requestAnimationFrame(stabilize);
   });
 })();
