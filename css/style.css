@@ -23,14 +23,14 @@ body {
   background: linear-gradient(135deg, #f3f6fb, #ffffff);
 }
 
-/* 🌈 Reflet iridescent multicolore avec fondu flou réaliste (étendu) */
+/* 🌈 Reflet iridescent multicolore avec fondu flou réaliste (étendu légèrement vers le bas) */
 body::before {
   content: "";
   position: absolute;
   top: -15vh;      /* étendu vers le haut */
   left: -10vw;     /* étendu vers la gauche */
   width: 120vw;    /* dépasse à droite aussi */
-  height: 65vh;    /* un peu plus haut */
+  height: 72vh;    /* ⬆️ légèrement plus bas qu’avant */
   z-index: -1;
   pointer-events: none;
 
@@ -63,19 +63,19 @@ body::before {
 
   filter: blur(28px); /* 🌫️ flou fort pour effet diffraction */
 
-  /* 💡 Fondu doux vers le blanc */
+  /* 💡 Fondu doux vers le blanc légèrement plus long */
   mask-image: linear-gradient(to bottom,
     rgba(0,0,0,1) 0%,
-    rgba(0,0,0,0.95) 70%,
-    rgba(0,0,0,0.6) 85%,
-    rgba(0,0,0,0.3) 92%,
+    rgba(0,0,0,0.95) 75%,
+    rgba(0,0,0,0.6) 88%,
+    rgba(0,0,0,0.3) 95%,
     rgba(0,0,0,0) 100%
   );
   -webkit-mask-image: linear-gradient(to bottom,
     rgba(0,0,0,1) 0%,
-    rgba(0,0,0,0.95) 70%,
-    rgba(0,0,0,0.6) 85%,
-    rgba(0,0,0,0.3) 92%,
+    rgba(0,0,0,0.95) 75%,
+    rgba(0,0,0,0.6) 88%,
+    rgba(0,0,0,0.3) 95%,
     rgba(0,0,0,0) 100%
   );
 }
