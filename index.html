@@ -13,17 +13,17 @@
   <meta name="theme-color" content="#4b73fa">
 </head>
 
-
+<body>
   <!-- Header -->
-<header class="site-header">
-  <div class="logo">
-    <img src="img/logo.svg" alt="Quartz Report" class="logo-img">
-  </div>
-  <div class="icons">
-    <i class="f7-icons">search</i>
-    <i class="f7-icons">menu</i>
-  </div>
-</header>
+  <header class="site-header">
+    <div class="logo">
+      <img src="img/logo.svg" alt="Quartz Report" class="logo-img">
+    </div>
+    <div class="icons">
+      <i class="f7-icons">search</i>
+      <i class="f7-icons">menu</i>
+    </div>
+  </header>
 
   <!-- Navigation (catégories dynamiques) -->
   <nav class="main-nav">
@@ -45,5 +45,29 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <!-- Ton script -->
   <script src="js/script.js"></script>
+
+  <!-- ===============================
+       🩹 Correctif flicker iOS Safari (scroll après reload)
+       =============================== -->
+  <script>
+  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    window.addEventListener("load", () => {
+      requestAnimationFrame(() => {
+        // Force Safari à réinitialiser le pipeline GPU du blur
+        document.querySelectorAll(".icons i, .main-nav a, body").forEach(el => {
+          el.style.webkitTransform = "translateZ(0)";
+          el.style.transform = "translateZ(0)";
+        });
+        // Supprime la propriété après stabilisation
+        setTimeout(() => {
+          document.querySelectorAll(".icons i, .main-nav a, body").forEach(el => {
+            el.style.webkitTransform = "";
+            el.style.transform = "";
+          });
+        }, 150);
+      });
+    });
+  }
+  </script>
 </body>
 </html>
