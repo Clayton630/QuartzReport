@@ -145,17 +145,12 @@ body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
-    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.12), rgba(255,255,255,0) 80%),
-    rgba(255,255,255,0.36);
-  border: 0.5px solid rgba(255,255,255,0.2);
-  backdrop-filter: blur(14px) saturate(200%);
-  -webkit-backdrop-filter: blur(14px) saturate(200%);
-  box-shadow:
-    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-    inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 0 12px rgba(0,0,0,0.09);
+  /* 🩹 suppression totale du fond */
+  background: none;
+  border: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
   transition: all 0.3s ease;
   color: #111;
   text-decoration: none;
@@ -163,23 +158,24 @@ body::before {
   cursor: pointer;
 }
 
-/* --- Double stroke diagonal blanc pur --- */
+/* --- Stroke de test ultra visible --- */
 .icons i::after,
 .main-nav a::after {
   content: "";
   position: absolute;
-  top: -35%;
-  left: -35%;
-  width: 190%;
-  height: 190%;
+  top: -40%;
+  left: -40%;
+  width: 200%;
+  height: 200%;
   pointer-events: none;
-  mix-blend-mode: normal; /* ✅ stop mélange, blanc pur */
+  mix-blend-mode: normal;
+  /* ✅ stroke pur, intense, blanc éclatant avec léger halo coloré */
   background:
-    linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 40%, transparent 80%),
-    linear-gradient(-45deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 40%, transparent 80%);
-  opacity: 1; /* ✅ éclat total */
+    linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 50%, transparent 80%),
+    linear-gradient(-45deg, rgba(255,255,255,1) 0%, rgba(255,255,255,1) 50%, transparent 80%);
+  filter: drop-shadow(0 0 6px rgba(255,255,255,0.85));
+  opacity: 1;
 }
-
 /* --- Forme et espacements --- */
 .icons i {
   border-radius: 50%;
