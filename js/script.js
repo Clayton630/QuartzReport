@@ -69,8 +69,8 @@ async function loadArticles() {
       if (!meta.thumbnail && firstImg) cover = firstImg[1];
 
       all.push({
-        filename: file.name,             // ⬅️ ajouté
-        slug,                            // ⬅️ déjà présent
+        filename: file.name,
+        slug,
         title: meta.title || "Sans titre",
         date: dateObj,
         author: meta.author || "Inconnu",
@@ -92,12 +92,11 @@ async function loadArticles() {
     const hottest = all.filter(a => a.important).slice(0, 3);
     hottest.forEach(article => {
       const link = document.createElement("a");
-      // ⬇️ on passe slug + file pour compat totale
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
       link.className = "card";
       const date = article.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" });
       link.innerHTML = `
-        <img src="${article.thumbnail}" alt="">
+        <img decoding="async" src="${article.thumbnail}" alt="">
         <div class="card-content">
           <p class="card-meta">Par ${article.author}, le ${date}.</p>
           <h3>${article.title}</h3>
@@ -143,7 +142,7 @@ async function loadArticles() {
             el.className = "day-article";
             el.innerHTML = `
               <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                <img src="${article.thumbnail}" alt="${article.title}">
+                <img decoding="async" src="${article.thumbnail}" alt="${article.title}">
                 <div class="day-article-info">
                   <p class="day-meta">Par ${article.author}, à ${time}</p>
                   <h4>${article.title}</h4>
@@ -211,7 +210,7 @@ async function loadArticles() {
                 el.className = "day-article";
                 el.innerHTML = `
                   <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <img src="${article.thumbnail}" alt="${article.title}">
+                    <img decoding="async" src="${article.thumbnail}" alt="${article.title}">
                     <div class="day-article-info">
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
                       <h4>${article.title}</h4>
@@ -266,15 +265,33 @@ async function loadArticles() {
 document.addEventListener("DOMContentLoaded", loadArticles);
 
 // ==============================
-// 🩹 iOS Safari flicker fix au scroll post-refresh
+// 🩹 iOS Safari flicker fix — re-promotion GPU
 // ==============================
-if (/iP(hone|od|ad)/.test(navigator.platform) || navigator.userAgent.includes("Mac") && "ontouchend" in document) {
+function nudgeImageLayers() {
+  const imgs = document.querySelectorAll('.day-article img, .hottest-grid img');
+  if (!imgs.length) return;
+  imgs.forEach(img => {
+    img.style.willChange = 'transform';
+    img.style.transform = 'translateZ(0)';
+  });
+  requestAnimationFrame(() => {
+    imgs.forEach(img => { img.style.transform = 'translateZ(0.001px)'; });
+    requestAnimationFrame(() => {
+      imgs.forEach(img => { img.style.transform = 'translateZ(0)'; });
+    });
+  });
+}
+
+document.addEventListener('DOMContentLoaded', nudgeImageLayers);
+window.addEventListener('pageshow', (e) => { if (e.persisted) nudgeImageLayers(); });
+
+// 🩹 Fallback global : recalcul GPU des couches floutées
+if (/iP(hone|od|ad)/.test(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document)) {
   window.addEventListener("pageshow", () => {
-    // Force le recalcul GPU des couches floutées après reload
     requestAnimationFrame(() => {
       document.body.style.webkitTransform = "translateZ(0)";
       document.body.style.transform = "translateZ(0)";
-      document.body.offsetHeight; // trigger reflow
+      document.body.offsetHeight; // reflow
       document.body.style.webkitTransform = "";
       document.body.style.transform = "";
     });
