@@ -18,31 +18,31 @@ body {
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
 
-  /* 🌈 Reflet iridescent ultra-prononcé, concentré tout en haut */
+  /* ✨ Reflet iridescent visible (départ bleu clair nacré) */
   background:
     linear-gradient(
       180deg,
-      rgba(255,255,255,1) 0%,           /* blanc pur en tout haut */
-      rgba(255,255,255,0.95) 3%,        /* début du halo */
-      rgba(255,255,255,0.9) 6%,
-      rgba(255,255,255,0.85) 10%,
-      rgba(255,255,255,0.7) 14%,
-      rgba(255,255,255,0.4) 20%,
-      rgba(255,255,255,0.15) 28%,
-      rgba(255,255,255,0) 35%
+      rgba(173, 216, 255, 0.85) 0%,     /* bleu pastel clair — visible */
+      rgba(210, 230, 255, 0.8) 4%,      /* transition douce */
+      rgba(240, 255, 255, 0.75) 8%,     /* turquoise blanc nacré */
+      rgba(255, 255, 255, 0.7) 12%,     
+      rgba(255, 255, 255, 0.55) 18%,
+      rgba(255, 255, 255, 0.35) 26%,
+      rgba(255, 255, 255, 0.15) 32%,
+      rgba(255, 255, 255, 0) 38%
     ),
-    /* 💎 couche iridescente : très forte diffraction colorée */
+    /* 🌈 diffraction nacrée concentrée sur le haut */
     linear-gradient(
       180deg,
-      rgba(255, 160, 190, 0.6) 0%,     /* rose éclatant */
-      rgba(120, 180, 255, 0.6) 5%,     /* bleu clair */
-      rgba(160, 255, 200, 0.6) 10%,    /* vert menthe */
-      rgba(255, 250, 180, 0.6) 15%,    /* jaune nacré */
-      rgba(210, 160, 255, 0.6) 20%,    /* violet perle */
-      rgba(255, 255, 255, 0.2) 28%,
-      rgba(255, 255, 255, 0) 36%
+      rgba(255, 180, 200, 0.4) 0%,      /* rose clair */
+      rgba(180, 200, 255, 0.4) 6%,      /* bleu lavande */
+      rgba(190, 255, 210, 0.35) 12%,    /* vert menthe pâle */
+      rgba(255, 250, 200, 0.35) 18%,    /* jaune nacré */
+      rgba(220, 190, 255, 0.35) 25%,    /* violet perlé */
+      rgba(255, 255, 255, 0.15) 32%,
+      rgba(255, 255, 255, 0) 40%
     ),
-    linear-gradient(135deg, #f5f7fa, #ffffff);
+    linear-gradient(135deg, #f6f8fb, #ffffff);
   background-repeat: no-repeat;
   background-size: 100% auto;
   background-attachment: scroll;
@@ -57,14 +57,14 @@ body::before {
   top: 0;
   left: 0;
   right: 0;
-  height: 25vh; /* ⬅️ plus haut, plus concentré */
+  height: 26vh; /* hauteur du halo visible */
   background-image:
-    radial-gradient(circle at 30% 15%, rgba(255,255,255,0.6) 0%, transparent 65%),
-    radial-gradient(circle at 80% 10%, rgba(255,255,255,0.5) 0%, transparent 70%),
-    radial-gradient(circle at 50% 40%, rgba(255,255,255,0.4) 0%, transparent 65%);
+    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.7) 0%, transparent 65%),
+    radial-gradient(circle at 70% 15%, rgba(255,255,255,0.6) 0%, transparent 70%),
+    radial-gradient(circle at 50% 45%, rgba(255,255,255,0.5) 0%, transparent 60%);
   mix-blend-mode: screen;
-  filter: blur(14px);
-  opacity: 0.9; /* 💥 rendu très visible */
+  filter: blur(16px);
+  opacity: 0.9;
   pointer-events: none;
   z-index: 0;
 }
