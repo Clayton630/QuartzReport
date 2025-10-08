@@ -261,7 +261,7 @@ async function loadArticles() {
 document.addEventListener("DOMContentLoaded", loadArticles);
 
 // ==============================
-// 🩹 Patch anti-flicker iOS Safari (GPU nudge après reload)
+// 🩹 Patch anti-flicker iOS Safari (final)
 // ==============================
 (function () {
   const isiOS =
@@ -270,27 +270,20 @@ document.addEventListener("DOMContentLoaded", loadArticles);
 
   if (!isiOS) return;
 
-  function nudgeImages() {
-    const imgs = document.querySelectorAll(
+  function stabilizeImages() {
+    document.querySelectorAll(
       ".day-article img, .hottest-grid img, .article-image img"
-    );
-    imgs.forEach(img => {
-      img.style.transition = "none";
-      img.style.webkitTransform = "translateZ(0.0001px)";
-      img.style.transform = "translateZ(0.0001px)";
-    });
-    requestAnimationFrame(() => {
-      imgs.forEach(img => {
-        img.style.webkitTransform = "";
-        img.style.transform = "";
-      });
+    ).forEach(img => {
+      img.style.webkitTransform = "translateZ(0)";
+      img.style.transform = "translateZ(0)";
     });
   }
 
-  window.addEventListener("load", nudgeImages, { once: true });
   window.addEventListener("pageshow", e => {
     const nav = performance.getEntriesByType("navigation")[0];
     const isReload = nav && nav.type === "reload";
-    if (e.persisted || isReload) nudgeImages();
+    if (e.persisted || isReload) {
+      requestAnimationFrame(stabilizeImages);
+    }
   });
 })();
