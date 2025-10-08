@@ -99,6 +99,18 @@ body {
       100% auto;   /* fond inchangé */
   }
 }
+
+/* ✅ Ajustement mobile — reflet un peu plus bas */
+@media (max-width: 768px) {
+  body {
+    background-size:
+      400% 60vh,   /* couche 1 descend plus bas */
+      360% 60vh,   /* couche 2 aussi */
+      320% 60vh,   /* couche 3 idem */
+      160% 60vh,   /* halo plus long */
+      100% auto;   /* fond inchangé */
+  }
+}
 /* =========================
    Navigation (catégories)
    ========================= */
