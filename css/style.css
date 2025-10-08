@@ -17,18 +17,30 @@ body {
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
-  background: linear-gradient(
+  background:
+    /* 💎 Reflet arc-en-ciel iridescent */
+    linear-gradient(
       180deg,
-      rgba(75,115,250,0.9) 0%,
-      rgba(75,115,250,0.78) 8%,
-      rgba(75,115,250,0.62) 14%,
-      rgba(75,115,250,0.46) 20%,
-      rgba(75,115,250,0.28) 27%,
-      rgba(75,115,250,0.15) 34%,
-      rgba(75,115,250,0.07) 40%,
-      rgba(255,255,255,0) 46%
+      rgba(255,255,255,0.85) 0%,
+      rgba(255,255,255,0.8) 8%,
+      rgba(255,255,255,0.7) 14%,
+      rgba(255,255,255,0.6) 20%,
+      rgba(255,255,255,0.45) 27%,
+      rgba(255,255,255,0.3) 34%,
+      rgba(255,255,255,0.15) 40%,
+      rgba(255,255,255,0) 48%
     ),
-    linear-gradient(135deg, #f3f6fb, #ffffff);
+    /* 🌈 diffraction nacrée subtile */
+    linear-gradient(
+      120deg,
+      rgba(255, 182, 193, 0.12) 0%,     /* rose pâle */
+      rgba(173, 216, 230, 0.12) 20%,    /* bleu clair */
+      rgba(152, 251, 152, 0.12) 40%,    /* vert menthe */
+      rgba(255, 255, 224, 0.12) 60%,    /* jaune doux */
+      rgba(221, 160, 221, 0.12) 80%,    /* lilas */
+      rgba(255, 182, 193, 0.12) 100%
+    ),
+    linear-gradient(135deg, #f5f7fa, #ffffff);
   background-repeat: no-repeat;
   background-size: 100% auto;
   padding-top: env(safe-area-inset-top);
