@@ -96,7 +96,6 @@ async function loadArticles() {
       link.className = "card";
       const date = article.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" });
       link.innerHTML = `
-        <!-- ⬇️ Dimensions intrinsèques + decode sync + eager -->
         <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager" fetchpriority="low">
         <div class="card-content">
           <p class="card-meta">Par ${article.author}, le ${date}.</p>
@@ -143,7 +142,6 @@ async function loadArticles() {
             el.className = "day-article";
             el.innerHTML = `
               <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                <!-- ⬇️ Dimensions intrinsèques 72x72 + decode sync + eager -->
                 <img src="${article.thumbnail}" alt="${article.title}" width="72" height="72" decoding="sync" loading="eager" fetchpriority="low">
                 <div class="day-article-info">
                   <p class="day-meta">Par ${article.author}, à ${time}</p>
@@ -212,7 +210,6 @@ async function loadArticles() {
                 el.className = "day-article";
                 el.innerHTML = `
                   <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <!-- ⬇️ Dimensions intrinsèques 72x72 + decode sync + eager -->
                     <img src="${article.thumbnail}" alt="${article.title}" width="72" height="72" decoding="sync" loading="eager" fetchpriority="low">
                     <div class="day-article-info">
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
@@ -232,7 +229,6 @@ async function loadArticles() {
 
       renderWeek("Cette semaine", weeks.current);
       renderWeek("La semaine dernière", weeks.previous);
-
       Object.keys(weeks.others)
         .sort((a, b) => new Date(b) - new Date(a))
         .forEach(wkKey => {
@@ -245,7 +241,6 @@ async function loadArticles() {
 
     render(all);
 
-    // ✅ Filtrage catégories
     categoriesContainer.querySelectorAll("a").forEach(link => {
       link.addEventListener("click", e => {
         e.preventDefault();
@@ -266,16 +261,36 @@ async function loadArticles() {
 document.addEventListener("DOMContentLoaded", loadArticles);
 
 // ==============================
-// 🩹 iOS Safari flicker fix au scroll post-refresh
+// 🩹 Patch anti-flicker iOS Safari (GPU nudge après reload)
 // ==============================
-if (/iP(hone|od|ad)/.test(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document)) {
-  window.addEventListener("pageshow", () => {
-    requestAnimationFrame(() => {
-      // léger nudge sans changer le rendu
-      document.documentElement.style.scrollBehavior = "auto";
-      // reflow court
-      void document.body.offsetHeight;
-      document.documentElement.style.scrollBehavior = "";
+(function () {
+  const isiOS =
+    /iP(hone|od|ad)/.test(navigator.platform) ||
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+
+  if (!isiOS) return;
+
+  function nudgeImages() {
+    const imgs = document.querySelectorAll(
+      ".day-article img, .hottest-grid img, .article-image img"
+    );
+    imgs.forEach(img => {
+      img.style.transition = "none";
+      img.style.webkitTransform = "translateZ(0.0001px)";
+      img.style.transform = "translateZ(0.0001px)";
     });
+    requestAnimationFrame(() => {
+      imgs.forEach(img => {
+        img.style.webkitTransform = "";
+        img.style.transform = "";
+      });
+    });
+  }
+
+  window.addEventListener("load", nudgeImages, { once: true });
+  window.addEventListener("pageshow", e => {
+    const nav = performance.getEntriesByType("navigation")[0];
+    const isReload = nav && nav.type === "reload";
+    if (e.persisted || isReload) nudgeImages();
   });
-}
+})();
