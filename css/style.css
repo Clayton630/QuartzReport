@@ -126,7 +126,6 @@ body::before {
   align-items: center;
   justify-content: center;
 
-  padding: 10px 16px;
   border-radius: 50px;
 
   background:
@@ -151,28 +150,30 @@ body::before {
   overflow: hidden;
 }
 
-/* Icônes — taille dynamique */
+/* Icônes — tailles corrigées */
 .icons i {
   border-radius: 50%;
-  font-size: 1.4rem;
-  width: 40px;
-  height: 40px;
-  justify-content: center;
+  width: 38px;
+  height: 38px;
+  font-size: 1.3rem;
+  line-height: 0;
 }
 
-/* Ajustement responsive */
+/* Mobile : légèrement plus petit */
 @media (max-width: 480px) {
+  .icons i {
+    width: 34px;
+    height: 34px;
+    font-size: 1.2rem;
+  }
+}
+
+/* Desktop : plus large mais parfaitement rond */
+@media (min-width: 1024px) {
   .icons i {
     width: 44px;
     height: 44px;
-    font-size: 1.5rem;
-  }
-}
-@media (min-width: 1024px) {
-  .icons i {
-    width: 36px;
-    height: 36px;
-    font-size: 1.2rem;
+    font-size: 1.35rem;
   }
 }
 
