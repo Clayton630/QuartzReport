@@ -24,7 +24,7 @@ body {
 }
 
 /* =========================
-   🌈 Reflet iridescent — plus léger, réaliste et subtil
+   🌈 Reflet iridescent — version avec reflets dynamiques et profondeur
    ========================= */
 body::before {
   content: "";
@@ -36,37 +36,62 @@ body::before {
   z-index: -1;
   pointer-events: none;
 
-  /* 🎨 Couleurs pastel translucides */
+  /* 🌤️ Superposition de plusieurs couches colorées et de reflets */
   background-image:
+    /* couche principale pastel */
     linear-gradient(60deg,
       rgba(255,170,200,0.45) 0%,
       rgba(255,200,170,0.4) 10%,
-      rgba(255,240,170,0.35) 20%,
-      rgba(190,255,220,0.35) 35%,
-      rgba(160,210,255,0.4) 50%,
-      rgba(210,170,255,0.35) 65%,
-      rgba(255,210,255,0.3) 80%,
-      rgba(255,255,255,0.25) 95%
+      rgba(255,240,170,0.35) 25%,
+      rgba(190,255,220,0.35) 40%,
+      rgba(160,210,255,0.4) 55%,
+      rgba(210,170,255,0.35) 70%,
+      rgba(255,210,255,0.3) 85%,
+      rgba(255,255,255,0.25) 100%
     ),
-    radial-gradient(180% 120% at 50% -10%,
+
+    /* reflets plus intenses localisés (éclats lumineux) */
+    radial-gradient(80% 100% at 25% 10%,
+      rgba(255,255,255,0.9) 0%,
+      rgba(255,255,255,0.65) 20%,
+      rgba(255,255,255,0.2) 45%,
+      rgba(255,255,255,0) 70%
+    ),
+    radial-gradient(100% 120% at 70% 0%,
+      rgba(255,200,255,0.6) 0%,
+      rgba(180,220,255,0.35) 30%,
+      rgba(255,255,255,0) 70%
+    ),
+
+    /* halo doux général */
+    radial-gradient(160% 120% at 50% -10%,
       rgba(255,255,255,0.9) 0%,
       rgba(255,255,255,0.6) 25%,
       rgba(255,255,255,0.25) 55%,
       rgba(255,255,255,0) 80%
     ),
+
+    /* base blanche de la page */
     linear-gradient(135deg, #f8fafc, #ffffff);
 
   background-size:
-    400% 100%,
-    200% 100%,
-    100% auto;
+    400% 100%,   /* couche principale */
+    200% 100%,   /* reflets haut gauche */
+    200% 100%,   /* reflets haut droit */
+    200% 100%,   /* halo global */
+    100% auto;   /* fond blanc */
   background-repeat: no-repeat;
-  background-position: top center;
+  background-position:
+    top center,
+    top left,
+    top right,
+    top center,
+    center;
 
-  /* ✨ flou doux pour effet verre */
-  filter: blur(32px);
+  /* ✨ flou doux mais légèrement augmenté pour la profondeur */
+  filter: blur(36px) brightness(1.05);
 
-  /* 🌤️ fondu progressif vers le blanc */
+  /* 🌫️ Fondu fluide vers le bas */
   mask-image: linear-gradient(to bottom,
     rgba(0,0,0,1) 0%,
     rgba(0,0,0,0.95) 70%,
@@ -83,10 +108,11 @@ body::before {
   );
 }
 
-/* 🖥️ Version desktop : halo légèrement réduit */
+/* 🖥️ Version desktop : halo un peu plus contenu */
 @media (min-width: 769px) {
   body::before {
     height: 66vh;
+    filter: blur(34px) brightness(1.04);
     mask-image: linear-gradient(to bottom,
       rgba(0,0,0,1) 0%,
       rgba(0,0,0,0.9) 68%,
