@@ -21,7 +21,7 @@ body {
   position: relative;
   z-index: 0;
 
-  /* 🌈 Reflet iridescent large + transition fluide vers le blanc */
+  /* 🌈 Reflet iridescent large + fondu fluide vers le blanc */
   background-image:
     /* couche 1 — diagonale multicolore principale */
     linear-gradient(62deg,
@@ -78,7 +78,7 @@ body {
     360% 46vh,
     320% 46vh,
     160% 46vh,
-    100% 46vh,  /* le fondu blanc */
+    100% 46vh,  /* fondu blanc */
     100% auto;
 
   background-position:
@@ -98,23 +98,6 @@ body {
     no-repeat;
 
   background-attachment: scroll;
-}
-
-/* ✨ Flou progressif du bas du halo iridescent */
-body::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 50vh;
-  pointer-events: none;
-  z-index: 1;
-  backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
-  mask-image: linear-gradient(to bottom, transparent 50%, black 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 50%, black 100%);
-  opacity: 0.8;
 }
 
 /* =========================
