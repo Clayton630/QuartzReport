@@ -378,13 +378,6 @@ body {
   gap: 12px;
   padding: 6px 0;
 }
-.day-article img {
-  width: 72px;
-  height: 72px;
-  border-radius: 12px;
-  object-fit: cover;
-  flex-shrink: 0;
-}
 .day-article-info { flex: 1; }
 .day-meta {
   margin: 0;
@@ -432,52 +425,32 @@ body {
 }
 
 /* =========================
-   🩹 Correctif final flicker iOS Safari (stabilisé)
+   🩹 Correctif final flicker iOS Safari
    ========================= */
+.day-article img,
+.hottest-grid img,
+.article-image img {
+  will-change: auto !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  contain: size paint;
+  display: block;
+  position: relative;
+  z-index: 1;
+  image-rendering: -webkit-optimize-contrast;
+}
 
-/* 1️⃣ Conteneurs stables sans surpromotion */
+.articles,
+.hottest-grid {
+  will-change: auto !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+}
+
 .site-header,
 .main-nav {
   isolation: isolate;
   contain: paint;
-}
-
-/* 2️⃣ Promotion GPU uniquement sur le feed */
-.articles {
-  contain: layout paint;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-/* 3️⃣ Optimisation du rendu des images */
-.day-article img,
-.hottest-grid img,
-.article-image img {
-  display: block;
-  contain: paint;
-  position: relative;
-  z-index: 1;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
-  image-rendering: -webkit-optimize-contrast;
-  will-change: transform;
-}
-
-/* 4️⃣ Contenu virtuel (scroll stable) */
-.day-block,
-.week-carousel {
-  content-visibility: auto;
-  contain-intrinsic-size: 200px;
-}
-
-/* 5️⃣ Éléments floutés (pas de GPU, juste isolation) */
-.icons i,
-.main-nav a {
-  -webkit-backdrop-filter: blur(14px) saturate(200%);
-  backdrop-filter: blur(14px) saturate(200%);
-  isolation: isolate;
 }
