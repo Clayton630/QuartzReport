@@ -28,23 +28,6 @@ function base64ToUtf8(base64) {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
-// ========= Préchargement images feed =========
-function preloadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(src);
-    img.onerror = () => resolve(src); // on résout quand même pour ne pas bloquer
-    img.src = src;
-  });
-}
-
-async function preloadAll(thumbnails) {
-  const unique = [...new Set(thumbnails)]; // éviter les doublons
-  await Promise.all(unique.map(preloadImage));
-  return true;
-}
-
-// ========= Chargement principal =========
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
@@ -103,7 +86,7 @@ async function loadArticles() {
     all.sort((a, b) => b.date - a.date);
 
     // ======================
-    // SECTION HOTTEST (inchangé)
+    // SECTION HOTTEST
     // ======================
     hottestContainer.innerHTML = "";
     const hottest = all.filter(a => a.important).slice(0, 3);
@@ -113,7 +96,7 @@ async function loadArticles() {
       link.className = "card";
       const date = article.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" });
       link.innerHTML = `
-        <img src="${article.thumbnail}" alt="" width="320" height="180">
+        <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager" fetchpriority="low">
         <div class="card-content">
           <p class="card-meta">Par ${article.author}, le ${date}.</p>
           <h3>${article.title}</h3>
@@ -131,16 +114,11 @@ async function loadArticles() {
       .join("");
 
     // ======================
-    // FEED ARTICLES (avec préchargement)
+    // FEED ARTICLES
     // ======================
-    async function render(list) {
-      container.innerHTML = "";
-
-      // Précharge toutes les thumbnails du feed
-      const thumbs = list.map(a => a.thumbnail);
-      await preloadAll(thumbs);
-
+    function render(list) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      container.innerHTML = "";
 
       // === MOBILE : regroupement par jour ===
       if (isMobile) {
@@ -164,7 +142,7 @@ async function loadArticles() {
             el.className = "day-article";
             el.innerHTML = `
               <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                <img src="${article.thumbnail}" alt="${article.title}" width="72" height="72">
+                <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
                 <div class="day-article-info">
                   <p class="day-meta">Par ${article.author}, à ${time}</p>
                   <h4>${article.title}</h4>
@@ -232,7 +210,7 @@ async function loadArticles() {
                 el.className = "day-article";
                 el.innerHTML = `
                   <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <img src="${article.thumbnail}" alt="${article.title}" width="72" height="72">
+                    <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
                     <div class="day-article-info">
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
                       <h4>${article.title}</h4>
@@ -281,3 +259,31 @@ async function loadArticles() {
 }
 
 document.addEventListener("DOMContentLoaded", loadArticles);
+
+// ==============================
+// 🩹 Patch anti-flicker iOS Safari (final)
+// ==============================
+(function () {
+  const isiOS =
+    /iP(hone|od|ad)/.test(navigator.platform) ||
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+
+  if (!isiOS) return;
+
+  function stabilizeImages() {
+    document.querySelectorAll(
+      ".day-article .thumb, .hottest-grid img, .article-image img"
+    ).forEach(el => {
+      el.style.webkitTransform = "translateZ(0)";
+      el.style.transform = "translateZ(0)";
+    });
+  }
+
+  window.addEventListener("pageshow", e => {
+    const nav = performance.getEntriesByType("navigation")[0];
+    const isReload = nav && nav.type === "reload";
+    if (e.persisted || isReload) {
+      requestAnimationFrame(stabilizeImages);
+    }
+  });
+})();
