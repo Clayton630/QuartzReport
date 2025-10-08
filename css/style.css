@@ -21,9 +21,9 @@ body {
   position: relative;
   z-index: 0;
 
-  /* 🌈 Reflet iridescent ultra-pop limité en haut, élargi x2, avec fondu doux vers le bas */
+  /* 🌈 Reflet iridescent ultra-pop limité en haut et répétitif */
   background-image:
-    /* couche 1 — diagonale vive */
+    /* couche 1 — diagonale principale multicolore */
     linear-gradient(60deg,
       rgba(255,120,180,0.75) 0%,
       rgba(255,220,130,0.7) 10%,
@@ -31,9 +31,9 @@ body {
       rgba(120,180,255,0.7) 32%,
       rgba(190,120,255,0.7) 44%,
       rgba(255,255,255,0.25) 54%,
-      rgba(255,255,255,0) 65%
+      rgba(255,255,255,0) 60%
     ),
-    /* couche 2 — contre-diagonale colorée */
+    /* couche 2 — contre-diagonale pour diffraction */
     linear-gradient(135deg,
       rgba(255,150,200,0.6) 0%,
       rgba(255,220,150,0.55) 8%,
@@ -41,43 +41,39 @@ body {
       rgba(150,200,255,0.55) 24%,
       rgba(200,150,255,0.55) 32%,
       rgba(255,255,255,0.2) 40%,
-      rgba(255,255,255,0) 52%
+      rgba(255,255,255,0) 46%
     ),
-    /* couche 3 — halo blanc diffus */
-    radial-gradient(130% 100% at 50% -10%,
+    /* couche 3 — halo blanc de verre */
+    radial-gradient(150% 100% at 50% -20%,
       rgba(255,255,255,0.95) 0%,
       rgba(255,255,255,0.75) 25%,
-      rgba(255,255,255,0.35) 40%,
+      rgba(255,255,255,0.35) 45%,
       rgba(255,255,255,0) 60%
     ),
-    /* couche 4 — fade doux vers le bas (plus léger pour ne pas masquer) */
-    linear-gradient(180deg,
-      rgba(255,255,255,0) 70%,
-      rgba(255,255,255,0.25) 85%,
-      rgba(255,255,255,0.7) 95%,
-      rgba(255,255,255,1) 100%
-    ),
-    /* couche 5 — fond blanc de base */
+    /* couche 4 — fond neutre blanc */
     linear-gradient(135deg, #f3f6fb, #ffffff);
 
+  /* 📐 Zones de couverture : 1-3 limitées au haut, 4 sur toute page */
   background-size:
-    200% 46vh,
-    200% 46vh,
-    200% 46vh,
-    100% 50vh,
-    100% auto;
+    200% 46vh,   /* couche 1 très large */
+    180% 46vh,   /* couche 2 légèrement moins large */
+    160% 46vh,   /* halo blanc */
+    100% auto;   /* fond général */
 
   background-position:
     top center,
     top center,
     top center,
-    top center,
     top left;
 
-  background-repeat: no-repeat;
-  background-blend-mode: screen, screen, normal, normal, normal;
+  /* répétition subtile pour couvrir grands écrans */
+  background-repeat:
+    repeat-x,
+    repeat-x,
+    no-repeat,
+    no-repeat;
 
-  filter: saturate(145%) brightness(1.05);
+  background-attachment: scroll;
 }
 
 /* =========================
@@ -141,6 +137,7 @@ body {
   transition: all 0.3s ease;
   overflow: hidden;
 }
+
 .icons i::after {
   content: "";
   position: absolute;
@@ -154,6 +151,7 @@ body {
     linear-gradient(45deg, rgba(255,255,255,0.02), transparent 70%),
     linear-gradient(-45deg, rgba(255,255,255,0.012), transparent 70%);
 }
+
 .icons i:hover {
   background: rgba(255,255,255,1);
   transform: scale(1.08);
