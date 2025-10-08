@@ -114,10 +114,8 @@ async function loadArticles() {
       .join("");
 
     // ======================
-    // FEED ARTICLES (utilise .thumb en background-image)
+    // FEED ARTICLES (utilise .thumb pour images)
     // ======================
-    function escUrl(u) { return String(u).replace(/"/g, '\\"'); }
-
     function render(list) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       container.innerHTML = "";
@@ -144,7 +142,7 @@ async function loadArticles() {
             el.className = "day-article";
             el.innerHTML = `
               <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                <div class="thumb" style="background-image:url(\\"${escUrl(article.thumbnail)}\\")"></div>
+                <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
                 <div class="day-article-info">
                   <p class="day-meta">Par ${article.author}, à ${time}</p>
                   <h4>${article.title}</h4>
@@ -213,7 +211,7 @@ async function loadArticles() {
                 el.className = "day-article";
                 el.innerHTML = `
                   <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <div class="thumb" style="background-image:url(\\"${escUrl(article.thumbnail)}\\")"></div>
+                    <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
                     <div class="day-article-info">
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
                       <h4>${article.title}</h4>
@@ -265,7 +263,7 @@ async function loadArticles() {
 document.addEventListener("DOMContentLoaded", loadArticles);
 
 // ==============================
-// 🩹 Patch anti-flicker iOS Safari (feed en .thumb)
+// 🩹 Patch anti-flicker iOS Safari
 // ==============================
 (function () {
   const isiOS =
