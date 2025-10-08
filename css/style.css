@@ -453,74 +453,57 @@ body {
 
 
 /* =========================
-   🧩 Correctif GPU — Safari iOS flicker fix
+   🩹 Correctif complet et optimisé — Flicker iOS Safari
    ========================= */
 
-/* Force les cartes à être rendues dans leur propre layer GPU */
+/* Force les conteneurs à être rendus dans leur propre layer GPU */
 .day-block,
 .hottest-grid .card,
-.article-block {
+.article-block,
+.week-carousel {
   isolation: isolate;
   contain: layout paint;
   will-change: transform;
-  transform: translate3d(0,0,0);
-  -webkit-transform: translate3d(0,0,0);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
 }
 
-/* Stabilise les images internes pour éviter le “repaint” */
+/* Stabilise les images internes et évite le repaint GPU */
 .day-article img,
 .hottest-grid img,
 .article-image img {
   display: block;
-  contain: strict;
-  -webkit-transform: translate3d(0,0,0);
-  transform: translate3d(0,0,0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
-}
-
-/* Évite que le scroll déclenche un repaint sur la couche principale */
-body {
-  position: relative;
-  transform: translate3d(0,0,0);
-  -webkit-transform: translate3d(0,0,0);
-  will-change: scroll-position;
-}
-
-/* ... tes autres styles et correctifs précédents ... */
-
-/* =========================
-   🩹 Fix final flicker iOS au rechargement
-   ========================= */
-body {
-  -webkit-transform: translate3d(0,0,0);
-  transform: translate3d(0,0,0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform-style: preserve-3d;
-  -webkit-overflow-scrolling: touch;
-  overflow-y: scroll;
-}
-
-.day-article img,
-.hottest-grid img,
-.article-image img {
-  -webkit-transform: translate3d(0,0,0);
-  transform: translate3d(0,0,0);
+  contain: paint;
   isolation: isolate;
-  contain: strict;
+  position: relative;
+  z-index: 1; /* Layer individuel */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
   image-rendering: -webkit-optimize-contrast;
 }
 
+/* Évite les repaints du body et stabilise le scroll GPU */
+body {
+  position: relative;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  transform-style: preserve-3d;
+  -webkit-overflow-scrolling: touch;
+  perspective: 1000px;
+  will-change: transform, scroll-position;
+}
+
+/* Assure la stabilité des éléments floutés */
 .icons i,
 .main-nav a {
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   backdrop-filter: blur(14px) saturate(200%);
-  transform: translateZ(0);
   -webkit-transform: translateZ(0);
+  transform: translateZ(0);
   will-change: transform;
   contain: paint;
 }
