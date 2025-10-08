@@ -21,53 +21,66 @@ body {
   position: relative;
   z-index: 0;
 
-  /* 🌈 Reflet iridescent étiré et décalé à droite */
+  /* 🌈 Reflet iridescent élargi (débordement horizontal massif) */
   background-image:
-    /* couche 1 — diagonale principale multicolore */
-    linear-gradient(60deg,
-      rgba(255,120,180,0.75) 0%,
-      rgba(255,220,130,0.7) 10%,
-      rgba(130,255,190,0.7) 20%,
-      rgba(120,180,255,0.7) 32%,
-      rgba(190,120,255,0.7) 44%,
-      rgba(255,255,255,0.25) 54%,
-      rgba(255,255,255,0) 60%
+    /* couche 1 — large diagonale multicolore principale */
+    linear-gradient(62deg,
+      rgba(255,120,180,0.8) 0%,
+      rgba(255,220,130,0.75) 8%,
+      rgba(130,255,190,0.75) 16%,
+      rgba(120,180,255,0.75) 28%,
+      rgba(190,120,255,0.75) 38%,
+      rgba(255,255,255,0.3) 48%,
+      rgba(255,255,255,0) 58%
     ),
-    /* couche 2 — contre-diagonale pour diffraction */
-    linear-gradient(135deg,
-      rgba(255,150,200,0.6) 0%,
-      rgba(255,220,150,0.55) 8%,
-      rgba(180,255,200,0.55) 16%,
-      rgba(150,200,255,0.55) 24%,
-      rgba(200,150,255,0.55) 32%,
-      rgba(255,255,255,0.2) 40%,
-      rgba(255,255,255,0) 46%
+    /* couche 2 — contre-diagonale légèrement décalée */
+    linear-gradient(132deg,
+      rgba(255,150,200,0.7) 0%,
+      rgba(255,220,150,0.65) 10%,
+      rgba(180,255,200,0.65) 18%,
+      rgba(150,200,255,0.65) 26%,
+      rgba(200,150,255,0.65) 34%,
+      rgba(255,255,255,0.25) 44%,
+      rgba(255,255,255,0) 55%
     ),
-    /* couche 3 — halo blanc de verre */
-    radial-gradient(150% 100% at 70% -20%,
+    /* couche 3 — iridescence supplémentaire horizontale */
+    linear-gradient(90deg,
+      rgba(255,120,240,0.6) 0%,
+      rgba(120,255,220,0.5) 12%,
+      rgba(255,255,160,0.45) 25%,
+      rgba(120,220,255,0.45) 38%,
+      rgba(255,180,200,0.45) 50%,
+      rgba(160,255,220,0.45) 62%,
+      rgba(255,255,255,0.3) 74%,
+      rgba(255,255,255,0) 86%
+    ),
+    /* couche 4 — halo blanc de verre */
+    radial-gradient(150% 100% at 50% -20%,
       rgba(255,255,255,0.95) 0%,
       rgba(255,255,255,0.75) 25%,
       rgba(255,255,255,0.35) 45%,
       rgba(255,255,255,0) 60%
     ),
-    /* couche 4 — fond neutre blanc */
+    /* couche 5 — fond neutre blanc */
     linear-gradient(135deg, #f3f6fb, #ffffff);
 
-  /* 📐 Largeur étirée à fond, hauteur conservée */
+  /* 📐 Zones de couverture : 1-4 limitées au haut, 5 sur toute page */
   background-size:
-    400% 46vh,  /* couche 1 étirée massivement */
-    360% 46vh,  /* couche 2 légèrement moins large */
-    300% 46vh,  /* halo blanc */
-    100% auto;  /* fond général */
+    400% 46vh,   /* couche 1 — très large */
+    360% 46vh,   /* couche 2 */
+    320% 46vh,   /* couche 3 */
+    160% 46vh,   /* halo blanc */
+    100% auto;   /* fond général */
 
-  /* ➡️ Décalage visuel vers la droite */
   background-position:
-    top right,
-    top right,
-    top right,
+    top center,
+    top center,
+    top center,
+    top center,
     top left;
 
   background-repeat:
+    no-repeat,
     no-repeat,
     no-repeat,
     no-repeat,
