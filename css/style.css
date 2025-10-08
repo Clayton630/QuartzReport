@@ -112,7 +112,7 @@ body::before {
 }
 
 /* =========================
-   💧 Boutons Liquid Glass — style unifié
+   💧 Boutons (icônes + catégories) — style unifié
    ========================= */
 .icons {
   display: flex;
@@ -129,17 +129,15 @@ body::before {
   border-radius: 50px;
 
   background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
-    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
-    rgba(255,255,255,0.36);
-
-  border: 0.5px solid rgba(255,255,255,0.2);
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
+    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
+    rgba(255,255,255,0.65); /* ✅ plus opaque */
+  border: 0.5px solid rgba(255,255,255,0.35);
   backdrop-filter: blur(14px) saturate(200%);
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   font-weight: 500;
   color: #111;
   text-decoration: none;
-  font-size: 0.95rem;
   flex-shrink: 0;
   white-space: nowrap;
   transition: all 0.3s ease;
@@ -150,7 +148,7 @@ body::before {
   overflow: hidden;
 }
 
-/* Icônes — tailles par défaut */
+/* Icônes (menu/recherche) — tailles */
 .icons i {
   border-radius: 50%;
   width: 38px;
@@ -159,7 +157,7 @@ body::before {
   line-height: 0;
 }
 
-/* Desktop : plus large */
+/* Desktop : plus grand */
 @media (min-width: 1024px) {
   .icons i {
     width: 44px;
@@ -168,7 +166,7 @@ body::before {
   }
 }
 
-/* ✅ Mobile : boutons plus grands + icônes adaptées */
+/* Mobile : encore plus grand (préférences finales) */
 @media (max-width: 768px) {
   .icons i {
     width: 45px;
@@ -178,7 +176,14 @@ body::before {
   }
 }
 
-/* Stroke identique à celui des catégories */
+/* Catégories (différences de style par rapport aux icônes) */
+.main-nav a {
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+}
+
+/* Stroke identique */
 .icons i::after,
 .main-nav a::after {
   content: "";
@@ -194,7 +199,7 @@ body::before {
     linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
 }
 
-/* Hover unifié */
+/* Hover */
 .icons i:hover,
 .main-nav a:hover {
   background: rgba(255,255,255,1);
@@ -202,7 +207,7 @@ body::before {
 }
 
 /* =========================
-   Navigation (catégories)
+   Navigation container
    ========================= */
 .main-nav {
   max-width: 100%;
@@ -217,48 +222,6 @@ body::before {
   list-style: none;
   padding: 0;
   margin: 0;
-}
-.main-nav a {
-  position: relative;
-  display: inline-block;
-  padding: 8px 16px;
-  border-radius: 50px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
-    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
-    rgba(255,255,255,0.65); /* plus opaque qu'avant */
-  border: 0.5px solid rgba(255,255,255,0.35);
-  backdrop-filter: blur(14px) saturate(200%);
-  -webkit-backdrop-filter: blur(14px) saturate(200%);
-  font-weight: 500;
-  color: #111;
-  text-decoration: none;
-  font-size: 0.95rem;
-  flex-shrink: 0;
-  white-space: nowrap;
-  transition: all 0.3s ease;
-  box-shadow:
-    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-    inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 0 12px rgba(0,0,0,0.09);
-  overflow: hidden;
-}
-.main-nav a::after {
-  content: "";
-  position: absolute;
-  top: -25%;
-  left: -25%;
-  width: 180%;
-  height: 180%;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  background:
-    linear-gradient(45deg, rgba(255,255,255,0.08), transparent 65%),
-    linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
-}
-.main-nav a:hover {
-  background: rgba(255,255,255,1);
-  transform: scale(1.05);
 }
 
 /* =========================
