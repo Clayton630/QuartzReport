@@ -19,92 +19,64 @@ body {
   color: #111;
   padding-top: env(safe-area-inset-top);
   position: relative;
-  z-index: 0;
+  isolation: isolate; /* ✅ pour gérer les z-index internes */
+}
 
-  /* 🌈 Fond iridescent large */
+/* 🌈 Reflet iridescent + fondu intégré dans pseudo-élément BACKGROUND */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 46vh;
+  z-index: -1; /* ✅ sous tout le contenu */
+  pointer-events: none;
+
   background-image:
+    /* couche 1 — diagonale multicolore principale */
     linear-gradient(62deg,
-      rgba(255,120,180,0.8) 0%,
-      rgba(255,220,130,0.75) 8%,
-      rgba(130,255,190,0.75) 16%,
-      rgba(120,180,255,0.75) 28%,
-      rgba(190,120,255,0.75) 38%,
-      rgba(255,255,255,0.3) 48%,
-      rgba(255,255,255,0) 58%
+      rgba(255,120,180,0.9) 0%,
+      rgba(255,220,130,0.8) 10%,
+      rgba(130,255,190,0.8) 20%,
+      rgba(120,180,255,0.8) 30%,
+      rgba(190,120,255,0.8) 40%,
+      rgba(255,255,255,0.6) 50%,
+      rgba(255,255,255,0.3) 60%
     ),
-    linear-gradient(132deg,
-      rgba(255,150,200,0.7) 0%,
-      rgba(255,220,150,0.65) 10%,
-      rgba(180,255,200,0.65) 18%,
-      rgba(150,200,255,0.65) 26%,
-      rgba(200,150,255,0.65) 34%,
-      rgba(255,255,255,0.25) 44%,
-      rgba(255,255,255,0) 55%
+    /* couche 2 — contre diagonale */
+    linear-gradient(120deg,
+      rgba(255,150,200,0.75) 0%,
+      rgba(255,220,150,0.7) 12%,
+      rgba(180,255,200,0.7) 22%,
+      rgba(150,200,255,0.7) 32%,
+      rgba(200,150,255,0.7) 42%,
+      rgba(255,255,255,0.4) 52%,
+      rgba(255,255,255,0.1) 62%
     ),
-    linear-gradient(90deg,
-      rgba(255,120,240,0.6) 0%,
-      rgba(120,255,220,0.5) 12%,
-      rgba(255,255,160,0.45) 25%,
-      rgba(120,220,255,0.45) 38%,
-      rgba(255,180,200,0.45) 50%,
-      rgba(160,255,220,0.45) 62%,
-      rgba(255,255,255,0.3) 74%,
-      rgba(255,255,255,0) 86%
-    ),
+    /* halo radial doux */
     radial-gradient(150% 100% at 50% -20%,
       rgba(255,255,255,0.95) 0%,
       rgba(255,255,255,0.75) 25%,
       rgba(255,255,255,0.35) 45%,
       rgba(255,255,255,0) 60%
     ),
-    /* couche “base blanche” qui restera en dessous */
-    linear-gradient(135deg, #f3f6fb, #ffffff);
+    /* 💫 fondu blanc progressif bas */
+    linear-gradient(to bottom,
+      rgba(255,255,255,0) 60%,
+      rgba(255,255,255,0.4) 75%,
+      rgba(255,255,255,0.8) 90%,
+      rgba(255,255,255,1) 100%
+    );
 
   background-size:
-    400% 46vh,
-    360% 46vh,
-    320% 46vh,
-    160% 46vh,
-    100% auto;
-
-  background-position:
-    top center,
-    top center,
-    top center,
-    top center,
-    top left;
-
-  background-repeat:
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat;
-
-  background-attachment: scroll;
-}
-
-/* Pseudo-élément pour le fondu vers blanc */
-body::after {
-  content: "";
-  position: absolute;
-  top: 38vh;             /* début du fondu */
-  left: 0;
-  width: 100%;
-  height: 12vh;          /* zone de fondu vertical */
-  pointer-events: none;
-  z-index: 1;
-
-  background: linear-gradient(
-    to bottom,
-    rgba(255,255,255,0) 0%,
-    rgba(255,255,255,0.2) 30%,
-    rgba(255,255,255,0.6) 60%,
-    rgba(255,255,255,1) 100%
-  );
-
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+    400% 100%,
+    360% 100%,
+    200% 100%,
+    100% 100%;
+  background-repeat: no-repeat;
+  background-position: top center;
+  filter: blur(2px); /* 🌫️ légère diffusion */
 }
 
 /* =========================
@@ -148,7 +120,7 @@ body::after {
   gap: 14px;
 }
 
-icons i {
+.icons i {
   position: relative;
   background: 
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
