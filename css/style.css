@@ -39,7 +39,6 @@ body::before {
   pointer-events: none;
   overflow: hidden;
 
-  /* Dégradé plus léger et mieux réparti */
   background-image:
     linear-gradient(65deg,
       rgba(140,180,255,0.55) 0%,
@@ -55,12 +54,9 @@ body::before {
   background-size: 250% 250%;
   background-position: 0% 50%;
   background-repeat: no-repeat;
-
-  /* Animation fluide plus légère (meilleur FPS) */
   animation: iridescentSoft 50s ease-in-out infinite alternate;
   filter: blur(28px) brightness(1.07) saturate(1.2);
 
-  /* Dégradé de fondu vers le bas */
   mask-image: linear-gradient(to bottom,
     rgba(0,0,0,1) 0%,
     rgba(0,0,0,0.95) 65%,
@@ -75,7 +71,6 @@ body::before {
   );
 }
 
-/* Animation plus simple (meilleure perf) */
 @keyframes iridescentSoft {
   0% {
     background-position: 0% 50%;
@@ -91,7 +86,6 @@ body::before {
   }
 }
 
-/* 🖥️ Desktop : couvrance uniforme */
 @media (min-width: 1200px) {
   body::before {
     background-size: 180% 180%;
@@ -121,7 +115,33 @@ body::before {
 }
 
 /* =========================
-   Icônes header — 💧 Liquid Glass adouci
+   ✅ Logo QuartzReport — version noire + taille ajustée
+   ========================= */
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.logo-img {
+  height: 28px;
+  width: auto;
+  display: block;
+  filter: none; /* 🔹 logo noir naturel */
+  transition: transform 0.2s ease;
+}
+.logo-img:hover {
+  transform: scale(1.05);
+}
+
+/* Desktop : logo plus petit */
+@media (min-width: 768px) {
+  .logo-img {
+    height: 22px; /* 🔹 taille ajustée (plus fin, comme avant) */
+  }
+}
+
+/* =========================
+   Icônes header — 💧 Liquid Glass renforcé
    ========================= */
 .icons {
   display: flex;
@@ -133,7 +153,7 @@ body::before {
   background:
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.45), rgba(255,255,255,0) 70%),
     radial-gradient(circle at 70% 70%, rgba(255,255,255,0.15), rgba(255,255,255,0) 80%),
-    rgba(255, 255, 255, 0.52); /* 🔹 plus opaque */
+    rgba(255, 255, 255, 0.52);
 
   border-radius: 50%;
   font-size: 1.5rem;
@@ -143,32 +163,34 @@ body::before {
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   border: 0.5px solid rgba(255, 255, 255, 0.25);
   box-shadow:
-    inset 0.6px 0.6px 0 rgba(255,255,255,0.85),
-    inset -0.6px -0.6px 0 rgba(255,255,255,0.75),
-    0 0 8px rgba(0,0,0,0.05); /* 🔹 ombre adoucie */
+    inset 0.6px 0.6px 0 rgba(255,255,255,0.9),
+    inset -0.6px -0.6px 0 rgba(255,255,255,0.85),
+    0 0 8px rgba(0,0,0,0.05);
   transition: all 0.3s ease;
   overflow: hidden;
 }
 
+/* ✅ Reflet diagonal renforcé (45° et -45°) */
 .icons i::after {
   content: "";
   position: absolute;
-  top: -35%;
-  left: -35%;
-  width: 190%;
-  height: 190%;
+  top: -40%;
+  left: -40%;
+  width: 200%;
+  height: 200%;
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    linear-gradient(45deg, rgba(255,255,255,0.04), transparent 70%),
-    linear-gradient(-45deg, rgba(255,255,255,0.02), transparent 70%);
+    linear-gradient(45deg, rgba(255,255,255,1), transparent 65%),
+    linear-gradient(-45deg, rgba(255,255,255,1), transparent 65%);
+  opacity: 1; /* 🔹 reflet blanc à opacité maximale */
 }
 
 .icons i:hover {
   background: rgba(255,255,255,0.9);
   box-shadow:
-    inset 1px 1px 2px rgba(255,255,255,0.7),
-    inset -1px -1px 2px rgba(255,255,255,0.6),
+    inset 1px 1px 2px rgba(255,255,255,0.8),
+    inset -1px -1px 2px rgba(255,255,255,0.75),
     0 0 12px rgba(0,0,0,0.08);
   transform: scale(1.08);
 }
