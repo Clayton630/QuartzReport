@@ -125,14 +125,11 @@ body::before {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 50px;
-
   background:
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
     radial-gradient(circle at 70% 70%, rgba(255,255,255,0.1), rgba(255,255,255,0) 80%),
     rgba(255,255,255,0.36);
-
   border: 0.5px solid rgba(255,255,255,0.2);
   backdrop-filter: blur(14px) saturate(200%);
   -webkit-backdrop-filter: blur(14px) saturate(200%);
@@ -199,6 +196,7 @@ body::before {
   background: rgba(255,255,255,1);
   transform: scale(1.05);
 }
+
 /* =========================
    Navigation (catégories)
    ========================= */
@@ -241,24 +239,10 @@ body::before {
     0 0 12px rgba(0,0,0,0.09);
   overflow: hidden;
 }
-.main-nav a::after {
-  content: "";
-  position: absolute;
-  top: -25%;
-  left: -25%;
-  width: 180%;
-  height: 180%;
-  pointer-events: none;
-  mix-blend-mode: screen;
-  background:
-    linear-gradient(45deg, rgba(255,255,255,0.08), transparent 65%),
-    linear-gradient(-45deg, rgba(255,255,255,0.05), transparent 65%);
-}
 .main-nav a:hover {
   background: rgba(255,255,255,1);
   transform: scale(1.05);
 }
-
 
 /* =========================
    Section Hottest
@@ -346,6 +330,7 @@ body::before {
   padding: 14px 14px 8px 14px;
   margin-bottom: 26px;
   box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+  box-sizing: border-box;
 }
 .day-title {
   font-size: 1.1rem;
@@ -428,46 +413,6 @@ body::before {
 /* =========================
    Feed regroupé par jour / semaine
    ========================= */
-.day-block {
-  background: #fff;
-  border-radius: 23px;
-  padding: 14px 14px 8px 14px;
-  margin-bottom: 26px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-  box-sizing: border-box;
-}
-.day-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111;
-  margin: 0 0 8px 4px;
-  text-transform: capitalize;
-}
-.day-article {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 0;
-}
-.day-article-info { flex: 1; }
-.day-meta {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #777;
-}
-.day-article-info h4 {
-  margin: 4px 0 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111;
-  line-height: 1.3;
-}
-.day-separator {
-  height: 1px;
-  background: rgba(0,0,0,0.06);
-  margin: 6px 0;
-}
-
 @media (min-width: 769px) {
   .week-block { margin-bottom: 36px; }
   .week-title {
@@ -496,14 +441,13 @@ body::before {
 }
 
 /* =========================
-   🩹 Correctif final flicker iOS Safari
+   🩹 Correctif flicker iOS Safari
    ========================= */
 .day-article img,
 .hottest-grid img,
 .article-image img {
-  will-change: auto !important;
-  transform: none !important;
-  -webkit-transform: none !important;
+  will-change: transform;
+  transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   contain: size paint;
@@ -511,17 +455,4 @@ body::before {
   position: relative;
   z-index: 1;
   image-rendering: -webkit-optimize-contrast;
-}
-
-.articles,
-.hottest-grid {
-  will-change: auto !important;
-  transform: none !important;
-  -webkit-transform: none !important;
-}
-
-.site-header,
-.main-nav {
-  isolation: isolate;
-  contain: paint;
 }
