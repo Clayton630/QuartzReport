@@ -74,7 +74,7 @@ async function loadArticles() {
         title: meta.title || "Sans titre",
         date: dateObj,
         author: meta.author || "Inconnu",
-        description: meta.description || "",
+        description: meta.description || "", // ✅ résumé
         thumbnail: cover,
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
@@ -142,10 +142,11 @@ async function loadArticles() {
             el.className = "day-article";
             el.innerHTML = `
               <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                <img src="${article.thumbnail}" alt="${article.title}" width="72" height="72" decoding="sync" loading="eager" fetchpriority="low">
                 <div class="day-article-info">
                   <p class="day-meta">Par ${article.author}, à ${time}</p>
                   <h4>${article.title}</h4>
+                  <p class="day-desc">${article.description}</p> <!-- ✅ résumé ajouté -->
                 </div>
               </a>`;
             block.appendChild(el);
@@ -210,10 +211,11 @@ async function loadArticles() {
                 el.className = "day-article";
                 el.innerHTML = `
                   <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                    <img src="${article.thumbnail}" alt="${article.title}" width="72" height="72" decoding="sync" loading="eager" fetchpriority="low">
                     <div class="day-article-info">
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
                       <h4>${article.title}</h4>
+                      <p class="day-desc">${article.description}</p> <!-- ✅ résumé ajouté -->
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
@@ -272,10 +274,10 @@ document.addEventListener("DOMContentLoaded", loadArticles);
 
   function stabilizeImages() {
     document.querySelectorAll(
-      ".day-article .thumb, .hottest-grid img, .article-image img"
-    ).forEach(el => {
-      el.style.webkitTransform = "translateZ(0)";
-      el.style.transform = "translateZ(0)";
+      ".day-article img, .hottest-grid img, .article-image img"
+    ).forEach(img => {
+      img.style.webkitTransform = "translateZ(0)";
+      img.style.transform = "translateZ(0)";
     });
   }
 
