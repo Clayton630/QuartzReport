@@ -6,7 +6,7 @@ html {
   padding: 0;
   height: 100%;
   overflow-x: hidden;
-  background: linear-gradient(135deg, #f3f6fb, #ffffff);
+  background: linear-gradient(135deg, #f3f6fb, #f7f7f7);
 }
 
 body {
@@ -22,7 +22,7 @@ body {
   padding-top: env(safe-area-inset-top);
   position: relative;
   isolation: isolate;
-  background: linear-gradient(135deg, #f3f6fb, #ffffff);
+  background: linear-gradient(135deg, #f3f6fb, #f7f7f7);
 }
 
 /* =========================
