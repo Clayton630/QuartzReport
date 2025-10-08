@@ -18,15 +18,37 @@ body {
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
 
-  /* 🌈 Reflet iridescent maximal – multicolore, diagonal, intense */
+  /* 💡 Fond neutre, blanc de base */
+  background: linear-gradient(135deg, #f6f8fb, #ffffff);
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  background-position: top;
+  padding-top: env(safe-area-inset-top);
+  position: relative;
+  z-index: 0;
+}
+
+/* =========================
+   🌈 Reflet iridescent — localisé en haut
+   ========================= */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -10%;
+  right: -10%;
+  height: 40vh; /* ← limité à la zone haute */
+  pointer-events: none;
+  z-index: 0;
+
+  /* superposition multicolore intense, en diagonales */
   background:
-    /* couches principales prismatiques */
     linear-gradient(60deg,
-      rgba(255, 120, 180, 0.65) 0%,   /* rose vif */
-      rgba(255, 220, 130, 0.6) 10%,   /* or chaud */
-      rgba(130, 255, 190, 0.6) 20%,   /* vert menthe */
-      rgba(120, 180, 255, 0.6) 30%,   /* bleu azur */
-      rgba(190, 120, 255, 0.6) 40%,   /* violet brillant */
+      rgba(255, 120, 180, 0.65) 0%,
+      rgba(255, 220, 130, 0.6) 10%,
+      rgba(130, 255, 190, 0.6) 20%,
+      rgba(120, 180, 255, 0.6) 30%,
+      rgba(190, 120, 255, 0.6) 40%,
       rgba(255, 255, 255, 0.3) 50%,
       rgba(255, 255, 255, 0) 60%
     ),
@@ -54,27 +76,6 @@ body {
       rgba(255,255,255,0.2) 38%,
       rgba(255,255,255,0) 44%
     ),
-    linear-gradient(135deg, #f6f8fb, #ffffff);
-
-  background-repeat: no-repeat;
-  background-size: 100% auto;
-  background-attachment: scroll;
-  background-position: top;
-  padding-top: env(safe-area-inset-top);
-}
-
-/* ✨ Halo prismatique localisé en haut */
-body::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -10%;
-  right: -10%;
-  height: 40vh;
-  background-image:
-    radial-gradient(circle at 20% 15%, rgba(255,255,255,0.8) 0%, transparent 65%),
-    radial-gradient(circle at 80% 10%, rgba(255,255,255,0.7) 0%, transparent 70%),
-    radial-gradient(circle at 50% 35%, rgba(255,255,255,0.6) 0%, transparent 60%),
     conic-gradient(
       from 180deg,
       rgba(255, 100, 150, 0.4),
@@ -85,10 +86,8 @@ body::before {
       rgba(255, 100, 150, 0.4)
     );
   mix-blend-mode: screen;
-  filter: blur(18px) saturate(180%);
+  filter: blur(18px) saturate(180%) brightness(1.1);
   opacity: 0.95;
-  pointer-events: none;
-  z-index: 0;
 }
 
 /* =========================
@@ -169,7 +168,6 @@ body::before {
   background: rgba(255,255,255,1);
   transform: scale(1.08);
 }
-
 /* =========================
    Navigation (catégories)
    ========================= */
