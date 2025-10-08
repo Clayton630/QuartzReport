@@ -156,12 +156,12 @@ body::before {
   line-height: 0;
 }
 
-/* Mobile : légèrement plus petit */
 @media (max-width: 480px) {
   .icons i {
-    width: 34px;
-    height: 34px;
-    font-size: 1.2rem;
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
+    line-height: 30px; /* centre mieux l’icône */
   }
 }
 
