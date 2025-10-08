@@ -124,7 +124,7 @@ body::before {
   height: 28px;
   width: auto;
   display: block;
-  filter: brightness(0); /* ✅ noir */
+  filter: brightness(0); /* ✅ noir pur */
   transition: transform 0.2s ease;
 }
 .logo-img:hover {
@@ -163,7 +163,7 @@ body::before {
   cursor: pointer;
 }
 
-/* --- Reflet diagonal (100% opaque) --- */
+/* --- Double stroke diagonal blanc pur --- */
 .icons i::after,
 .main-nav a::after {
   content: "";
@@ -173,18 +173,18 @@ body::before {
   width: 190%;
   height: 190%;
   pointer-events: none;
-  mix-blend-mode: screen;
+  mix-blend-mode: normal; /* ✅ stop mélange, blanc pur */
   background:
-    linear-gradient(45deg, rgba(255,255,255,1), transparent 65%),
-    linear-gradient(-45deg, rgba(255,255,255,1), transparent 65%);
-  opacity: 1; /* ✅ 100% opaque */
+    linear-gradient(45deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 40%, transparent 80%),
+    linear-gradient(-45deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.95) 40%, transparent 80%);
+  opacity: 1; /* ✅ éclat total */
 }
 
-/* --- Forme et espacements spécifiques --- */
+/* --- Forme et espacements --- */
 .icons i {
   border-radius: 50%;
   font-size: 1.5rem;
-  padding: 12px; /* ✅ padding d’origine conservé */
+  padding: 12px; /* padding d’origine */
 }
 
 .main-nav a {
