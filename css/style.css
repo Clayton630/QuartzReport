@@ -21,9 +21,8 @@ body {
   position: relative;
   z-index: 0;
 
-  /* 🌈 Reflet iridescent élargi (débordement horizontal massif) */
+  /* 🌈 Reflet iridescent élargi */
   background-image:
-    /* couche 1 — large diagonale multicolore principale */
     linear-gradient(62deg,
       rgba(255,120,180,0.8) 0%,
       rgba(255,220,130,0.75) 8%,
@@ -33,7 +32,6 @@ body {
       rgba(255,255,255,0.3) 48%,
       rgba(255,255,255,0) 58%
     ),
-    /* couche 2 — contre-diagonale légèrement décalée */
     linear-gradient(132deg,
       rgba(255,150,200,0.7) 0%,
       rgba(255,220,150,0.65) 10%,
@@ -43,7 +41,6 @@ body {
       rgba(255,255,255,0.25) 44%,
       rgba(255,255,255,0) 55%
     ),
-    /* couche 3 — iridescence supplémentaire horizontale */
     linear-gradient(90deg,
       rgba(255,120,240,0.6) 0%,
       rgba(120,255,220,0.5) 12%,
@@ -54,23 +51,20 @@ body {
       rgba(255,255,255,0.3) 74%,
       rgba(255,255,255,0) 86%
     ),
-    /* couche 4 — halo blanc de verre */
     radial-gradient(150% 100% at 50% -20%,
       rgba(255,255,255,0.95) 0%,
       rgba(255,255,255,0.75) 25%,
       rgba(255,255,255,0.35) 45%,
       rgba(255,255,255,0) 60%
     ),
-    /* couche 5 — fond neutre blanc */
     linear-gradient(135deg, #f3f6fb, #ffffff);
 
-  /* 📐 Zones de couverture : 1-4 limitées au haut, 5 sur toute page */
   background-size:
-    400% 46vh,   /* couche 1 — très large */
-    360% 46vh,   /* couche 2 */
-    320% 46vh,   /* couche 3 */
-    160% 46vh,   /* halo blanc */
-    100% auto;   /* fond général */
+    400% 46vh,
+    360% 46vh,
+    320% 46vh,
+    160% 46vh,
+    100% auto;
 
   background-position:
     top center,
@@ -79,14 +73,25 @@ body {
     top center,
     top left;
 
-  background-repeat:
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat,
-    no-repeat;
-
+  background-repeat: no-repeat;
   background-attachment: scroll;
+}
+
+/* ✨ Flou progressif du bas du halo iridescent */
+body::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50vh;
+  pointer-events: none;
+  z-index: 1;
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  mask-image: linear-gradient(to bottom, transparent 50%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 50%, black 100%);
+  opacity: 0.8;
 }
 
 /* =========================
