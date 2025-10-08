@@ -264,3 +264,19 @@ async function loadArticles() {
 }
 
 document.addEventListener("DOMContentLoaded", loadArticles);
+
+// ==============================
+// 🩹 iOS Safari flicker fix au scroll post-refresh
+// ==============================
+if (/iP(hone|od|ad)/.test(navigator.platform) || navigator.userAgent.includes("Mac") && "ontouchend" in document) {
+  window.addEventListener("pageshow", () => {
+    // Force le recalcul GPU des couches floutées après reload
+    requestAnimationFrame(() => {
+      document.body.style.webkitTransform = "translateZ(0)";
+      document.body.style.transform = "translateZ(0)";
+      document.body.offsetHeight; // trigger reflow
+      document.body.style.webkitTransform = "";
+      document.body.style.transform = "";
+    });
+  });
+}
