@@ -324,14 +324,17 @@ body::before {
   padding: 20px;
   overflow: visible;
 }
+
+/* ✅ Cartes du feed → fond blanc opaque */
 .day-block {
-  background: #fff;
+  background: #ffffff;           /* blanc plein, sans blur ni transparence */
   border-radius: 23px;
   padding: 14px 14px 8px 14px;
   margin-bottom: 26px;
   box-shadow: 0 3px 12px rgba(0,0,0,0.04);
   box-sizing: border-box;
 }
+
 .day-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -441,18 +444,15 @@ body::before {
 }
 
 /* =========================
-   🩹 Correctif flicker iOS Safari
+   Correctif images (sans annuler GPU)
    ========================= */
 .day-article img,
 .hottest-grid img,
 .article-image img {
-  will-change: transform;
-  transform: translateZ(0);
+  transform: translate3d(0,0,0);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  contain: size paint;
   display: block;
   position: relative;
   z-index: 1;
-  image-rendering: -webkit-optimize-contrast;
 }
