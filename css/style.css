@@ -18,31 +18,44 @@ body {
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
 
-  /* ✨ Reflet iridescent visible (départ bleu clair nacré) */
+  /* 🌈 Reflet iridescent maximal – multicolore, diagonal, intense */
   background:
-    linear-gradient(
-      180deg,
-      rgba(173, 216, 255, 0.85) 0%,     /* bleu pastel clair — visible */
-      rgba(210, 230, 255, 0.8) 4%,      /* transition douce */
-      rgba(240, 255, 255, 0.75) 8%,     /* turquoise blanc nacré */
-      rgba(255, 255, 255, 0.7) 12%,     
-      rgba(255, 255, 255, 0.55) 18%,
-      rgba(255, 255, 255, 0.35) 26%,
-      rgba(255, 255, 255, 0.15) 32%,
-      rgba(255, 255, 255, 0) 38%
+    /* couches principales prismatiques */
+    linear-gradient(60deg,
+      rgba(255, 120, 180, 0.65) 0%,   /* rose vif */
+      rgba(255, 220, 130, 0.6) 10%,   /* or chaud */
+      rgba(130, 255, 190, 0.6) 20%,   /* vert menthe */
+      rgba(120, 180, 255, 0.6) 30%,   /* bleu azur */
+      rgba(190, 120, 255, 0.6) 40%,   /* violet brillant */
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 60%
     ),
-    /* 🌈 diffraction nacrée concentrée sur le haut */
-    linear-gradient(
-      180deg,
-      rgba(255, 180, 200, 0.4) 0%,      /* rose clair */
-      rgba(180, 200, 255, 0.4) 6%,      /* bleu lavande */
-      rgba(190, 255, 210, 0.35) 12%,    /* vert menthe pâle */
-      rgba(255, 250, 200, 0.35) 18%,    /* jaune nacré */
-      rgba(220, 190, 255, 0.35) 25%,    /* violet perlé */
-      rgba(255, 255, 255, 0.15) 32%,
-      rgba(255, 255, 255, 0) 40%
+    linear-gradient(135deg,
+      rgba(255, 150, 200, 0.5) 0%,
+      rgba(255, 220, 150, 0.45) 8%,
+      rgba(180, 255, 200, 0.45) 15%,
+      rgba(150, 200, 255, 0.45) 22%,
+      rgba(200, 150, 255, 0.45) 30%,
+      rgba(255, 255, 255, 0.15) 38%,
+      rgba(255, 255, 255, 0) 45%
+    ),
+    linear-gradient(-30deg,
+      rgba(255, 255, 200, 0.4) 0%,
+      rgba(255, 200, 255, 0.35) 12%,
+      rgba(200, 255, 255, 0.35) 22%,
+      rgba(255, 255, 255, 0.15) 35%,
+      rgba(255, 255, 255, 0) 45%
+    ),
+    linear-gradient(180deg,
+      rgba(255,255,255,0.95) 0%,
+      rgba(255,255,255,0.85) 10%,
+      rgba(255,255,255,0.7) 20%,
+      rgba(255,255,255,0.45) 30%,
+      rgba(255,255,255,0.2) 38%,
+      rgba(255,255,255,0) 44%
     ),
     linear-gradient(135deg, #f6f8fb, #ffffff);
+
   background-repeat: no-repeat;
   background-size: 100% auto;
   background-attachment: scroll;
@@ -50,21 +63,30 @@ body {
   padding-top: env(safe-area-inset-top);
 }
 
-/* ✨ Reflet nacré concentré dans le haut de la page */
+/* ✨ Halo prismatique localisé en haut */
 body::before {
   content: "";
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
-  height: 26vh; /* hauteur du halo visible */
+  left: -10%;
+  right: -10%;
+  height: 40vh;
   background-image:
-    radial-gradient(circle at 30% 20%, rgba(255,255,255,0.7) 0%, transparent 65%),
-    radial-gradient(circle at 70% 15%, rgba(255,255,255,0.6) 0%, transparent 70%),
-    radial-gradient(circle at 50% 45%, rgba(255,255,255,0.5) 0%, transparent 60%);
+    radial-gradient(circle at 20% 15%, rgba(255,255,255,0.8) 0%, transparent 65%),
+    radial-gradient(circle at 80% 10%, rgba(255,255,255,0.7) 0%, transparent 70%),
+    radial-gradient(circle at 50% 35%, rgba(255,255,255,0.6) 0%, transparent 60%),
+    conic-gradient(
+      from 180deg,
+      rgba(255, 100, 150, 0.4),
+      rgba(255, 220, 100, 0.4),
+      rgba(120, 255, 180, 0.4),
+      rgba(100, 200, 255, 0.4),
+      rgba(200, 120, 255, 0.4),
+      rgba(255, 100, 150, 0.4)
+    );
   mix-blend-mode: screen;
-  filter: blur(16px);
-  opacity: 0.9;
+  filter: blur(18px) saturate(180%);
+  opacity: 0.95;
   pointer-events: none;
   z-index: 0;
 }
