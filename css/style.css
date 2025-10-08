@@ -21,9 +21,8 @@ body {
   position: relative;
   z-index: 0;
 
-  /* 🌈 Reflet iridescent large + fondu fluide vers le blanc */
+  /* 🌈 Fond iridescent large */
   background-image:
-    /* couche 1 — diagonale multicolore principale */
     linear-gradient(62deg,
       rgba(255,120,180,0.8) 0%,
       rgba(255,220,130,0.75) 8%,
@@ -33,7 +32,6 @@ body {
       rgba(255,255,255,0.3) 48%,
       rgba(255,255,255,0) 58%
     ),
-    /* couche 2 — contre-diagonale */
     linear-gradient(132deg,
       rgba(255,150,200,0.7) 0%,
       rgba(255,220,150,0.65) 10%,
@@ -43,7 +41,6 @@ body {
       rgba(255,255,255,0.25) 44%,
       rgba(255,255,255,0) 55%
     ),
-    /* couche 3 — iridescence horizontale */
     linear-gradient(90deg,
       rgba(255,120,240,0.6) 0%,
       rgba(120,255,220,0.5) 12%,
@@ -54,35 +51,23 @@ body {
       rgba(255,255,255,0.3) 74%,
       rgba(255,255,255,0) 86%
     ),
-    /* couche 4 — halo blanc diffus */
     radial-gradient(150% 100% at 50% -20%,
       rgba(255,255,255,0.95) 0%,
       rgba(255,255,255,0.75) 25%,
       rgba(255,255,255,0.35) 45%,
       rgba(255,255,255,0) 60%
     ),
-    /* ⚡ couche 5 — dégradé blanc bas → transparent haut pour fondu fluide */
-    linear-gradient(180deg,
-      rgba(255,255,255,1) 70%,
-      rgba(255,255,255,0.85) 80%,
-      rgba(255,255,255,0.55) 88%,
-      rgba(255,255,255,0.25) 94%,
-      rgba(255,255,255,0) 100%
-    ),
-    /* couche 6 — fond neutre blanc */
+    /* couche “base blanche” qui restera en dessous */
     linear-gradient(135deg, #f3f6fb, #ffffff);
 
-  /* 📐 Zones de couverture : 1–5 limitées au haut, 6 sur toute page */
   background-size:
     400% 46vh,
     360% 46vh,
     320% 46vh,
     160% 46vh,
-    100% 46vh,  /* fondu blanc */
     100% auto;
 
   background-position:
-    top center,
     top center,
     top center,
     top center,
@@ -94,10 +79,32 @@ body {
     no-repeat,
     no-repeat,
     no-repeat,
-    no-repeat,
     no-repeat;
 
   background-attachment: scroll;
+}
+
+/* Pseudo-élément pour le fondu vers blanc */
+body::after {
+  content: "";
+  position: absolute;
+  top: 38vh;             /* début du fondu */
+  left: 0;
+  width: 100%;
+  height: 12vh;          /* zone de fondu vertical */
+  pointer-events: none;
+  z-index: 1;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.2) 30%,
+    rgba(255,255,255,0.6) 60%,
+    rgba(255,255,255,1) 100%
+  );
+
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* =========================
@@ -141,7 +148,7 @@ body {
   gap: 14px;
 }
 
-.icons i {
+icons i {
   position: relative;
   background: 
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.35), rgba(255,255,255,0) 70%),
