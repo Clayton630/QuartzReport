@@ -507,3 +507,20 @@ body {
   will-change: transform;
   contain: paint;
 }
+
+/* --- iOS Safari flicker: isoler header & nav dans leur propre stacking context --- */
+.site-header,
+.main-nav {
+  isolation: isolate;
+  contain: paint;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* --- Promouvoir le conteneur du feed en layer GPU stable --- */
+.articles {
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
