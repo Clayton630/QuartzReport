@@ -102,14 +102,14 @@ body {
 .icons i::after {
   content: "";
   position: absolute;
-  top: -35%;              /* ↓ plus large et plus flou */
+  top: -35%;
   left: -35%;
   width: 190%;
   height: 190%;
   pointer-events: none;
   mix-blend-mode: screen;
   background:
-    linear-gradient(45deg, rgba(255,255,255,0.02), transparent 70%),  /* ↓ opacité et diffusion */
+    linear-gradient(45deg, rgba(255,255,255,0.02), transparent 70%),
     linear-gradient(-45deg, rgba(255,255,255,0.012), transparent 70%);
 }
 
@@ -357,15 +357,13 @@ body {
 /* =========================
    Feed regroupé par jour / semaine
    ========================= */
-
-/* Bloc de jour commun (mobile & desktop) */
 .day-block {
   background: #fff;
   border-radius: 23px;
   padding: 14px 14px 8px 14px;
   margin-bottom: 26px;
   box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-  box-sizing: border-box; /* ✅ pour largeur fixe en desktop */
+  box-sizing: border-box;
 }
 .day-title {
   font-size: 1.1rem;
@@ -379,14 +377,6 @@ body {
   align-items: center;
   gap: 12px;
   padding: 6px 0;
-}
-.day-article-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  text-decoration: none;
-  color: inherit;
 }
 .day-article img {
   width: 72px;
@@ -414,11 +404,8 @@ body {
   margin: 6px 0;
 }
 
-/* Desktop : semaines horizontales */
 @media (min-width: 769px) {
-  .week-block {
-    margin-bottom: 36px;
-  }
+  .week-block { margin-bottom: 36px; }
   .week-title {
     font-size: 1.2rem;
     font-weight: 600;
@@ -427,100 +414,70 @@ body {
     text-transform: capitalize;
   }
   .week-carousel {
-    --day-card-w: 320px;          /* ⬅️ largeur fixe paramétrable */
+    --day-card-w: 320px;
     display: flex;
     gap: 18px;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     padding: 0 4px;
-    align-items: flex-start;      /* ✅ empêche l’étirement vertical */
+    align-items: flex-start;
   }
   .week-carousel .day-block {
-    flex: 0 0 var(--day-card-w);  /* ✅ largeur fixe */
-    width: var(--day-card-w);     /* ✅ largeur fixe */
+    flex: 0 0 var(--day-card-w);
+    width: var(--day-card-w);
     max-width: var(--day-card-w);
-    height: auto;                 /* ✅ hauteur dynamique */
+    height: auto;
     scroll-snap-align: start;
   }
 }
 
-/* Mobile */
-@media (max-width: 480px) {
-  .day-article img { width: 64px; height: 64px; }
-  .day-title { font-size: 1rem; margin-bottom: 8px; }
-  .day-article-info h4 { font-size: 0.95rem; }
-}
-
-
 /* =========================
-   🩹 Correctif complet et optimisé — Flicker iOS Safari
+   🩹 Correctif final flicker iOS Safari (stabilisé)
    ========================= */
 
-/* Force les conteneurs à être rendus dans leur propre layer GPU */
-.day-block,
-.hottest-grid .card,
-.article-block,
-.week-carousel {
+/* 1️⃣ Conteneurs stables sans surpromotion */
+.site-header,
+.main-nav {
   isolation: isolate;
-  contain: layout paint;
-  will-change: transform;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
+  contain: paint;
 }
 
-/* Stabilise les images internes et évite le repaint GPU */
+/* 2️⃣ Promotion GPU uniquement sur le feed */
+.articles {
+  contain: layout paint;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+/* 3️⃣ Optimisation du rendu des images */
 .day-article img,
 .hottest-grid img,
 .article-image img {
   display: block;
   contain: paint;
-  isolation: isolate;
   position: relative;
-  z-index: 1; /* Layer individuel */
+  z-index: 1;
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
-  will-change: transform, opacity;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform-style: preserve-3d;
   image-rendering: -webkit-optimize-contrast;
+  will-change: transform;
 }
 
-/* Évite les repaints du body et stabilise le scroll GPU */
-body {
-  position: relative;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  transform-style: preserve-3d;
-  -webkit-overflow-scrolling: touch;
-  perspective: 1000px;
-  will-change: transform, scroll-position;
+/* 4️⃣ Contenu virtuel (scroll stable) */
+.day-block,
+.week-carousel {
+  content-visibility: auto;
+  contain-intrinsic-size: 200px;
 }
 
-/* Assure la stabilité des éléments floutés */
+/* 5️⃣ Éléments floutés (pas de GPU, juste isolation) */
 .icons i,
 .main-nav a {
   -webkit-backdrop-filter: blur(14px) saturate(200%);
   backdrop-filter: blur(14px) saturate(200%);
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
-  contain: paint;
-}
-
-/* --- iOS Safari flicker: isoler header & nav dans leur propre stacking context --- */
-.site-header,
-.main-nav {
   isolation: isolate;
-  contain: paint;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-/* --- Promouvoir le conteneur du feed en layer GPU stable --- */
-.articles {
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
 }
