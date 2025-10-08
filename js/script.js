@@ -28,6 +28,57 @@ function base64ToUtf8(base64) {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
+// ========= Helpers images (anti-flicker iOS) =========
+const isiOS = /iP(hone|od|ad)/.test(navigator.platform) || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+
+// Observer de lazy-loading (précharge douce + swap d’opacité)
+let imgObserver = null;
+function ensureImgObserver() {
+  if (imgObserver) return imgObserver;
+  imgObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const img = entry.target;
+      imgObserver.unobserve(img);
+
+      // Déclenche le chargement seulement quand visible (avec marge)
+      const src = img.getAttribute("data-src");
+      if (!src) return;
+
+      // On attend la fin de frame pour éviter un layout jank
+      requestAnimationFrame(() => {
+        img.onload = () => {
+          img.setAttribute("data-loaded", "true");
+          img.style.opacity = "1";
+        };
+        img.onerror = () => {
+          // Fallback basique en cas d'erreur (évite toggle/reflow)
+          img.style.opacity = "1";
+        };
+        img.decoding = "async";
+        img.loading = "lazy"; // Safari >= 17.2 OK ; sinon ignoré sans dommage
+        img.src = src;
+        img.removeAttribute("data-src");
+      });
+    });
+  }, { root: null, rootMargin: "250px 0px", threshold: 0.01 });
+  return imgObserver;
+}
+
+// Crée une <img> stabilisée (sans src immédiat)
+function createLazyImg({ src, alt = "", w = null, h = null }) {
+  const img = document.createElement("img");
+  if (w) img.setAttribute("width", String(w));
+  if (h) img.setAttribute("height", String(h));
+  img.setAttribute("alt", alt);
+  img.style.opacity = "0";                 // invisible tant que non décodée
+  img.style.transition = "opacity 150ms";  // apparition douce une fois chargée
+  img.setAttribute("data-src", src);       // on ne fixe pas src tout de suite
+  ensureImgObserver().observe(img);
+  return img;
+}
+
+// ========= Chargement principal =========
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
@@ -38,6 +89,7 @@ async function loadArticles() {
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
+    // On peut garder le cache-bust pour la LISTE (JSON) uniquement
     const resp = await fetch(`${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`);
     if (!resp.ok) throw new Error("Erreur chargement liste articles");
 
@@ -94,14 +146,31 @@ async function loadArticles() {
       const link = document.createElement("a");
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
       link.className = "card";
+
+      // Image HOTTEST — lazy + opacity swap (dimensions cohérentes)
+      const img = createLazyImg({
+        src: article.thumbnail,
+        alt: "",
+        w: 320,
+        h: 180
+      });
+
+      const content = document.createElement("div");
+      content.className = "card-content";
       const date = article.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" });
-      link.innerHTML = `
-        <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager" fetchpriority="low">
-        <div class="card-content">
-          <p class="card-meta">Par ${article.author}, le ${date}.</p>
-          <h3>${article.title}</h3>
-        </div>
-      `;
+
+      const metaP = document.createElement("p");
+      metaP.className = "card-meta";
+      metaP.textContent = `Par ${article.author}, le ${date}.`;
+
+      const h3 = document.createElement("h3");
+      h3.textContent = article.title;
+
+      content.appendChild(metaP);
+      content.appendChild(h3);
+
+      link.appendChild(img);
+      link.appendChild(content);
       hottestContainer.appendChild(link);
     });
 
@@ -119,6 +188,10 @@ async function loadArticles() {
     function render(list) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
       container.innerHTML = "";
+
+      // Réinitialise l'observer (pour éviter des références obsolètes après rerender)
+      imgObserver = null;
+      ensureImgObserver();
 
       // === MOBILE : regroupement par jour ===
       if (isMobile) {
@@ -140,16 +213,41 @@ async function loadArticles() {
             const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
             const el = document.createElement("div");
             el.className = "day-article";
-            el.innerHTML = `
-              <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                <img src="${article.thumbnail}" alt="${article.title}" width="72" height="72" decoding="sync" loading="eager" fetchpriority="low">
-                <div class="day-article-info">
-                  <p class="day-meta">Par ${article.author}, à ${time}</p>
-                  <h4>${article.title}</h4>
-                </div>
-              </a>`;
+
+            const aLink = document.createElement("a");
+            aLink.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
+            aLink.className = "day-article-link";
+
+            const img = createLazyImg({
+              src: article.thumbnail,
+              alt: article.title,
+              w: 72,
+              h: 72
+            });
+
+            const info = document.createElement("div");
+            info.className = "day-article-info";
+
+            const pMeta = document.createElement("p");
+            pMeta.className = "day-meta";
+            pMeta.textContent = `Par ${article.author}, à ${time}`;
+
+            const h4 = document.createElement("h4");
+            h4.textContent = article.title;
+
+            info.appendChild(pMeta);
+            info.appendChild(h4);
+
+            aLink.appendChild(img);
+            aLink.appendChild(info);
+            el.appendChild(aLink);
             block.appendChild(el);
-            if (i < arr.length - 1) block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+
+            if (i < arr.length - 1) {
+              const sep = document.createElement("div");
+              sep.className = "day-separator";
+              block.appendChild(sep);
+            }
           });
 
           container.appendChild(block);
@@ -208,16 +306,41 @@ async function loadArticles() {
                 const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
                 const el = document.createElement("div");
                 el.className = "day-article";
-                el.innerHTML = `
-                  <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <img src="${article.thumbnail}" alt="${article.title}" width="72" height="72" decoding="sync" loading="eager" fetchpriority="low">
-                    <div class="day-article-info">
-                      <p class="day-meta">Par ${article.author}, à ${time}</p>
-                      <h4>${article.title}</h4>
-                    </div>
-                  </a>`;
+
+                const aLink = document.createElement("a");
+                aLink.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
+                aLink.className = "day-article-link";
+
+                const img = createLazyImg({
+                  src: article.thumbnail,
+                  alt: article.title,
+                  w: 72,
+                  h: 72
+                });
+
+                const info = document.createElement("div");
+                info.className = "day-article-info";
+
+                const pMeta = document.createElement("p");
+                pMeta.className = "day-meta";
+                pMeta.textContent = `Par ${article.author}, à ${time}`;
+
+                const h4 = document.createElement("h4");
+                h4.textContent = article.title;
+
+                info.appendChild(pMeta);
+                info.appendChild(h4);
+
+                aLink.appendChild(img);
+                aLink.appendChild(info);
+                el.appendChild(aLink);
                 dayBlock.appendChild(el);
-                if (i < arr.length - 1) dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+
+                if (i < arr.length - 1) {
+                  const sep = document.createElement("div");
+                  sep.className = "day-separator";
+                  dayBlock.appendChild(sep);
+                }
               });
 
             carousel.appendChild(dayBlock);
@@ -254,36 +377,36 @@ async function loadArticles() {
 
   } catch (err) {
     console.error(err);
-    container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
+    const container = document.getElementById("articles");
+    if (container) container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
 
 document.addEventListener("DOMContentLoaded", loadArticles);
 
 // ==============================
-// 🩹 Patch anti-flicker iOS Safari (final)
+// Patch post-reload iOS (stabilisation observer/images)
 // ==============================
 (function () {
-  const isiOS =
-    /iP(hone|od|ad)/.test(navigator.platform) ||
-    (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-
   if (!isiOS) return;
-
-  function stabilizeImages() {
-    document.querySelectorAll(
-      ".day-article img, .hottest-grid img, .article-image img"
-    ).forEach(img => {
-      img.style.webkitTransform = "translateZ(0)";
-      img.style.transform = "translateZ(0)";
-    });
-  }
-
-  window.addEventListener("pageshow", e => {
-    const nav = performance.getEntriesByType("navigation")[0];
-    const isReload = nav && nav.type === "reload";
-    if (e.persisted || isReload) {
-      requestAnimationFrame(stabilizeImages);
+  window.addEventListener("pageshow", (e) => {
+    // Après reload/BFCache, on réarme l'observer pour re-stabiliser le pipeline
+    if (e.persisted || (performance.getEntriesByType("navigation")[0]?.type === "reload")) {
+      // Re-observe toutes les images non encore chargées
+      const imgs = document.querySelectorAll('.day-article img:not([data-loaded="true"]), .hottest-grid img:not([data-loaded="true"]), .article-image img:not([data-loaded="true"])');
+      if (!imgs.length) return;
+      imgObserver = null;
+      ensureImgObserver();
+      imgs.forEach(img => {
+        // Si l’img a encore un data-src, on la (ré)observe
+        if (img.hasAttribute("data-src")) {
+          ensureImgObserver().observe(img);
+        } else if (!img.src) {
+          // cas rare: réarmer si src absent
+          const ds = img.getAttribute("data-src");
+          if (ds) ensureImgObserver().observe(img);
+        }
+      });
     }
   });
 })();
