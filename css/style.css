@@ -156,12 +156,13 @@ body::before {
   line-height: 0;
 }
 
-@media (max-width: 480px) {
-  .icons i {
-    width: 30px;
-    height: 30px;
-    font-size: 1.1rem;
-    line-height: 30px; /* centre mieux l’icône */
+/* ✅ Correction taille icônes recherche & menu sur mobile */
+@media (max-width: 768px) {
+  .site-header .icons i {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+    line-height: 28px; /* centre l’icône */
   }
 }
 
