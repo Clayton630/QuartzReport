@@ -168,13 +168,13 @@ body::before {
   }
 }
 
-/* ✅ Mobile : réduire la bulle mais garder l’icône */
+/* ✅ Mobile : boutons un peu plus grands + icônes légèrement agrandies */
 @media (max-width: 768px) {
   .icons i {
-    width: 32px;
-    height: 32px;
-    font-size: 1.3rem;  /* icône conservée */
-    line-height: 32px;
+    width: 36px;
+    height: 36px;
+    font-size: 1.4rem;
+    line-height: 36px;
   }
 }
 
