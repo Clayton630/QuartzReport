@@ -127,7 +127,7 @@ async function loadArticles() {
       .join("");
 
     // ======================
-    // FEED ARTICLES (progressif, avec blocs journaliers)
+    // FEED ARTICLES (progressif, blocs de 4)
     // ======================
     container.innerHTML = "";
     const byDay = {};
@@ -149,30 +149,33 @@ async function loadArticles() {
 
       const articles = byDay[k].sort((a, b) => b.date - a.date);
 
-      for (let i = 0; i < articles.length; i++) {
-        const article = articles[i];
-        const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+      // ⏱ Injection en groupes de 4
+      for (let i = 0; i < articles.length; i += 4) {
+        const chunk = articles.slice(i, i + 4);
 
-        const el = document.createElement("div");
-        el.className = "day-article";
-        el.innerHTML = `
-          <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-            <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
-            <div class="day-article-info">
-              <p class="day-meta">Par ${article.author}, à ${time}</p>
-              <h4>${article.title}</h4>
-              <p class="day-desc">${article.description}</p>
-            </div>
-          </a>`;
-        block.appendChild(el);
+        chunk.forEach((article, idx) => {
+          const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+          const el = document.createElement("div");
+          el.className = "day-article";
+          el.innerHTML = `
+            <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+              <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+              <div class="day-article-info">
+                <p class="day-meta">Par ${article.author}, à ${time}</p>
+                <h4>${article.title}</h4>
+                <p class="day-desc">${article.description}</p>
+              </div>
+            </a>`;
+          block.appendChild(el);
 
-        if (i < articles.length - 1) {
-          const sep = document.createElement("div");
-          sep.className = "day-separator";
-          block.appendChild(sep);
-        }
+          if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
+            const sep = document.createElement("div");
+            sep.className = "day-separator";
+            block.appendChild(sep);
+          }
+        });
 
-        // ⏱ Injection progressive : 1 article toutes les 200 ms
+        // 👇 petit délai entre les groupes (200 ms par groupe de 4)
         await new Promise(res => setTimeout(res, 200));
       }
     }
