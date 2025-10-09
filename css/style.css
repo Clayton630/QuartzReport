@@ -503,3 +503,19 @@ body::before {
   isolation: isolate;
   contain: paint;
 }
+/* =========================
+   Résumé (description) des articles du feed
+   ========================= */
+.day-desc {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 1.45;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
