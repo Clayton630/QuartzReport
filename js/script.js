@@ -26,6 +26,7 @@ function base64ToUtf8(base64) {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
+// ========= Chargement principal =========
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
@@ -80,7 +81,7 @@ async function loadArticles() {
       });
     }
 
-    // Tri par date décroissante
+    // Tri du plus récent au plus ancien
     all.sort((a, b) => b.date - a.date);
 
     // ======================
@@ -126,39 +127,55 @@ async function loadArticles() {
       .join("");
 
     // ======================
-    // FEED ARTICLES — version progressive
+    // FEED ARTICLES (progressif, avec blocs journaliers)
     // ======================
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
     container.innerHTML = "";
+    const byDay = {};
+    all.forEach(a => {
+      const key = ymdKey(a.date);
+      if (!byDay[key]) byDay[key] = [];
+      byDay[key].push(a);
+    });
 
-    const renderArticle = (article) => {
-      const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-      const el = document.createElement("div");
-      el.className = "day-article";
-      el.innerHTML = `
-        <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-          <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
-          <div class="day-article-info">
-            <p class="day-meta">Par ${article.author}, à ${time}</p>
-            <h4>${article.title}</h4>
-            <p class="day-desc">${article.description}</p>
-          </div>
-        </a>`;
-      return el;
-    };
+    const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
 
-    async function renderProgressively(list) {
-      container.innerHTML = "";
-      for (let i = 0; i < list.length; i++) {
-        const article = list[i];
-        const el = renderArticle(article);
-        container.appendChild(el);
-        // 👇 injection progressive (1 par 1)
-        await new Promise(res => setTimeout(res, 200)); 
+    for (const k of sortedDays) {
+      const d = new Date(k);
+      const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+      const block = document.createElement("div");
+      block.className = "day-block";
+      block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
+      container.appendChild(block);
+
+      const articles = byDay[k].sort((a, b) => b.date - a.date);
+
+      for (let i = 0; i < articles.length; i++) {
+        const article = articles[i];
+        const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+
+        const el = document.createElement("div");
+        el.className = "day-article";
+        el.innerHTML = `
+          <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+            <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+            <div class="day-article-info">
+              <p class="day-meta">Par ${article.author}, à ${time}</p>
+              <h4>${article.title}</h4>
+              <p class="day-desc">${article.description}</p>
+            </div>
+          </a>`;
+        block.appendChild(el);
+
+        if (i < articles.length - 1) {
+          const sep = document.createElement("div");
+          sep.className = "day-separator";
+          block.appendChild(sep);
+        }
+
+        // ⏱ Injection progressive : 1 article toutes les 200 ms
+        await new Promise(res => setTimeout(res, 200));
       }
     }
-
-    await renderProgressively(all);
 
   } catch (err) {
     console.error(err);
