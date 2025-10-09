@@ -112,7 +112,7 @@ async function loadArticles() {
       } else {
         dateDisplay = article.date.toLocaleDateString("fr-FR", {
           day: "numeric",
-          month: "short", // ✅ mois abrégé
+          month: "short",
         });
       }
 
@@ -284,7 +284,7 @@ async function loadArticles() {
 document.addEventListener("DOMContentLoaded", loadArticles);
 
 // ==============================
-// 🩹 Patch anti-flicker iOS Safari
+// 🩹 Patch anti-flicker iOS Safari (léger et propre)
 // ==============================
 (function () {
   const isiOS =
@@ -306,5 +306,26 @@ document.addEventListener("DOMContentLoaded", loadArticles);
     const nav = performance.getEntriesByType("navigation")[0];
     const isReload = nav && nav.type === "reload";
     if (e.persisted || isReload) requestAnimationFrame(stabilize);
+  });
+})();
+
+// ==============================
+// 🩹 iOS Safari reload fix — forcer un rendu "comme initial"
+// ==============================
+(function () {
+  const isiOS =
+    /iP(hone|od|ad)/.test(navigator.platform) ||
+    (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+
+  if (!isiOS) return;
+
+  window.addEventListener("pageshow", e => {
+    if (e.persisted) {
+      requestAnimationFrame(() => {
+        document.body.style.display = "none";
+        void document.body.offsetHeight;
+        document.body.style.display = "";
+      });
+    }
   });
 })();
