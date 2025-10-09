@@ -4,16 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Article – Quartz Report</title>
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
 
-  <!-- Conteneur principal article -->
-  <section class="articles" id="article-full">
-    <!-- Article inséré dynamiquement -->
+  <!-- ✅ Style principal -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- ✅ Icônes (si besoin pour cohérence avec le reste du site) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7-icons/css/framework7-icons.css">
+
+  <!-- ✅ Couleur de statut (optionnelle pour iOS PWA-like) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#4b73fa">
+</head>
+
+<body class="article-page">
+
+  <!-- =========================
+       Contenu principal
+       ========================= -->
+  <section id="article-full" class="articles">
+    <!-- L’article est injecté dynamiquement ici -->
   </section>
 
-  <!-- JS -->
+  <!-- =========================
+       Scripts
+       ========================= -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="js/article.js"></script>
 </body>
