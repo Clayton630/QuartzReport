@@ -127,56 +127,154 @@ async function loadArticles() {
       .join("");
 
     // ======================
-    // FEED ARTICLES (progressif, blocs de 4)
+    // FEED ARTICLES
     // ======================
     container.innerHTML = "";
-    const byDay = {};
-    all.forEach(a => {
-      const key = ymdKey(a.date);
-      if (!byDay[key]) byDay[key] = [];
-      byDay[key].push(a);
-    });
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-    const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
+    if (isMobile) {
+      // ==== VERSION MOBILE — par jour ====
+      const byDay = {};
+      all.forEach(a => {
+        const key = ymdKey(a.date);
+        if (!byDay[key]) byDay[key] = [];
+        byDay[key].push(a);
+      });
 
-    for (const k of sortedDays) {
-      const d = new Date(k);
-      const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-      const block = document.createElement("div");
-      block.className = "day-block";
-      block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
-      container.appendChild(block);
+      const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
 
-      const articles = byDay[k].sort((a, b) => b.date - a.date);
+      for (const k of sortedDays) {
+        const d = new Date(k);
+        const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+        const block = document.createElement("div");
+        block.className = "day-block";
+        block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
+        container.appendChild(block);
 
-      // ⏱ Injection en groupes de 4
-      for (let i = 0; i < articles.length; i += 4) {
-        const chunk = articles.slice(i, i + 4);
+        const articles = byDay[k].sort((a, b) => b.date - a.date);
 
-        chunk.forEach((article, idx) => {
-          const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-          const el = document.createElement("div");
-          el.className = "day-article";
-          el.innerHTML = `
-            <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-              <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
-              <div class="day-article-info">
-                <p class="day-meta">Par ${article.author}, à ${time}</p>
-                <h4>${article.title}</h4>
-                <p class="day-desc">${article.description}</p>
-              </div>
-            </a>`;
-          block.appendChild(el);
+        for (let i = 0; i < articles.length; i += 4) {
+          const chunk = articles.slice(i, i + 4);
 
-          if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
-            const sep = document.createElement("div");
-            sep.className = "day-separator";
-            block.appendChild(sep);
+          chunk.forEach((article, idx) => {
+            const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+            const el = document.createElement("div");
+            el.className = "day-article";
+            el.innerHTML = `
+              <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                <div class="day-article-info">
+                  <p class="day-meta">Par ${article.author}, à ${time}</p>
+                  <h4>${article.title}</h4>
+                  <p class="day-desc">${article.description}</p>
+                </div>
+              </a>`;
+            block.appendChild(el);
+
+            if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
+              const sep = document.createElement("div");
+              sep.className = "day-separator";
+              block.appendChild(sep);
+            }
+          });
+
+          await new Promise(res => setTimeout(res, 200));
+        }
+      }
+    } else {
+      // ==== VERSION DESKTOP — par semaine ====
+      const mondayThis = startOfWeekMonday(new Date());
+      const mondayNext = addDays(mondayThis, 7);
+      const mondayPrev = addDays(mondayThis, -7);
+
+      const weeks = { current: {}, previous: {}, others: {} };
+
+      all.forEach(article => {
+        const d = normalizeDate(article.date);
+        const dayKey = ymdKey(d);
+        const dTime = d.getTime();
+        const mondayThisTime = mondayThis.getTime();
+        const mondayNextTime = mondayNext.getTime();
+        const mondayPrevTime = mondayPrev.getTime();
+
+        if (dTime >= mondayThisTime && dTime < mondayNextTime) {
+          (weeks.current[dayKey] ||= []).push(article);
+        } else if (dTime >= mondayPrevTime && dTime < mondayThisTime) {
+          (weeks.previous[dayKey] ||= []).push(article);
+        } else {
+          const wk = startOfWeekMonday(d);
+          const wkKey = ymdKey(wk);
+          (weeks.others[wkKey] ||= {});
+          (weeks.others[wkKey][dayKey] ||= []).push(article);
+        }
+      });
+
+      async function renderWeek(title, daysMap) {
+        if (!Object.keys(daysMap).length) return;
+        const weekBlock = document.createElement("div");
+        weekBlock.className = "week-block";
+        weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
+
+        const carousel = document.createElement("div");
+        carousel.className = "week-carousel";
+
+        const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
+
+        for (const dayKey of sortedDays) {
+          const d = new Date(dayKey);
+          const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+          const dayBlock = document.createElement("div");
+          dayBlock.className = "day-block";
+          dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
+
+          const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
+          for (let i = 0; i < articles.length; i += 4) {
+            const chunk = articles.slice(i, i + 4);
+
+            chunk.forEach((article, idx) => {
+              const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+              const el = document.createElement("div");
+              el.className = "day-article";
+              el.innerHTML = `
+                <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                  <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                  <div class="day-article-info">
+                    <p class="day-meta">Par ${article.author}, à ${time}</p>
+                    <h4>${article.title}</h4>
+                    <p class="day-desc">${article.description}</p>
+                  </div>
+                </a>`;
+              dayBlock.appendChild(el);
+
+              if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
+                const sep = document.createElement("div");
+                sep.className = "day-separator";
+                dayBlock.appendChild(sep);
+              }
+            });
+
+            await new Promise(res => setTimeout(res, 200));
           }
-        });
 
-        // 👇 petit délai entre les groupes (200 ms par groupe de 4)
-        await new Promise(res => setTimeout(res, 200));
+          carousel.appendChild(dayBlock);
+        }
+
+        weekBlock.appendChild(carousel);
+        container.appendChild(weekBlock);
+      }
+
+      await renderWeek("Cette semaine", weeks.current);
+      await renderWeek("La semaine dernière", weeks.previous);
+
+      const otherWeeks = Object.keys(weeks.others).sort((a, b) => new Date(b) - new Date(a));
+      for (const wkKey of otherWeeks) {
+        const start = new Date(wkKey);
+        const end = addDays(start, 6);
+        const title = `Semaine du ${start.toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "long"
+        })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
+        await renderWeek(title, weeks.others[wkKey]);
       }
     }
 
