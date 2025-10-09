@@ -119,7 +119,7 @@ async function loadArticles() {
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager" fetchpriority="low">
         <div class="card-content">
-          <p class="card-meta">Par ${article.author}, ${dateDisplay}.</p>
+          <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
           <h3>${article.title}</h3>
         </div>
       `;
