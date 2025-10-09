@@ -86,7 +86,7 @@ async function loadArticles() {
     all.sort((a, b) => b.date - a.date);
 
     // ======================
-    // SECTION HOTTEST (conserve <img>)
+    // SECTION HOTTEST
     // ======================
     hottestContainer.innerHTML = "";
     const hottest = all.filter(a => a.important).slice(0, 3);
@@ -94,11 +94,32 @@ async function loadArticles() {
       const link = document.createElement("a");
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
       link.className = "card";
-      const date = article.date.toLocaleDateString("fr-FR", { day: "2-digit", month: "long" });
+
+      // ✅ Format dynamique pour la date du HOTTEST
+      const now = new Date();
+      const isToday =
+        article.date.getDate() === now.getDate() &&
+        article.date.getMonth() === now.getMonth() &&
+        article.date.getFullYear() === now.getFullYear();
+
+      let dateDisplay;
+      if (isToday) {
+        const time = article.date.toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        dateDisplay = `à ${time}`;
+      } else {
+        dateDisplay = article.date.toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "short", // ✅ mois abrégé
+        });
+      }
+
       link.innerHTML = `
         <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager" fetchpriority="low">
         <div class="card-content">
-          <p class="card-meta">Par ${article.author}, le ${date}.</p>
+          <p class="card-meta">Par ${article.author}, ${dateDisplay}.</p>
           <h3>${article.title}</h3>
         </div>
       `;
@@ -114,7 +135,7 @@ async function loadArticles() {
       .join("");
 
     // ======================
-    // FEED ARTICLES (utilise .thumb pour images)
+    // FEED ARTICLES
     // ======================
     function render(list) {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
