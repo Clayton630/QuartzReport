@@ -547,11 +547,10 @@ body::before {
    Titre "Tous les articles"
    ========================= */
 .all-articles-title {
-  font-size: 2rem;              /* plus grand, vrai titre de section */
-  font-weight: 700;
-  color: #0f0f0f;
-  margin: 40px 24px 18px 24px;  /* plus d’espace au-dessus */
-  line-height: 1.2;
-  letter-spacing: -0.01em;
+  font-size: 1.5rem;         /* légèrement plus grand */
+  font-weight: 600;          /* un peu plus gras, mais pas excessif */
+  color: #111;
+  margin: 32px 20px 14px 20px;
+  line-height: 1.3;
   text-align: left;
 }
