@@ -1,4 +1,4 @@
-// ========= Fonctions utilitaires =========
+// ========= Décodage GitHub =========
 function base64ToUtf8(base64) {
   const binary = atob(base64.replace(/\n/g, ""));
   const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
@@ -46,16 +46,19 @@ async function loadSingleArticle() {
       year: "numeric",
     });
 
+    // ✅ Construction de l'article avec image de couverture plein écran
     container.innerHTML = `
       <article class="article-full">
+        ${
+          meta.thumbnail
+            ? `<div class="article-cover">
+                 <img src="${meta.thumbnail}" alt="Illustration de l'article">
+               </div>`
+            : ""
+        }
         <header class="article-header">
           <h1>${meta.title || "Sans titre"}</h1>
           <p class="article-meta">Par ${meta.author || "Inconnu"}, le ${dateDisplay}</p>
-          ${
-            meta.thumbnail
-              ? `<div class="article-image"><img src="${meta.thumbnail}" alt=""></div>`
-              : ""
-          }
         </header>
         <section class="article-body">
           ${marked.parse(body)}
