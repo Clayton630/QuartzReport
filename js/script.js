@@ -33,6 +33,11 @@ async function loadArticles() {
   const hottestContainer = document.getElementById("hottest");
   const categoriesContainer = document.getElementById("categories");
 
+  // ✅ Reset complet avant chargement pour éviter la réutilisation des layers GPU
+  document.body.offsetHeight; // force un reflow
+  container.innerHTML = "";
+  hottestContainer.innerHTML = "";
+
   const repo = "Clayton630/QuartzReport";
   const branch = "main";
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
@@ -171,7 +176,8 @@ async function loadArticles() {
                 </div>
               </a>`;
             block.appendChild(el);
-            if (i < arr.length - 1) block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+            if (i < arr.length - 1)
+              block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
           });
 
           container.appendChild(block);
@@ -240,7 +246,8 @@ async function loadArticles() {
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
-                if (i < arr.length - 1) dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+                if (i < arr.length - 1)
+                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
               });
 
             carousel.appendChild(dayBlock);
@@ -257,7 +264,10 @@ async function loadArticles() {
         .forEach(wkKey => {
           const start = new Date(wkKey);
           const end = addDays(start, 6);
-          const title = `Semaine du ${start.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
+          const title = `Semaine du ${start.toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+          })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
           renderWeek(title, weeks.others[wkKey]);
         });
     }
@@ -282,50 +292,3 @@ async function loadArticles() {
 }
 
 document.addEventListener("DOMContentLoaded", loadArticles);
-
-// ==============================
-// 🩹 Patch anti-flicker iOS Safari (léger et propre)
-// ==============================
-(function () {
-  const isiOS =
-    /iP(hone|od|ad)/.test(navigator.platform) ||
-    (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-
-  if (!isiOS) return;
-
-  function stabilize() {
-    document.querySelectorAll(
-      ".day-article .thumb, .hottest-grid img, .article-image img"
-    ).forEach(el => {
-      el.style.webkitTransform = "translateZ(0)";
-      el.style.transform = "translateZ(0)";
-    });
-  }
-
-  window.addEventListener("pageshow", e => {
-    const nav = performance.getEntriesByType("navigation")[0];
-    const isReload = nav && nav.type === "reload";
-    if (e.persisted || isReload) requestAnimationFrame(stabilize);
-  });
-})();
-
-// ==============================
-// 🩹 iOS Safari reload fix — forcer un rendu "comme initial"
-// ==============================
-(function () {
-  const isiOS =
-    /iP(hone|od|ad)/.test(navigator.platform) ||
-    (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-
-  if (!isiOS) return;
-
-  window.addEventListener("pageshow", e => {
-    if (e.persisted) {
-      requestAnimationFrame(() => {
-        document.body.style.display = "none";
-        void document.body.offsetHeight;
-        document.body.style.display = "";
-      });
-    }
-  });
-})();
