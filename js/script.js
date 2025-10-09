@@ -26,7 +26,7 @@ function base64ToUtf8(base64) {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
-// ========= Chargement du feed principal =========
+// ========= Chargement principal (feed) =========
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
@@ -81,7 +81,7 @@ async function loadArticles() {
       });
     }
 
-    // Tri par date décroissante
+    // Tri du plus récent au plus ancien
     all.sort((a, b) => b.date - a.date);
 
     // ======================
@@ -133,7 +133,7 @@ async function loadArticles() {
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
     if (isMobile) {
-      // === VERSION MOBILE : par jour ===
+      // === VERSION MOBILE — par jour ===
       const byDay = {};
       all.forEach(a => {
         const key = ymdKey(a.date);
@@ -182,7 +182,7 @@ async function loadArticles() {
         }
       }
     } else {
-      // === VERSION DESKTOP : par semaine ===
+      // === VERSION DESKTOP — par semaine ===
       const mondayThis = startOfWeekMonday(new Date());
       const mondayNext = addDays(mondayThis, 7);
       const mondayPrev = addDays(mondayThis, -7);
@@ -284,61 +284,4 @@ async function loadArticles() {
   }
 }
 
-// ========= Chargement d’un article unique (article.html) =========
-async function loadSingleArticle() {
-  const params = new URLSearchParams(window.location.search);
-  const file = params.get("file");
-  if (!file) return;
-
-  const repo = "Clayton630/QuartzReport";
-  const branch = "main";
-  const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
-
-  const container = document.querySelector("main") || document.body;
-
-  try {
-    const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file}?ref=${branch}`);
-    const apiData = await apiResp.json();
-    const text = base64ToUtf8(apiData.content);
-
-    const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
-    let meta = {}, body = text;
-    if (match) {
-      const yaml = match[1].trim();
-      body = match[2].trim();
-      yaml.split("\n").forEach(line => {
-        const [k, ...rest] = line.split(":");
-        meta[k.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
-      });
-    }
-
-    const date = new Date(meta.date || Date.now());
-    const dateDisplay = date.toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
-
-    container.innerHTML = `
-      <article class="article-full">
-        <header class="article-header">
-          <h1>${meta.title || "Sans titre"}</h1>
-          <p class="article-meta">Par ${meta.author || "Inconnu"}, le ${dateDisplay}</p>
-          ${
-            meta.thumbnail
-              ? `<div class="article-image"><img src="${meta.thumbnail}" alt=""></div>`
-              : ""
-          }
-        </header>
-        <section class="article-body">
-          ${marked.parse(body)}
-        </section>
-      </article>
-    `;
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = "<p>Erreur lors du chargement de l'article.</p>";
-  }
-}
-
-// ========= Déclencheur selon la page =========
-document.addEventListener("DOMContentLoaded", () => {
-  if (document.getElementById("articles")) loadArticles();
-  else loadSingleArticle();
-});
+document.addEventListener("DOMContentLoaded", loadArticles);
