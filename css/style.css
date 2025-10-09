@@ -472,37 +472,6 @@ body::before {
     scroll-snap-align: start;
   }
 }
-
-/* =========================
-   🩹 Correctif final flicker iOS Safari
-   ========================= */
-.day-article .thumb,
-.hottest-grid img,
-.article-image img {
-  will-change: auto !important;
-  transform: none !important;
-  -webkit-transform: none !important;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  contain: size paint;
-  display: block;
-  position: relative;
-  z-index: 1;
-  image-rendering: -webkit-optimize-contrast;
-}
-
-.articles,
-.hottest-grid {
-  will-change: auto !important;
-  transform: none !important;
-  -webkit-transform: none !important;
-}
-
-.site-header,
-.main-nav {
-  isolation: isolate;
-  contain: paint;
-}
 /* =========================
    Résumé (description) des articles du feed
    ========================= */
@@ -572,4 +541,15 @@ body::before {
   border-radius: 14px;
   margin: 1.2rem 0;
   object-fit: contain;
+}
+
+/* =========================
+   Titre "Tous les articles"
+   ========================= */
+.all-articles-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111;
+  margin: 26px 20px 12px 20px;
+  text-align: left;
 }
