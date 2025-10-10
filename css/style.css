@@ -316,34 +316,6 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   🌈 Fade latéral (indicateur de scroll)
-   ========================= */
-.main-nav::before,
-.main-nav::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 40px;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.main-nav::before {
-  left: 0;
-  background: linear-gradient(to right,
-    rgba(243, 246, 251, 1),
-    rgba(243, 246, 251, 0));
-}
-
-.main-nav::after {
-  right: 0;
-  background: linear-gradient(to left,
-    rgba(243, 246, 251, 1),
-    rgba(243, 246, 251, 0));
-}
-
-/* =========================
    Section Hottest
    ========================= */
 .hottest {
