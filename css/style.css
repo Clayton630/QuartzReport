@@ -155,7 +155,7 @@ body::before {
     0 2px 20px rgba(0,0,0,0.1);
   cursor: pointer;
   transition: all 0.25s ease;
-  padding: 0 12px; /* 👈 espacement interne ajusté */
+  padding: 0 12px; /* espacement interne ajusté */
 }
 
 .dual-icon-btn:hover {
@@ -232,7 +232,7 @@ body::before {
 }
 
 /* =========================
-   Section Hottest
+   Section Hottest (avec padding d’origine)
    ========================= */
 .hottest {
   padding: 20px 0;
@@ -240,7 +240,7 @@ body::before {
 }
 
 .hottest-wrapper {
-  padding: 0 20px;
+  padding: 60px 20px; /* ✅ grand padding vertical rétabli */
   overflow: visible;
 }
 
@@ -248,7 +248,7 @@ body::before {
   display: flex;
   gap: 14px;
   scroll-snap-type: x mandatory;
-  overflow-x: auto;
+  overflow-x: visible; /* ✅ permet aux ombres et hovers de dépasser */
   overflow-y: visible;
   overscroll-behavior-x: contain;
   padding: 0;
@@ -259,7 +259,6 @@ body::before {
   display: none;
 }
 
-/* ✅ Cartes HOTTEST ancrées vers le bas */
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -268,8 +267,6 @@ body::before {
   color: inherit;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;       /* 👈 ancre tout vers le bas */
-  transform-origin: bottom;        /* 👈 les changements de taille se font vers le bas */
   border-radius: 28px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
@@ -284,21 +281,13 @@ body::before {
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
 
-/* ✅ Image 16:9 forcée et stable visuellement */
-.hottest-grid .card > img {
-  display: block;
+.card img {
   width: 100%;
-  height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  transform-origin: bottom;
-  flex-shrink: 0;
-  border: none;
-  margin: 0;
-  padding: 0;
+  display: block;
 }
 
-/* ✅ Contenu inchangé */
 .card-content {
   flex: 1;
   padding: 14px 16px 16px;
