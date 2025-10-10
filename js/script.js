@@ -285,3 +285,28 @@ async function loadArticles() {
 }
 
 document.addEventListener("DOMContentLoaded", loadArticles);
+
+
+// ==============================
+// Bouton combiné (recherche + menu)
+// ==============================
+document.addEventListener("DOMContentLoaded", () => {
+  const searchIcon = document.querySelector(".search-icon");
+  const menuIcon = document.querySelector(".menu-icon");
+
+  if (searchIcon) {
+    searchIcon.addEventListener("click", e => {
+      e.stopPropagation();
+      // 🟢 Ton code d’ouverture de la recherche ici
+      console.log("Recherche ouverte");
+    });
+  }
+
+  if (menuIcon) {
+    menuIcon.addEventListener("click", e => {
+      e.stopPropagation();
+      // 🟢 Ton code d’ouverture du menu ici
+      console.log("Menu ouvert");
+    });
+  }
+});
