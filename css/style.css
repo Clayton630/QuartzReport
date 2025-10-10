@@ -180,9 +180,10 @@ body::before {
     height: 44px;
     width: 90px;
     padding: 0 14px;
+    gap: 12px;
   }
   .dual-icon-btn i {
-    font-size: 1.45rem;
+    font-size: 1.55rem;
   }
 }
 
