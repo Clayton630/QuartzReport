@@ -265,7 +265,7 @@ body::before {
   display: none;
 }
 
-/* ✅ Cartes ancrées vers le bas */
+/* ✅ Cartes HOTTEST ancrées vers le bas */
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -274,8 +274,8 @@ body::before {
   color: inherit;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;       /* 👈 ancre le contenu vers le bas */
-  transform-origin: bottom;        /* 👈 toute réduction vient du bas */
+  justify-content: flex-end;       /* 👈 ancre tout vers le bas */
+  transform-origin: bottom;        /* 👈 les changements de taille se font vers le bas */
   border-radius: 28px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
@@ -290,13 +290,18 @@ body::before {
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
 
-/* ✅ Image 16/9 ancrée en bas */
-.hottest-grid .card img {
+/* ✅ Image 16:9 forcée et stable visuellement */
+.hottest-grid .card > img {
+  display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  display: block;
   transform-origin: bottom;
+  flex-shrink: 0;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 /* ✅ Contenu inchangé */
