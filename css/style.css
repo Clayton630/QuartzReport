@@ -206,9 +206,12 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Navigation (catégories) — scroll libre + fade dynamique clippé
+   Navigation (catégories) — scroll libre + fades intelligents
    ========================= */
 .main-nav {
+  --edge-pad: 16px;   /* marge visuelle gauche/droite */
+  --fadeW: 40px;      /* largeur du fade */
+
   position: relative;
   display: block;
   width: 100%;
@@ -219,37 +222,21 @@ body, button, input, textarea, select {
   scroll-snap-type: none;
   padding: 10px 0;
   margin: 8px 0 0 0;
-  mask-image: linear-gradient(to right,
-    transparent 0,
-    black 20px,
-    black calc(100% - 20px),
-    transparent 100%
-  ); /* ✅ clip visuel du fade */
-  -webkit-mask-image: linear-gradient(to right,
-    transparent 0,
-    black 20px,
-    black calc(100% - 20px),
-    transparent 100%
-  );
 }
 
-.main-nav::-webkit-scrollbar {
-  display: none;
-}
+.main-nav::-webkit-scrollbar { display: none; }
 
-/* ✅ Liste correctement contenue et alignée */
+/* Liste avec marge gauche ET marge droite (incluant la zone sous le fade droit) */
 .main-nav ul {
   display: flex;
   gap: 12px;
   list-style: none;
-  padding: 0 16px; /* ✅ marges égales gauche/droite */
+  padding: 0 calc(var(--edge-pad) + var(--fadeW)) 0 var(--edge-pad);
   margin: 0;
   width: max-content;
 }
 
-.main-nav li {
-  flex: 0 0 auto;
-}
+.main-nav li { flex: 0 0 auto; }
 
 .main-nav a {
   display: inline-block;
@@ -281,7 +268,6 @@ body, button, input, textarea, select {
   transform: scale(1.04);
 }
 
-/* ✅ Catégorie active */
 .main-nav a.active {
   background: rgba(255,255,255,1);
   border: 0.5px solid rgba(0,0,0,0.1);
@@ -289,34 +275,38 @@ body, button, input, textarea, select {
   transform: scale(1.03);
 }
 
-/* =========================
-   🌈 Fade subtil (restreint dans la zone scrollable)
-   ========================= */
+/* Fades : masqués par défaut, affichés via classes .has-left / .has-right */
 .main-nav::before,
 .main-nav::after {
   content: "";
   position: absolute;
   top: 0;
-  width: 40px;
+  width: var(--fadeW);
   height: 100%;
   pointer-events: none;
   z-index: 2;
-  transition: opacity 0.3s ease;
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
+/* gauche */
 .main-nav::before {
   left: 0;
   background: linear-gradient(to right,
-    rgba(243, 246, 251, 1),
-    rgba(243, 246, 251, 0));
+    rgba(243,246,251,1),
+    rgba(243,246,251,0));
 }
-
+/* droite */
 .main-nav::after {
   right: 0;
   background: linear-gradient(to left,
-    rgba(243, 246, 251, 1),
-    rgba(243, 246, 251, 0));
+    rgba(243,246,251,1),
+    rgba(243,246,251,0));
 }
+
+/* Affichage conditionnel des fades */
+.main-nav.has-left::before { opacity: 1; }
+.main-nav.has-right::after { opacity: 1; }
 
 /* =========================
    Section Hottest
