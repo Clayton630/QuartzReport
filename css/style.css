@@ -178,7 +178,7 @@ body::before {
 @media (max-width: 768px) {
   .dual-icon-btn {
     height: 44px;
-    width: 90px;
+    width: 94px;
     padding: 0 10px;
     justify-content: space-between;
   }
