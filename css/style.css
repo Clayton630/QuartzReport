@@ -206,13 +206,12 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Navigation (catégories) — scroll libre + fade latéral
+   Navigation (catégories) — scroll libre + marges alignées
    ========================= */
 .main-nav {
-  position: relative;
   display: block;
   width: 100%;
-  overflow-x: auto;                  
+  overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
@@ -230,7 +229,7 @@ body, button, input, textarea, select {
   display: flex;
   gap: 12px;
   list-style: none;
-  padding: 0 16px 0 14px;     /* 👈 padding gauche légèrement réduit */
+  padding: 0 14px;          /* 👈 marge égale à gauche et à droite */
   margin: 0;
   width: max-content;
 }
