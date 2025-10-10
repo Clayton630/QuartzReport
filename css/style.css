@@ -233,6 +233,17 @@ body::before {
 }
 
 /* =========================
+   Catégories — ajustement mobile
+   ========================= */
+@media (max-width: 768px) {
+  .main-nav a {
+    padding: 6px 14px;    /* 👈 réduit la hauteur */
+    border-radius: 40px;
+    font-weight: 550;     /* 👈 un peu plus gras */
+  }
+}
+
+/* =========================
    Section Hottest (version restaurée — scroll + ombres intactes)
    ========================= */
 .hottest {
