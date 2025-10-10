@@ -515,6 +515,10 @@ body::before {
    Responsive — correction du 16/9 sur mobile
    ========================= */
 @media (max-width: 768px) {
+  .hottest-wrapper {
+    margin-top: 8px; /* 👈 léger décalage vers le bas */
+  }
+
   .hottest-grid .card {
     flex: 0 0 65%;
     max-width: 260px;
@@ -522,7 +526,7 @@ body::before {
 
   .hottest-grid .card > img {
     width: 100%;
-    aspect-ratio: 16 / 9;     /* ✅ rétablit le format 16:9 */
+    aspect-ratio: 16 / 9;
     object-fit: cover;
     display: block;
     height: auto;
