@@ -177,8 +177,8 @@ body::before {
 /* Mobile */
 @media (max-width: 768px) {
   .dual-icon-btn {
-    height: 48px;
-    width: 96px;
+    height: 44px;
+    width: 90px;
     padding: 0 14px;
   }
   .dual-icon-btn i {
