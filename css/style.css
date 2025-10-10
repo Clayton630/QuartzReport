@@ -179,7 +179,7 @@ body::before {
   .dual-icon-btn {
     height: 44px;
     width: 90px;
-    padding: 0 20px;
+    padding: 0 5px;
     justify-content: space-between;
   }
   .dual-icon-btn i {
