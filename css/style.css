@@ -130,7 +130,7 @@ body::before {
    ========================= */
 .icons {
   display: flex;
-  gap: 14px;
+  gap: 8px;
   overflow: visible;
 }
 
