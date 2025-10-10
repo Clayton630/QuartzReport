@@ -516,7 +516,7 @@ body::before {
    ========================= */
 @media (max-width: 768px) {
   .hottest-wrapper {
-    margin-top: 25px; /* 👈 léger décalage vers le bas */
+    margin-top: 10px; /* 👈 léger décalage vers le bas */
   }
 
   .hottest-grid .card {
