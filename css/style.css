@@ -206,12 +206,11 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Navigation (catégories) — fade intégré dans la ligne
+   Navigation (catégories) — scroll libre + fade dynamique clippé
    ========================= */
 .main-nav {
   position: relative;
-  display: flex;
-  align-items: center;
+  display: block;
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
@@ -220,29 +219,36 @@ body, button, input, textarea, select {
   scroll-snap-type: none;
   padding: 10px 0;
   margin: 8px 0 0 0;
-  mask-image: none;
-  -webkit-mask-image: none;
+  mask-image: linear-gradient(to right,
+    transparent 0,
+    black 20px,
+    black calc(100% - 20px),
+    transparent 100%
+  ); /* ✅ clip visuel du fade */
+  -webkit-mask-image: linear-gradient(to right,
+    transparent 0,
+    black 20px,
+    black calc(100% - 20px),
+    transparent 100%
+  );
 }
 
 .main-nav::-webkit-scrollbar {
   display: none;
 }
 
-/* ✅ Liste parfaitement alignée */
+/* ✅ Liste correctement contenue et alignée */
 .main-nav ul {
   display: flex;
-  align-items: center;
   gap: 12px;
   list-style: none;
-  padding: 0 16px;
+  padding: 0 16px; /* ✅ marges égales gauche/droite */
   margin: 0;
   width: max-content;
 }
 
 .main-nav li {
   flex: 0 0 auto;
-  position: relative;
-  overflow: hidden; /* 👈 le fade est maintenant contenu à l’intérieur des catégories */
 }
 
 .main-nav a {
@@ -268,8 +274,6 @@ body, button, input, textarea, select {
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
     0 2px 20px rgba(0,0,0,0.1);
   transition: all 0.25s ease;
-  position: relative;
-  z-index: 1;
 }
 
 .main-nav a:hover {
@@ -285,34 +289,33 @@ body, button, input, textarea, select {
   transform: scale(1.03);
 }
 
-/* 🌈 Fade contenu à l’intérieur des catégories */
-.main-nav li::before,
-.main-nav li::after {
+/* =========================
+   🌈 Fade subtil (restreint dans la zone scrollable)
+   ========================= */
+.main-nav::before,
+.main-nav::after {
   content: "";
   position: absolute;
   top: 0;
   width: 40px;
   height: 100%;
-  z-index: 2;
   pointer-events: none;
-  opacity: 0; /* 👈 par défaut invisible */
+  z-index: 2;
   transition: opacity 0.3s ease;
 }
 
-.main-nav li:first-child::before {
-  left: -1px;
+.main-nav::before {
+  left: 0;
   background: linear-gradient(to right,
     rgba(243, 246, 251, 1),
     rgba(243, 246, 251, 0));
-  opacity: 1;
 }
 
-.main-nav li:last-child::after {
-  right: -1px;
+.main-nav::after {
+  right: 0;
   background: linear-gradient(to left,
     rgba(243, 246, 251, 1),
     rgba(243, 246, 251, 0));
-  opacity: 1;
 }
 
 /* =========================
