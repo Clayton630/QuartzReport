@@ -522,15 +522,18 @@ body::before {
 }
 
 /* =========================
-   Catégories mobile — ajustement fin
+   Catégories — rendu mobile corrigé (fin)
    ========================= */
 @media (max-width: 480px) {
   .main-nav li a {
-    padding: 6px 14px;
-    min-height: 32px;
-    line-height: 1.2;
+    display: inline-flex;             /* ✅ centre verticalement */
+    align-items: center;
+    justify-content: center;
+    padding: 6px 14px;                /* ✅ plus fin verticalement */
+    min-height: 34px;                 /* ✅ assure une bonne taille tapable */
+    line-height: 1;                   /* ✅ corrige l'alignement du texte */
     border-radius: 38px;
-    font-weight: 600;
-    letter-spacing: -0.1px;
+    font-weight: 500;                 /* ✅ normal, plus de gras */
+    letter-spacing: 0;                /* ✅ neutre */
   }
 }
