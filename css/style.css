@@ -244,14 +244,12 @@ body::before {
   padding: 20px 0;
   overflow: visible;
 }
-.hottest h2 {
-  font-size: 1.2rem;
-  margin: 0 20px 14px 20px;
-}
+
 .hottest-wrapper {
   padding: 0 20px;
   overflow: visible;
 }
+
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -262,9 +260,12 @@ body::before {
   padding: 0;
   margin: 0;
 }
+
 .hottest-grid::-webkit-scrollbar {
   display: none;
 }
+
+/* ✅ Cartes ancrées vers le bas */
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -273,6 +274,8 @@ body::before {
   color: inherit;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;       /* 👈 ancre le contenu vers le bas */
+  transform-origin: bottom;        /* 👈 toute réduction vient du bas */
   border-radius: 28px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
@@ -281,20 +284,27 @@ body::before {
   transition: all 0.3s ease;
   overflow: hidden;
 }
+
 .hottest-grid .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
-.card img {
+
+/* ✅ Image 16/9 ancrée en bas */
+.hottest-grid .card img {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
+  transform-origin: bottom;
 }
+
+/* ✅ Contenu inchangé */
 .card-content {
   flex: 1;
   padding: 14px 16px 16px;
 }
+
 .card-content h3 {
   font-size: 1.05rem;
   margin: 6px 0 0;
@@ -302,6 +312,7 @@ body::before {
   text-align: left;
   font-weight: 600;
 }
+
 .card-content p {
   margin: 0;
   font-size: 13px;
