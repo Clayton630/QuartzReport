@@ -592,3 +592,14 @@ body, button, input, textarea, select {
   padding: 18px 16px;                    /* ✅ padding horizontal légèrement réduit */
   border-radius: 60px;
 }
+
+/* =========================
+   Catégorie active — état sélectionné
+   ========================= */
+.main-nav a.active {
+  background: rgba(255, 255, 255, 1);
+  border: 0.5px solid rgba(0,0,0,0.1);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  font-weight: 500;
+  transform: scale(1.03);
+}
