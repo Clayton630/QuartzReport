@@ -206,22 +206,23 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Navigation (catégories) — scroll horizontal libre et marges alignées
+   Navigation (catégories) — scroll libre + fade latéral
    ========================= */
 .main-nav {
+  position: relative;
   display: block;
   width: 100%;
-  overflow-x: auto;                  /* ✅ scroll horizontal activé */
+  overflow-x: auto;                  
   overflow-y: hidden;
-  -webkit-overflow-scrolling: touch; /* ✅ inertie fluide iOS */
+  -webkit-overflow-scrolling: touch;
   white-space: nowrap;
-  scroll-snap-type: none;            /* ✅ aucun snap */
-  padding: 10px 0;                   /* ✅ padding vertical uniquement */
+  scroll-snap-type: none;
+  padding: 10px 0;
   margin: 8px 0 0 0;
 }
 
 .main-nav::-webkit-scrollbar {
-  display: none;                     /* ✅ cache la barre */
+  display: none;
 }
 
 /* ✅ Liste correctement contenue et alignée */
@@ -229,9 +230,9 @@ body, button, input, textarea, select {
   display: flex;
   gap: 12px;
   list-style: none;
-  padding: 0 20px;                   /* ✅ marge interne alignée au reste du layout */
+  padding: 0 16px 0 14px;     /* 👈 padding gauche légèrement réduit */
   margin: 0;
-  width: max-content;                /* ✅ empêche le retour automatique au début */
+  width: max-content;
 }
 
 .main-nav li {
@@ -274,6 +275,34 @@ body, button, input, textarea, select {
   border: 0.5px solid rgba(0,0,0,0.1);
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   transform: scale(1.03);
+}
+
+/* =========================
+   🌈 Fade latéral (indicateur de scroll)
+   ========================= */
+.main-nav::before,
+.main-nav::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.main-nav::before {
+  left: 0;
+  background: linear-gradient(to right,
+    rgba(243, 246, 251, 1),
+    rgba(243, 246, 251, 0));
+}
+
+.main-nav::after {
+  right: 0;
+  background: linear-gradient(to left,
+    rgba(243, 246, 251, 1),
+    rgba(243, 246, 251, 0));
 }
 
 /* =========================
