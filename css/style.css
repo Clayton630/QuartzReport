@@ -206,11 +206,11 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Navigation (catégories) — scroll libre + fades intelligents
+   Navigation (catégories) — fades calibrés et précis
    ========================= */
 .main-nav {
-  --edge-pad: 16px;   /* marge visuelle gauche/droite */
-  --fadeW: 40px;      /* largeur du fade */
+  --edge-pad: 16px;
+  --fadeW: 40px;
 
   position: relative;
   display: block;
@@ -222,11 +222,17 @@ body, button, input, textarea, select {
   scroll-snap-type: none;
   padding: 10px 0;
   margin: 8px 0 0 0;
+
+  /* ✅ Clip naturel du contenu + empêche le fade de déborder */
+  mask-image: linear-gradient(to right, black 0%, black 100%);
+  -webkit-mask-image: linear-gradient(to right, black 0%, black 100%);
 }
 
-.main-nav::-webkit-scrollbar { display: none; }
+.main-nav::-webkit-scrollbar {
+  display: none;
+}
 
-/* Liste avec marge gauche ET marge droite (incluant la zone sous le fade droit) */
+/* ✅ Liste avec marges symétriques */
 .main-nav ul {
   display: flex;
   gap: 12px;
@@ -236,7 +242,9 @@ body, button, input, textarea, select {
   width: max-content;
 }
 
-.main-nav li { flex: 0 0 auto; }
+.main-nav li {
+  flex: 0 0 auto;
+}
 
 .main-nav a {
   display: inline-block;
@@ -275,11 +283,13 @@ body, button, input, textarea, select {
   transform: scale(1.03);
 }
 
-/* Fades : masqués par défaut, affichés via classes .has-left / .has-right */
+/* =========================
+   🌈 Fades fixes parfaitement alignés
+   ========================= */
 .main-nav::before,
 .main-nav::after {
   content: "";
-  position: absolute;
+  position: sticky; /* 👈 reste toujours aligné à l'écran */
   top: 0;
   width: var(--fadeW);
   height: 100%;
@@ -289,22 +299,23 @@ body, button, input, textarea, select {
   transition: opacity 0.25s ease;
 }
 
-/* gauche */
+/* ✅ Fade gauche */
 .main-nav::before {
   left: 0;
   background: linear-gradient(to right,
     rgba(243,246,251,1),
     rgba(243,246,251,0));
 }
-/* droite */
+
+/* ✅ Fade droite */
 .main-nav::after {
-  right: 0;
+  margin-left: calc(100% - var(--fadeW));
   background: linear-gradient(to left,
     rgba(243,246,251,1),
     rgba(243,246,251,0));
 }
 
-/* Affichage conditionnel des fades */
+/* ✅ Visibilité contrôlée dynamiquement */
 .main-nav.has-left::before { opacity: 1; }
 .main-nav.has-right::after { opacity: 1; }
 
