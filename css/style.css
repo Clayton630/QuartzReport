@@ -522,18 +522,25 @@ body::before {
 }
 
 /* =========================
-   Catégories — rendu mobile corrigé (fin)
+   Catégories — réduction réelle de hauteur mobile
    ========================= */
 @media (max-width: 480px) {
   .main-nav li a {
-    display: inline-flex;             /* ✅ centre verticalement */
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 6px 14px;                /* ✅ plus fin verticalement */
-    min-height: 34px;                 /* ✅ assure une bonne taille tapable */
-    line-height: 1;                   /* ✅ corrige l'alignement du texte */
-    border-radius: 38px;
-    font-weight: 500;                 /* ✅ normal, plus de gras */
-    letter-spacing: 0;                /* ✅ neutre */
+    padding: 3px 14px;          /* ✅ réduit nettement la hauteur */
+    height: 30px;               /* ✅ force la hauteur totale du bouton */
+    min-height: 0;              /* ✅ supprime héritage précédent */
+    line-height: 1;             /* ✅ empêche le texte d’étirer la pill */
+    border-radius: 34px;        /* ✅ toujours arrondi */
+    font-weight: 500;           /* ✅ normal */
+    font-size: 0.95rem;         /* ✅ garde la lisibilité */
+    box-sizing: border-box;     /* ✅ compatibilité iOS Safari */
+  }
+
+  /* Ajustement pour compenser visuel si le texte semble collé */
+  .main-nav ul {
+    gap: 10px;
   }
 }
