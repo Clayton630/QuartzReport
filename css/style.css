@@ -1,3 +1,5 @@
+Ça n’a strictement rien changé du tout, la hauteur ne bouge pas, la font est toujours exactement aussi grasse, ii doit y avoir des conflits ou jsp. Voici mon css complet actuel :
+
 /* =========================
    Reset & bases
    ========================= */
@@ -139,8 +141,8 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 94px;
-  height: 44px;
+  width: 86px;
+  height: 42px;
   border-radius: 50px;
   background:
     radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
@@ -155,7 +157,7 @@ body::before {
     0 2px 20px rgba(0,0,0,0.1);
   cursor: pointer;
   transition: all 0.25s ease;
-  padding: 0 10px;
+  padding: 0 12px; /* espacement interne ajusté */
 }
 
 .dual-icon-btn:hover {
@@ -164,7 +166,7 @@ body::before {
 }
 
 .dual-icon-btn i {
-  font-size: 1.55rem;
+  font-size: 1.3rem;
   color: #111;
   line-height: 0;
   transition: transform 0.2s ease;
@@ -172,6 +174,19 @@ body::before {
 
 .dual-icon-btn i:hover {
   transform: scale(1.15);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .dual-icon-btn {
+    height: 44px;
+    width: 94px;
+    padding: 0 10px;
+    justify-content: space-between;
+  }
+  .dual-icon-btn i {
+    font-size: 1.55rem;
+  }
 }
 
 /* =========================
@@ -220,7 +235,18 @@ body::before {
 }
 
 /* =========================
-   Section Hottest — taille originale restaurée
+   Catégories — ajustement mobile
+   ========================= */
+@media (max-width: 768px) {
+  .main-nav a {
+    padding: 3px 14px;    /* 👈 réduit la hauteur */
+    border-radius: 40px;
+    font-weight: 520;     /* 👈 un peu plus gras */
+  }
+}
+
+/* =========================
+   Section Hottest (version restaurée — scroll + ombres intactes)
    ========================= */
 .hottest {
   padding: 20px 0;
@@ -236,13 +262,13 @@ body::before {
   display: flex;
   gap: 14px;
   scroll-snap-type: x mandatory;
-  overflow-x: auto;
-  overflow-y: visible;
+  overflow-x: auto;          /* ✅ swipe horizontal rétabli */
+  overflow-y: visible;       /* ✅ ombres et hover non coupés */
   overscroll-behavior-x: contain;
-  padding-top: 30px;
-  padding-bottom: 30px;
-  margin-top: -30px;
-  margin-bottom: -30px;
+  padding-top: 30px;         /* espace visuel au-dessus */
+  padding-bottom: 30px;      /* espace visuel au-dessous */
+  margin-top: -30px;         /* ✅ neutralise le padding visuellement */
+  margin-bottom: -30px;      /* ✅ ne décale plus les autres sections */
 }
 
 .hottest-grid::-webkit-scrollbar {
@@ -271,36 +297,260 @@ body::before {
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
 
+/* ✅ Image en 16:9 stable */
 .hottest-grid .card > img {
   width: 100%;
   aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
+  border: none;
+  margin: 0;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.card-content {
+  flex: 1;
+  padding: 14px 16px 16px;
+}
+
+.card-content h3 {
+  font-size: 1.05rem;
+  margin: 6px 0 0;
+  color: #111;
+  text-align: left;
+  font-weight: 600;
+}
+
+.card-content p {
+  margin: 0;
+  font-size: 13px;
+  color: #0000008a;
+  font-weight: 400;
+  line-height: 1.3;
 }
 
 /* =========================
-   Titre “Tous les articles” — recentré
+   Articles du feed
+   ========================= */
+.articles {
+  padding: 20px;
+  overflow: visible;
+}
+.day-block {
+  background: #fff;
+  border-radius: 23px;
+  padding: 14px 14px 8px 14px;
+  margin-bottom: 26px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+}
+.day-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111;
+  margin: 0 0 12px 4px;
+  text-transform: capitalize;
+}
+.day-article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+.day-article-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+.thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex-shrink: 0;
+}
+.day-article-info {
+  flex: 1;
+}
+.day-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #777;
+}
+.day-article-info h4 {
+  margin: 4px 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.3;
+}
+.day-separator {
+  height: 1px;
+  background: rgba(0,0,0,0.06);
+  margin: 6px 0;
+}
+
+/* =========================
+   Résumé (description)
+   ========================= */
+.day-desc {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 1.45;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* =========================
+   Responsive
+   ========================= */
+@media (max-width: 480px) {
+  .logo-img { height: 27px; }
+  .main-nav { padding-left: 8px; padding-right: 16px; }
+  .main-nav a { font-size: 1.05rem; padding: 10px 16px; border-radius: 50px; }
+  .hottest-grid .card { flex: 0 0 65%; max-width: 260px; }
+  .card-content h3 { font-size: 1.05rem; }
+  .article-header h3 { font-size: 1.3rem; }
+  .article-body { font-size: 0.95rem; }
+  .thumb { width: 64px; height: 64px; }
+  .day-title { font-size: 1rem; margin-bottom: 8px; }
+  .day-article-info h4 { font-size: 0.95rem; }
+}
+
+/* =========================
+   Feed regroupé par jour / semaine
+   ========================= */
+@media (min-width: 769px) {
+  .week-block { margin-bottom: 36px; }
+  .week-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 16px 4px;
+    text-transform: capitalize;
+  }
+  .week-carousel {
+    --day-card-w: 320px;
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0 4px;
+    align-items: flex-start;
+  }
+  .week-carousel .day-block {
+    flex: 0 0 var(--day-card-w);
+    width: var(--day-card-w);
+    max-width: var(--day-card-w);
+    height: auto;
+    scroll-snap-align: start;
+  }
+}
+
+/* =========================
+   Article — Page complète
+   ========================= */
+.article-cover {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  top: 0;
+  overflow: hidden;
+  max-height: 55vh;
+  border-radius: 0;
+}
+
+.article-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.article-header {
+  text-align: center;
+  padding: 0 1.2rem;
+}
+
+.article-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0.2rem 0 0.6rem;
+  color: #111;
+}
+
+.article-meta {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 1.8rem;
+}
+
+.article-body {
+  font-size: 1rem;
+  color: #111;
+  line-height: 1.6;
+  padding: 0 1.2rem 2.5rem;
+}
+
+.article-body img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  margin: 1.2rem 0;
+  object-fit: contain;
+}
+
+/* =========================
+   Titre "Tous les articles"
    ========================= */
 .all-articles-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: #111;
-  margin: 32px auto 14px auto;
-  padding: 0 20px;
+  margin: 32px 20px 14px 20px;
   line-height: 1.3;
   text-align: left;
-  max-width: 1200px;
 }
 
 /* =========================
-   Catégories — ajustement mobile (semi-bold, même taille)
+   Responsive — correction du 16/9 sur mobile
    ========================= */
 @media (max-width: 768px) {
-  .main-nav a {
-    padding: 6px 16px !important;
-    border-radius: 38px !important;
-    font-weight: 600 !important; /* semi-bold réel */
-    font-size: 0.95rem !important; /* taille inchangée */
-    line-height: 1.15 !important;
+  .hottest-wrapper {
+    margin-top: 10px; /* 👈 léger décalage vers le bas */
+  }
+
+  .hottest-grid .card {
+    flex: 0 0 65%;
+    max-width: 260px;
+  }
+
+  .hottest-grid .card > img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    height: auto;
+  }
+
+  .card-content {
+    padding: 12px 14px 14px;
+  }
+
+  .card-content h3 {
+    font-size: 1rem;
   }
 }
