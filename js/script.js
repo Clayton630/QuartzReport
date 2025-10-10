@@ -122,115 +122,37 @@ async function loadArticles() {
     // SECTION CATÉGORIES
     // ======================
     const categories = [...new Set(all.map(a => a.category))];
-    categoriesContainer.innerHTML = categories
-      .map(c => `<li><a href="#" data-category="${c}">${c}</a></li>`)
-      .join("");
+    categoriesContainer.innerHTML =
+      `<li><a href="#" data-category="Tous" class="active">Tous</a></li>` +
+      categories.map(c => `<li><a href="#" data-category="${c}">${c}</a></li>`).join("");
 
     // ======================
-    // FEED ARTICLES (progressif, blocs de 4)
+    // FONCTION RENDER
     // ======================
-    container.innerHTML = "";
-    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    async function render(list) {
+      container.innerHTML = "";
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
-    if (isMobile) {
-      // === VERSION MOBILE — par jour ===
-      const byDay = {};
-      all.forEach(a => {
-        const key = ymdKey(a.date);
-        if (!byDay[key]) byDay[key] = [];
-        byDay[key].push(a);
-      });
+      if (isMobile) {
+        const byDay = {};
+        list.forEach(a => {
+          const key = ymdKey(a.date);
+          if (!byDay[key]) byDay[key] = [];
+          byDay[key].push(a);
+        });
 
-      const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
+        const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
+        for (const k of sortedDays) {
+          const d = new Date(k);
+          const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+          const block = document.createElement("div");
+          block.className = "day-block";
+          block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
+          container.appendChild(block);
 
-      for (const k of sortedDays) {
-        const d = new Date(k);
-        const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-        const block = document.createElement("div");
-        block.className = "day-block";
-        block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
-        container.appendChild(block);
-
-        const articles = byDay[k].sort((a, b) => b.date - a.date);
-
-        for (let i = 0; i < articles.length; i += 4) {
-          const chunk = articles.slice(i, i + 4);
-
-          chunk.forEach((article, idx) => {
-            const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-            const el = document.createElement("div");
-            el.className = "day-article";
-            el.innerHTML = `
-              <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
-                <div class="day-article-info">
-                  <p class="day-meta">Par ${article.author}, à ${time}</p>
-                  <h4>${article.title}</h4>
-                  <p class="day-desc">${article.description}</p>
-                </div>
-              </a>`;
-            block.appendChild(el);
-
-            if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
-              const sep = document.createElement("div");
-              sep.className = "day-separator";
-              block.appendChild(sep);
-            }
-          });
-
-          await new Promise(res => setTimeout(res, 200));
-        }
-      }
-    } else {
-      // === VERSION DESKTOP — par semaine ===
-      const mondayThis = startOfWeekMonday(new Date());
-      const mondayNext = addDays(mondayThis, 7);
-      const mondayPrev = addDays(mondayThis, -7);
-
-      const weeks = { current: {}, previous: {}, others: {} };
-
-      all.forEach(article => {
-        const d = normalizeDate(article.date);
-        const dayKey = ymdKey(d);
-        const dTime = d.getTime();
-        const mondayThisTime = mondayThis.getTime();
-        const mondayNextTime = mondayNext.getTime();
-        const mondayPrevTime = mondayPrev.getTime();
-
-        if (dTime >= mondayThisTime && dTime < mondayNextTime) {
-          (weeks.current[dayKey] ||= []).push(article);
-        } else if (dTime >= mondayPrevTime && dTime < mondayThisTime) {
-          (weeks.previous[dayKey] ||= []).push(article);
-        } else {
-          const wk = startOfWeekMonday(d);
-          const wkKey = ymdKey(wk);
-          (weeks.others[wkKey] ||= {});
-          (weeks.others[wkKey][dayKey] ||= []).push(article);
-        }
-      });
-
-      async function renderWeek(title, daysMap) {
-        if (!Object.keys(daysMap).length) return;
-        const weekBlock = document.createElement("div");
-        weekBlock.className = "week-block";
-        weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
-
-        const carousel = document.createElement("div");
-        carousel.className = "week-carousel";
-
-        const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
-
-        for (const dayKey of sortedDays) {
-          const d = new Date(dayKey);
-          const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-          const dayBlock = document.createElement("div");
-          dayBlock.className = "day-block";
-          dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
-
-          const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
+          const articles = byDay[k].sort((a, b) => b.date - a.date);
           for (let i = 0; i < articles.length; i += 4) {
             const chunk = articles.slice(i, i + 4);
-
             chunk.forEach((article, idx) => {
               const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
               const el = document.createElement("div");
@@ -244,40 +166,116 @@ async function loadArticles() {
                     <p class="day-desc">${article.description}</p>
                   </div>
                 </a>`;
-              dayBlock.appendChild(el);
-
+              block.appendChild(el);
               if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
-                const sep = document.createElement("div");
-                sep.className = "day-separator";
-                dayBlock.appendChild(sep);
+                block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
               }
             });
-
             await new Promise(res => setTimeout(res, 200));
           }
+        }
+      } else {
+        const mondayThis = startOfWeekMonday(new Date());
+        const mondayNext = addDays(mondayThis, 7);
+        const mondayPrev = addDays(mondayThis, -7);
 
-          carousel.appendChild(dayBlock);
+        const weeks = { current: {}, previous: {}, others: {} };
+        list.forEach(article => {
+          const d = normalizeDate(article.date);
+          const dayKey = ymdKey(d);
+          const dTime = d.getTime();
+          const mondayThisTime = mondayThis.getTime();
+          const mondayNextTime = mondayNext.getTime();
+          const mondayPrevTime = mondayPrev.getTime();
+
+          if (dTime >= mondayThisTime && dTime < mondayNextTime) {
+            (weeks.current[dayKey] ||= []).push(article);
+          } else if (dTime >= mondayPrevTime && dTime < mondayThisTime) {
+            (weeks.previous[dayKey] ||= []).push(article);
+          } else {
+            const wk = startOfWeekMonday(d);
+            const wkKey = ymdKey(wk);
+            (weeks.others[wkKey] ||= {});
+            (weeks.others[wkKey][dayKey] ||= []).push(article);
+          }
+        });
+
+        async function renderWeek(title, daysMap) {
+          if (!Object.keys(daysMap).length) return;
+          const weekBlock = document.createElement("div");
+          weekBlock.className = "week-block";
+          weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
+
+          const carousel = document.createElement("div");
+          carousel.className = "week-carousel";
+          const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
+
+          for (const dayKey of sortedDays) {
+            const d = new Date(dayKey);
+            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+            const dayBlock = document.createElement("div");
+            dayBlock.className = "day-block";
+            dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
+
+            const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
+            for (let i = 0; i < articles.length; i += 4) {
+              const chunk = articles.slice(i, i + 4);
+              chunk.forEach((article, idx) => {
+                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+                const el = document.createElement("div");
+                el.className = "day-article";
+                el.innerHTML = `
+                  <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                    <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                    <div class="day-article-info">
+                      <p class="day-meta">Par ${article.author}, à ${time}</p>
+                      <h4>${article.title}</h4>
+                      <p class="day-desc">${article.description}</p>
+                    </div>
+                  </a>`;
+                dayBlock.appendChild(el);
+                if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
+                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+                }
+              });
+              await new Promise(res => setTimeout(res, 200));
+            }
+            carousel.appendChild(dayBlock);
+          }
+
+          weekBlock.appendChild(carousel);
+          container.appendChild(weekBlock);
         }
 
-        weekBlock.appendChild(carousel);
-        container.appendChild(weekBlock);
-      }
+        await renderWeek("Cette semaine", weeks.current);
+        await renderWeek("La semaine dernière", weeks.previous);
 
-      await renderWeek("Cette semaine", weeks.current);
-      await renderWeek("La semaine dernière", weeks.previous);
-
-      const otherWeeks = Object.keys(weeks.others).sort((a, b) => new Date(b) - new Date(a));
-      for (const wkKey of otherWeeks) {
-        const start = new Date(wkKey);
-        const end = addDays(start, 6);
-        const title = `Semaine du ${start.toLocaleDateString("fr-FR", {
-          day: "numeric",
-          month: "long"
-        })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
-        await renderWeek(title, weeks.others[wkKey]);
+        const otherWeeks = Object.keys(weeks.others).sort((a, b) => new Date(b) - new Date(a));
+        for (const wkKey of otherWeeks) {
+          const start = new Date(wkKey);
+          const end = addDays(start, 6);
+          const title = `Semaine du ${start.toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long"
+          })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
+          await renderWeek(title, weeks.others[wkKey]);
+        }
       }
     }
 
+    // 🧩 Activation du tri par catégorie + surbrillance
+    categoriesContainer.querySelectorAll("a").forEach(link => {
+      link.addEventListener("click", e => {
+        e.preventDefault();
+        categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+        link.classList.add("active");
+        const cat = link.getAttribute("data-category");
+        const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+        render(filtered);
+      });
+    });
+
+    await render(all);
   } catch (err) {
     console.error(err);
     container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
@@ -285,7 +283,6 @@ async function loadArticles() {
 }
 
 document.addEventListener("DOMContentLoaded", loadArticles);
-
 
 // ==============================
 // Bouton combiné (recherche + menu)
@@ -297,7 +294,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (searchIcon) {
     searchIcon.addEventListener("click", e => {
       e.stopPropagation();
-      // 🟢 Ton code d’ouverture de la recherche ici
       console.log("Recherche ouverte");
     });
   }
@@ -305,7 +301,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (menuIcon) {
     menuIcon.addEventListener("click", e => {
       e.stopPropagation();
-      // 🟢 Ton code d’ouverture du menu ici
       console.log("Menu ouvert");
     });
   }
