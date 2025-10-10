@@ -206,31 +206,32 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Navigation (catégories) — scroll horizontal fluide et libre
+   Navigation (catégories) — scroll horizontal libre et marges alignées
    ========================= */
 .main-nav {
   display: block;
   width: 100%;
   overflow-x: auto;                  /* ✅ scroll horizontal activé */
   overflow-y: hidden;
-  -webkit-overflow-scrolling: touch; /* ✅ inertie fluide sur iOS */
+  -webkit-overflow-scrolling: touch; /* ✅ inertie fluide iOS */
   white-space: nowrap;
-  scroll-snap-type: none;            /* ✅ défilement totalement libre */
-  padding: 10px 16px;
+  scroll-snap-type: none;            /* ✅ aucun snap */
+  padding: 10px 0;                   /* ✅ padding vertical uniquement */
   margin: 8px 0 0 0;
 }
 
 .main-nav::-webkit-scrollbar {
-  display: none;                     /* ✅ pas de barre visible */
+  display: none;                     /* ✅ cache la barre */
 }
 
+/* ✅ Liste correctement contenue et alignée */
 .main-nav ul {
-  display: inline-flex;
+  display: flex;
   gap: 12px;
   list-style: none;
-  padding: 0;
+  padding: 0 20px;                   /* ✅ marge interne alignée au reste du layout */
   margin: 0;
-  width: max-content;                /* ✅ empêche le recentrage automatique */
+  width: max-content;                /* ✅ empêche le retour automatique au début */
 }
 
 .main-nav li {
@@ -260,8 +261,6 @@ body, button, input, textarea, select {
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
     0 2px 20px rgba(0,0,0,0.1);
   transition: all 0.25s ease;
-  scroll-snap-align: start;          /* 👌 stable mais non contraignant */
-  scroll-snap-stop: normal;
 }
 
 .main-nav a:hover {
