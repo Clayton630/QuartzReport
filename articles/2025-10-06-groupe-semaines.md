@@ -5,6 +5,6 @@ author: Clayton
 description: osef
 thumbnail: /img/uploads/10-depart-aimants.png
 important: false
-category: Autre
+category: Comparatif
 ---
 c﻿est poue tester les groupes
