@@ -206,10 +206,12 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Navigation (catégories) — scroll libre + marges alignées
+   Navigation (catégories) — fade intégré dans la ligne
    ========================= */
 .main-nav {
-  display: block;
+  position: relative;
+  display: flex;
+  align-items: center;
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
@@ -218,24 +220,29 @@ body, button, input, textarea, select {
   scroll-snap-type: none;
   padding: 10px 0;
   margin: 8px 0 0 0;
+  mask-image: none;
+  -webkit-mask-image: none;
 }
 
 .main-nav::-webkit-scrollbar {
   display: none;
 }
 
-/* ✅ Liste correctement contenue et alignée */
+/* ✅ Liste parfaitement alignée */
 .main-nav ul {
   display: flex;
+  align-items: center;
   gap: 12px;
   list-style: none;
-  padding: 0 14px;          /* 👈 marge égale à gauche et à droite */
+  padding: 0 16px;
   margin: 0;
   width: max-content;
 }
 
 .main-nav li {
   flex: 0 0 auto;
+  position: relative;
+  overflow: hidden; /* 👈 le fade est maintenant contenu à l’intérieur des catégories */
 }
 
 .main-nav a {
@@ -261,6 +268,8 @@ body, button, input, textarea, select {
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
     0 2px 20px rgba(0,0,0,0.1);
   transition: all 0.25s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .main-nav a:hover {
@@ -274,6 +283,36 @@ body, button, input, textarea, select {
   border: 0.5px solid rgba(0,0,0,0.1);
   box-shadow: 0 2px 12px rgba(0,0,0,0.08);
   transform: scale(1.03);
+}
+
+/* 🌈 Fade contenu à l’intérieur des catégories */
+.main-nav li::before,
+.main-nav li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0; /* 👈 par défaut invisible */
+  transition: opacity 0.3s ease;
+}
+
+.main-nav li:first-child::before {
+  left: -1px;
+  background: linear-gradient(to right,
+    rgba(243, 246, 251, 1),
+    rgba(243, 246, 251, 0));
+  opacity: 1;
+}
+
+.main-nav li:last-child::after {
+  right: -1px;
+  background: linear-gradient(to left,
+    rgba(243, 246, 251, 1),
+    rgba(243, 246, 251, 0));
+  opacity: 1;
 }
 
 /* =========================
