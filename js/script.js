@@ -127,7 +127,7 @@ async function loadArticles() {
       categories.map(c => `<li><a href="#" data-category="${c}">${c}</a></li>`).join("");
 
     // ======================
-    // FONCTION RENDER
+    // RENDER PRINCIPAL
     // ======================
     async function render(list) {
       container.innerHTML = "";
@@ -276,6 +276,8 @@ async function loadArticles() {
     });
 
     await render(all);
+    initCategoryNavFades(); // ✅ Active les fades dynamiques
+
   } catch (err) {
     console.error(err);
     container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
@@ -305,3 +307,24 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// ==============================
+// Fades dynamiques des catégories
+// ==============================
+function initCategoryNavFades() {
+  const nav = document.querySelector(".main-nav");
+  if (!nav) return;
+
+  const sync = () => {
+    const max = Math.max(0, nav.scrollWidth - nav.clientWidth);
+    const atStart = nav.scrollLeft <= 1;
+    const atEnd = nav.scrollLeft >= max - 1;
+    nav.classList.toggle("has-left", !atStart);
+    nav.classList.toggle("has-right", !atEnd);
+  };
+
+  nav.addEventListener("scroll", sync, { passive: true });
+  window.addEventListener("resize", sync);
+  requestAnimationFrame(sync);
+  setTimeout(sync, 60);
+}
