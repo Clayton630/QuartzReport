@@ -32,13 +32,17 @@ Mais en réalité, un jailbreak moderne, même compatible avec les iPhone récen
 
 ### Q﻿uand apple s'inspire des tweaks
 
-Apple a intégré de nombreux tweaks populaires au fil des années :
+Apple a intégré à iOS et iPadOS de nombreux tweaks populaires au fil des années :
 
-* les widgets (iOS 14),
-* le Picture-in-Picture (iOS 14),
 * le mode économie d’énergie (iOS 9),
-* ou encore l’Always-On Display (iOS 16).
-* Et bien d’autres fonctionnalités...
+* le Picture-in-Picture (iOS 14),
+* les widgets sur l'écran d'acceuil (iOS 14),
+* l’Always-On Display (iOS 16),
+* le verrouillage d'applications (iOS 18),
+* la position des icones personnalisée (iOS 18),
+* l’estimation du temps de charge (iOS 26),
+
+Et bien d’autres fonctionnalités...
 
 ![WWDC iOS 14 reveal](/img/uploads/wwdc-ios-14.png "WWDC iOS 14 Reveal")
 
