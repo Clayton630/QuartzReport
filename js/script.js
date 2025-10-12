@@ -317,14 +317,15 @@ function initCategoryNavFades() {
 
   const sync = () => {
     const max = Math.max(0, nav.scrollWidth - nav.clientWidth);
-    const atStart = nav.scrollLeft <= 1;
-    const atEnd = nav.scrollLeft >= max - 1;
+    const atStart = nav.scrollLeft <= 2;
+    const atEnd = nav.scrollLeft >= max - 2;
     nav.classList.toggle("has-left", !atStart);
     nav.classList.toggle("has-right", !atEnd);
   };
 
+  // Rafraîchit quand on scroll, resize ou au chargement
   nav.addEventListener("scroll", sync, { passive: true });
   window.addEventListener("resize", sync);
   requestAnimationFrame(sync);
-  setTimeout(sync, 60);
+  setTimeout(sync, 100);
 }
