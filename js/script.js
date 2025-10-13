@@ -256,7 +256,7 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES (construction + couleurs dynamiques)
+    // CATÉGORIES (couleurs dynamiques + effet verre)
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
@@ -265,7 +265,7 @@ async function loadArticles() {
 
       const cats = Array.from(new Set(list.map(a => a.category)));
 
-      // 🎨 Attribution dynamique des couleurs
+      // 🎨 Attribution dynamique
       const categoryColors = {};
       const palette = [
         "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
@@ -292,7 +292,6 @@ async function loadArticles() {
         });
       }
 
-      // ✅ Applique la couleur dynamique à la catégorie active
       const applyActiveColor = (catName) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
           a.style.background = "";
@@ -303,11 +302,26 @@ async function loadArticles() {
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (activeLink) {
-          const color = categoryColors[catName] || "#fff";
-          activeLink.style.background = color;
-          activeLink.style.color = "#fff";
-          activeLink.style.borderColor = "rgba(0,0,0,0.15)";
-          activeLink.style.boxShadow = `0 3px 12px ${color}40`;
+          if (catName === "Tous") {
+            activeLink.style.background = "rgba(255,255,255,0.8)";
+            activeLink.style.color = "#111";
+            activeLink.style.borderColor = "rgba(0,0,0,0.08)";
+            activeLink.style.boxShadow = "0 3px 12px rgba(0,0,0,0.05)";
+            return;
+          }
+
+          const baseColor = categoryColors[catName] || "#4B73FA";
+          const hex = baseColor.replace("#", "");
+          const bigint = parseInt(hex, 16);
+          const r = (bigint >> 16) & 255;
+          const g = (bigint >> 8) & 255;
+          const b = bigint & 255;
+
+          const translucent = `rgba(${r},${g},${b},0.85)`;
+          activeLink.style.background = translucent;
+          activeLink.style.color = "rgba(255,255,255,0.9)";
+          activeLink.style.borderColor = `rgba(${r},${g},${b},0.2)`;
+          activeLink.style.boxShadow = `0 3px 14px rgba(${r},${g},${b},0.25)`;
         }
       };
 
@@ -332,7 +346,6 @@ async function loadArticles() {
 
   } catch (err) {
     console.error(err);
-    const container = document.getElementById("articles");
     if (container) container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
