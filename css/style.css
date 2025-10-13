@@ -639,3 +639,17 @@ body, button, input, textarea, select {
 .main-nav ul {
   min-width: max-content; /* ✅ garantit que tout le contenu s’étale et que l’extrémité droite est atteignable */
 }
+
+/* Spacer à droite pour que la dernière catégorie ne soit jamais mangée */
+.main-nav ul::after {
+  content: "";
+  flex: 0 0 max(20px, env(safe-area-inset-right)); /* espace final visible */
+}
+
+/* s’assure que l’UL peut étirer ses items et le spacer */
+.main-nav ul {
+  display: flex;
+  min-width: max-content;      /* déjà ajouté, on le confirme */
+  padding-left: 20px;          /* ton padding gauche actuel */
+  padding-right: 0;            /* on laisse le spacer gérer le bord droit */
+}
