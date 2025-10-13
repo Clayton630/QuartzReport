@@ -256,7 +256,7 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES (couleurs dynamiques + effet verre)
+    // CATÉGORIES (couleurs dynamiques opaques)
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
@@ -290,41 +290,23 @@ async function loadArticles() {
       const applyActiveColor = (catName) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
           a.style.background = "";
-          a.style.borderColor = "";
-          a.style.boxShadow = "";
           a.style.color = "#111";
-          a.style.borderWidth = "0.5px";
         });
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (activeLink) {
-          // ✅ Catégorie "Tous"
           if (catName === "Tous") {
             activeLink.style.background =
               `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
                radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
                rgba(255,255,255,0.65)`;
             activeLink.style.color = "#111";
-            activeLink.style.borderColor = "rgba(255,255,255,0.35)";
-            activeLink.style.boxShadow =
-              "inset 0.8px 0.8px 0 rgba(255,255,255,0.85), inset -0.8px -0.8px 0 rgba(255,255,255,0.75), 0 2px 20px rgba(0,0,0,0.1)";
             return;
           }
 
           const baseColor = categoryColors[catName] || "#4B73FA";
-          const hex = baseColor.replace("#", "");
-          const bigint = parseInt(hex, 16);
-          const r = (bigint >> 16) & 255;
-          const g = (bigint >> 8) & 255;
-          const b = bigint & 255;
-
-          // 🎨 Fond plus opaque, contour plus marqué
-          const translucent = `rgba(${r},${g},${b},0.68)`; // plus opaque
-          activeLink.style.background = translucent;
-          activeLink.style.color = "rgba(255,255,255,0.75)"; // texte légèrement plus doux
-          activeLink.style.borderColor = `rgba(${r},${g},${b},1)`; // contour couleur pleine
-          activeLink.style.borderWidth = "1.2px"; // contour plus épais
-          activeLink.style.boxShadow = `0 3px 12px rgba(${r},${g},${b},0.25)`; // ombre harmonisée
+          activeLink.style.background = baseColor; // fond opaque
+          activeLink.style.color = "rgba(255,255,255,0.85)"; // texte légèrement translucide
         }
       };
 
