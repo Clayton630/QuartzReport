@@ -653,3 +653,18 @@ body, button, input, textarea, select {
   padding-left: 20px;          /* ton padding gauche actuel */
   padding-right: 0;            /* on laisse le spacer gérer le bord droit */
 }
+
+/* =========================
+   Alignement horizontal universel des catégories
+   ========================= */
+@media (max-width: 768px) {
+  .main-nav ul {
+    padding-left: calc(20px + env(safe-area-inset-left, 0px));  /* 👈 même marge que hottest et articles */
+  }
+}
+
+@media (min-width: 769px) {
+  .main-nav ul {
+    padding-left: 20px;  /* 👈 cohérent avec le layout desktop */
+  }
+}
