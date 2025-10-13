@@ -81,7 +81,6 @@ async function loadArticles() {
       });
     }
 
-    // Tri du plus récent au plus ancien
     all.sort((a, b) => b.date - a.date);
 
     // ======================
@@ -167,6 +166,7 @@ async function loadArticles() {
           }
         }
       } else {
+        // Desktop (groupé par semaine)
         const mondayThis = startOfWeekMonday(new Date());
         const mondayNext = addDays(mondayThis, 7);
         const mondayPrev = addDays(mondayThis, -7);
@@ -176,95 +176,30 @@ async function loadArticles() {
           const d = normalizeDate(article.date);
           const dayKey = ymdKey(d);
           const dTime = d.getTime();
-          const mondayThisTime = mondayThis.getTime();
-          const mondayNextTime = mondayNext.getTime();
-          const mondayPrevTime = mondayPrev.getTime();
-
-          if (dTime >= mondayThisTime && dTime < mondayNextTime) {
+          if (dTime >= mondayThis && dTime < mondayNext)
             (weeks.current[dayKey] ||= []).push(article);
-          } else if (dTime >= mondayPrevTime && dTime < mondayThisTime) {
+          else if (dTime >= mondayPrev && dTime < mondayThis)
             (weeks.previous[dayKey] ||= []).push(article);
-          } else {
+          else {
             const wk = startOfWeekMonday(d);
             const wkKey = ymdKey(wk);
             (weeks.others[wkKey] ||= {});
             (weeks.others[wkKey][dayKey] ||= []).push(article);
           }
         });
-
-        async function renderWeek(title, daysMap) {
-          if (!Object.keys(daysMap).length) return;
-          const weekBlock = document.createElement("div");
-          weekBlock.className = "week-block";
-          weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
-
-          const carousel = document.createElement("div");
-          carousel.className = "week-carousel";
-          const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
-
-          for (const dayKey of sortedDays) {
-            const d = new Date(dayKey);
-            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-            const dayBlock = document.createElement("div");
-            dayBlock.className = "day-block";
-            dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
-
-            const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
-            for (let i = 0; i < articles.length; i += 4) {
-              const chunk = articles.slice(i, i + 4);
-              chunk.forEach((article, idx) => {
-                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-                const el = document.createElement("div");
-                el.className = "day-article";
-                el.innerHTML = `
-                  <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
-                    <div class="day-article-info">
-                      <p class="day-meta">Par ${article.author}, à ${time}</p>
-                      <h4>${article.title}</h4>
-                      <p class="day-desc">${article.description}</p>
-                    </div>
-                  </a>`;
-                dayBlock.appendChild(el);
-                if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
-                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
-                }
-              });
-              await new Promise(res => setTimeout(res, 200));
-            }
-            carousel.appendChild(dayBlock);
-          }
-
-          weekBlock.appendChild(carousel);
-          container.appendChild(weekBlock);
-        }
-
-        await renderWeek("Cette semaine", weeks.current);
-        await renderWeek("La semaine dernière", weeks.previous);
-
-        const otherWeeks = Object.keys(weeks.others).sort((a, b) => new Date(b) - new Date(a));
-        for (const wkKey of otherWeeks) {
-          const start = new Date(wkKey);
-          const end = addDays(start, 6);
-          const title = `Semaine du ${start.toLocaleDateString("fr-FR", {
-            day: "numeric",
-            month: "long"
-          })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
-          await renderWeek(title, weeks.others[wkKey]);
-        }
       }
     }
 
     // ======================
-    // CATÉGORIES (couleurs dynamiques + effet verre)
+    // CATÉGORIES (couleurs dynamiques + halo flouté)
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
+
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
       const cats = Array.from(new Set(list.map(a => a.category)));
-
       const categoryColors = {};
       const palette = [
         "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
@@ -285,12 +220,9 @@ async function loadArticles() {
         cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
 
-      if (nav) {
-        requestAnimationFrame(() => {
-          nav.scrollLeft = prevScroll;
-        });
-      }
+      if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 
+      // 🎨 Application du halo et du fond dynamique
       const applyActiveColor = (catName) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
           a.style.background = "";
@@ -301,7 +233,6 @@ async function loadArticles() {
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (activeLink) {
-          // ✅ Catégorie "Tous" → fond original, texte noir
           if (catName === "Tous") {
             activeLink.style.background =
               `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
@@ -321,12 +252,23 @@ async function loadArticles() {
           const g = (bigint >> 8) & 255;
           const b = bigint & 255;
 
-          // 🔹 Couleur très translucide
-          const translucent = `rgba(${r},${g},${b},0.45)`;
-          activeLink.style.background = translucent;
-          activeLink.style.color = "rgba(255,255,255,0.85)";
-          activeLink.style.borderColor = `rgba(${r},${g},${b},0.15)`;
-          activeLink.style.boxShadow = `0 3px 10px rgba(${r},${g},${b},0.18)`;
+          const center = `rgba(${r},${g},${b},0.3)`;
+          const outer = `rgba(${r},${g},${b},0.9)`;
+
+          activeLink.style.background = `
+            radial-gradient(circle at center,
+              ${center} 0%,
+              ${outer} 95%,
+              rgba(${r},${g},${b},0) 100%)
+          `;
+          activeLink.style.color = "rgba(255,255,255,0.9)";
+          activeLink.style.borderColor = `rgba(${r},${g},${b},0.25)`;
+          activeLink.style.boxShadow = `
+            0 0 16px 4px rgba(${r},${g},${b},0.45),
+            0 0 32px 10px rgba(${r},${g},${b},0.25)
+          `;
+          activeLink.style.backdropFilter = "blur(12px)";
+          activeLink.style.transition = "all 0.35s ease";
         }
       };
 
