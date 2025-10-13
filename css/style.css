@@ -657,23 +657,23 @@ a:focus-visible, button:focus-visible {
 
 img { max-width: 100%; height: auto; }
 
-/* ===== Nav: keep horizontal scroll, show shadows, don't change layout height ===== */
+/* ===== Nav: keep horizontal scroll, full shadow breathing, no layout shift ===== */
 .main-nav {
-  overflow-x: auto;         /* keep swipe */
-  overflow-y: visible;      /* let shadows render outside */
+  overflow-x: auto;            /* conserve le scroll horizontal */
+  overflow-y: visible;         /* permet aux ombres de déborder */
   -webkit-overflow-scrolling: touch;
 
-  padding-top: 8px;         /* internal space for shadows */
-  padding-bottom: 8px;
-  margin-top: -8px;         /* neutralize so layout height stays identical */
-  margin-bottom: -8px;
+  padding-top: 14px;           /* espace interne pour les ombres */
+  padding-bottom: 14px;
+  margin-top: -14px;           /* neutralise pour ne rien décaler */
+  margin-bottom: -14px;
 }
 
-/* 📱 Slightly larger pills on mobile (without affecting layout height) */
+/* 📱 Catégories légèrement plus grandes sur mobile */
 @media (max-width: 480px) {
   .main-nav a {
-    padding: 10px 18px;
-    font-size: 1.02rem;
-    border-radius: 36px;
+    padding: 11px 20px;
+    font-size: 1.04rem;
+    border-radius: 38px;
   }
 }
