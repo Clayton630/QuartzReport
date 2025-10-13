@@ -300,6 +300,7 @@ body, button, input, textarea, select {
 /* Activation automatique */
 .main-nav.has-left::before { opacity: 1; }
 .main-nav.has-right::after { opacity: 1; }
+
 /* =========================
    Section Hottest
    ========================= */
