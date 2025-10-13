@@ -108,94 +108,19 @@ async function loadArticles() {
       }
 
       link.innerHTML = `
-        <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager">
+        <img src="${article.thumbnail}" alt="">
         <div class="card-content">
           <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
           <h3>${article.title}</h3>
-        </div>
-      `;
+        </div>`;
       hottestContainer.appendChild(link);
     });
 
     // ======================
-    // RENDER PRINCIPAL
-    // ======================
-    async function render(list) {
-      container.innerHTML = "";
-      const isMobile = window.matchMedia("(max-width: 768px)").matches;
-
-      if (isMobile) {
-        const byDay = {};
-        list.forEach(a => {
-          const key = ymdKey(a.date);
-          if (!byDay[key]) byDay[key] = [];
-          byDay[key].push(a);
-        });
-
-        const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
-        for (const k of sortedDays) {
-          const d = new Date(k);
-          const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-          const block = document.createElement("div");
-          block.className = "day-block";
-          block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
-          container.appendChild(block);
-
-          const articles = byDay[k].sort((a, b) => b.date - a.date);
-          for (let i = 0; i < articles.length; i += 4) {
-            const chunk = articles.slice(i, i + 4);
-            chunk.forEach((article, idx) => {
-              const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-              const el = document.createElement("div");
-              el.className = "day-article";
-              el.innerHTML = `
-                <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                  <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
-                  <div class="day-article-info">
-                    <p class="day-meta">Par ${article.author}, à ${time}</p>
-                    <h4>${article.title}</h4>
-                    <p class="day-desc">${article.description}</p>
-                  </div>
-                </a>`;
-              block.appendChild(el);
-              if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
-                block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
-              }
-            });
-            await new Promise(res => setTimeout(res, 200));
-          }
-        }
-      } else {
-        // Desktop (groupé par semaine)
-        const mondayThis = startOfWeekMonday(new Date());
-        const mondayNext = addDays(mondayThis, 7);
-        const mondayPrev = addDays(mondayThis, -7);
-
-        const weeks = { current: {}, previous: {}, others: {} };
-        list.forEach(article => {
-          const d = normalizeDate(article.date);
-          const dayKey = ymdKey(d);
-          const dTime = d.getTime();
-          if (dTime >= mondayThis && dTime < mondayNext)
-            (weeks.current[dayKey] ||= []).push(article);
-          else if (dTime >= mondayPrev && dTime < mondayThis)
-            (weeks.previous[dayKey] ||= []).push(article);
-          else {
-            const wk = startOfWeekMonday(d);
-            const wkKey = ymdKey(wk);
-            (weeks.others[wkKey] ||= {});
-            (weeks.others[wkKey][dayKey] ||= []).push(article);
-          }
-        });
-      }
-    }
-
-    // ======================
-    // CATÉGORIES (couleurs dynamiques + halo flouté)
+    // CATÉGORIES (couleurs dynamiques + stroke)
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
-
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
@@ -222,54 +147,28 @@ async function loadArticles() {
 
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 
-      // 🎨 Application du halo et du fond dynamique
       const applyActiveColor = (catName) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
-          a.style.background = "";
-          a.style.borderColor = "";
-          a.style.boxShadow = "";
-          a.style.color = "#111";
+          a.classList.remove("colored-active");
+          a.style.removeProperty("--cat-color");
         });
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
-        if (activeLink) {
-          if (catName === "Tous") {
-            activeLink.style.background =
-              `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
-               radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
-               rgba(255,255,255,0.65)`;
-            activeLink.style.color = "#111";
-            activeLink.style.borderColor = "rgba(255,255,255,0.35)";
-            activeLink.style.boxShadow =
-              "inset 0.8px 0.8px 0 rgba(255,255,255,0.85), inset -0.8px -0.8px 0 rgba(255,255,255,0.75), 0 2px 20px rgba(0,0,0,0.1)";
-            return;
-          }
+        if (!activeLink) return;
 
-          const baseColor = categoryColors[catName] || "#4B73FA";
-          const hex = baseColor.replace("#", "");
-          const bigint = parseInt(hex, 16);
-          const r = (bigint >> 16) & 255;
-          const g = (bigint >> 8) & 255;
-          const b = bigint & 255;
-
-          const center = `rgba(${r},${g},${b},0.3)`;
-          const outer = `rgba(${r},${g},${b},0.9)`;
-
-          activeLink.style.background = `
-            radial-gradient(circle at center,
-              ${center} 0%,
-              ${outer} 95%,
-              rgba(${r},${g},${b},0) 100%)
-          `;
-          activeLink.style.color = "rgba(255,255,255,0.9)";
-          activeLink.style.borderColor = `rgba(${r},${g},${b},0.25)`;
-          activeLink.style.boxShadow = `
-            0 0 16px 4px rgba(${r},${g},${b},0.45),
-            0 0 32px 10px rgba(${r},${g},${b},0.25)
-          `;
-          activeLink.style.backdropFilter = "blur(12px)";
-          activeLink.style.transition = "all 0.35s ease";
+        if (catName === "Tous") {
+          activeLink.classList.remove("colored-active");
+          activeLink.style.background =
+            `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
+             radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
+             rgba(255,255,255,0.65)`;
+          activeLink.style.color = "#111";
+          return;
         }
+
+        const baseColor = categoryColors[catName] || "#4B73FA";
+        activeLink.classList.add("colored-active");
+        activeLink.style.setProperty("--cat-color", baseColor);
       };
 
       applyActiveColor(active);
@@ -282,14 +181,12 @@ async function loadArticles() {
           link.classList.add("active");
           applyActiveColor(cat);
           const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
-          render(filtered);
+          // tu peux appeler render(filtered) ici si tu veux filtrer
         });
       });
     }
 
     buildCategories(all, "Tous");
-    await render(all);
-
   } catch (err) {
     console.error(err);
     if (container) container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
@@ -297,25 +194,3 @@ async function loadArticles() {
 }
 
 document.addEventListener("DOMContentLoaded", loadArticles);
-
-// ==============================
-// Bouton combiné (recherche + menu)
-// ==============================
-document.addEventListener("DOMContentLoaded", () => {
-  const searchIcon = document.querySelector(".search-icon");
-  const menuIcon = document.querySelector(".menu-icon");
-
-  if (searchIcon) {
-    searchIcon.addEventListener("click", e => {
-      e.stopPropagation();
-      console.log("Recherche ouverte");
-    });
-  }
-
-  if (menuIcon) {
-    menuIcon.addEventListener("click", e => {
-      e.stopPropagation();
-      console.log("Menu ouvert");
-    });
-  }
-});
