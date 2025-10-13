@@ -646,34 +646,23 @@ body, button, input, textarea, select {
   }
 }
 
-/* =========================
-   Petits raffinements / accessibilité
-   ========================= */
-a:focus-visible, button:focus-visible {
-  outline: 2px solid rgba(58,123,213,0.65);
-  outline-offset: 2px;
-  border-radius: 12px;
-}
-
-img { max-width: 100%; height: auto; }
-
 /* ===== Nav: keep horizontal scroll, full shadow breathing, no layout shift ===== */
 .main-nav {
-  overflow-x: auto;            /* conserve le scroll horizontal */
-  overflow-y: visible;         /* permet aux ombres de déborder */
+  overflow-x: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 
-  padding-top: 14px;           /* espace interne pour les ombres */
+  padding-top: 14px;
   padding-bottom: 14px;
-  margin-top: -14px;           /* neutralise pour ne rien décaler */
+  margin-top: -14px;
   margin-bottom: -14px;
 }
 
-/* 📱 Catégories légèrement plus grandes sur mobile */
+/* 📱 Catégories légèrement plus petites mais toujours confortables */
 @media (max-width: 480px) {
   .main-nav a {
-    padding: 11px 20px;
-    font-size: 1.04rem;
-    border-radius: 38px;
+    padding: 9px 18px;
+    font-size: 1.0rem;
+    border-radius: 36px;
   }
 }
