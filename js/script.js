@@ -206,45 +206,45 @@ async function loadArticles() {
           weekBlock.className = "week-block";
           weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
 
-          const carousel = document.createElement("div");
-          carousel.className = "week-carousel";
-          const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
+        const carousel = document.createElement("div");
+        carousel.className = "week-carousel";
+        const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
 
-          for (const dayKey of sortedDays) {
-            const d = new Date(dayKey);
-            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-            const dayBlock = document.createElement("div");
-            dayBlock.className = "day-block";
-            dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
+        for (const dayKey of sortedDays) {
+          const d = new Date(dayKey);
+          const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+          const dayBlock = document.createElement("div");
+          dayBlock.className = "day-block";
+          dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
 
-            const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
-            for (let i = 0; i < articles.length; i += 4) {
-              const chunk = articles.slice(i, i + 4);
-              chunk.forEach((article, idx) => {
-                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-                const el = document.createElement("div");
-                el.className = "day-article";
-                el.innerHTML = `
-                  <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
-                    <div class="day-article-info">
-                      <p class="day-meta">Par ${article.author}, à ${time}</p>
-                      <h4>${article.title}</h4>
-                      <p class="day-desc">${article.description}</p>
-                    </div>
-                  </a>`;
-                dayBlock.appendChild(el);
-                if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
-                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
-                }
-              });
-              await new Promise(res => setTimeout(res, 200));
-            }
-            carousel.appendChild(dayBlock);
+          const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
+          for (let i = 0; i < articles.length; i += 4) {
+            const chunk = articles.slice(i, i + 4);
+            chunk.forEach((article, idx) => {
+              const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+              const el = document.createElement("div");
+              el.className = "day-article";
+              el.innerHTML = `
+                <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                  <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                  <div class="day-article-info">
+                    <p class="day-meta">Par ${article.author}, à ${time}</p>
+                    <h4>${article.title}</h4>
+                    <p class="day-desc">${article.description}</p>
+                  </div>
+                </a>`;
+              dayBlock.appendChild(el);
+              if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
+                dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+              }
+            });
+            await new Promise(res => setTimeout(res, 200));
           }
+          carousel.appendChild(dayBlock);
+        }
 
-          weekBlock.appendChild(carousel);
-          container.appendChild(weekBlock);
+        weekBlock.appendChild(carousel);
+        container.appendChild(weekBlock);
         }
 
         await renderWeek("Cette semaine", weeks.current);
@@ -272,6 +272,8 @@ async function loadArticles() {
         const cat = link.getAttribute("data-category");
         const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
         render(filtered);
+        // recalc fades après filtrage (largeur change)
+        requestAnimationFrame(updateCategoryFades);
       });
     });
 
@@ -311,20 +313,53 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==============================
 // Fades dynamiques des catégories (sans wrapper)
 // ==============================
+let cleanupCategoryFades = null;
+
 function initCategoryNavFades() {
   const nav = document.querySelector(".main-nav");
-  if (!nav) return;
+  const list = document.getElementById("categories");
+  if (!nav || !list) return;
 
-  const updateFades = () => {
-    const maxScroll = nav.scrollWidth - nav.clientWidth;
-    const showLeft = nav.scrollLeft > 5;
-    const showRight = nav.scrollLeft < maxScroll - 5;
+  // observer précis sur le 1er et le dernier élément
+  const first = list.firstElementChild;
+  const last  = list.lastElementChild;
+  if (!first || !last) return;
 
-    nav.classList.toggle("has-left", showLeft);
-    nav.classList.toggle("has-right", showRight);
+  const opts = { root: nav, threshold: 0.999 }; // quasi entièrement visible
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.target === first) {
+        nav.classList.toggle("has-left", !entry.isIntersecting);
+      } else if (entry.target === last) {
+        nav.classList.toggle("has-right", !entry.isIntersecting);
+      }
+    });
+  }, opts);
+
+  io.observe(first);
+  io.observe(last);
+
+  // sync initial + sur scroll/redimensionnement
+  const onScroll = () => updateCategoryFades();
+  nav.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", onScroll);
+
+  updateCategoryFades();
+
+  // cleanup si on réinitialise
+  cleanupCategoryFades = () => {
+    io.disconnect();
+    nav.removeEventListener("scroll", onScroll);
+    window.removeEventListener("resize", onScroll);
   };
+}
 
-  nav.addEventListener("scroll", updateFades, { passive: true });
-  window.addEventListener("resize", updateFades);
-  updateFades();
+function updateCategoryFades() {
+  const nav = document.querySelector(".main-nav");
+  if (!nav) return;
+  const max = Math.max(0, nav.scrollWidth - nav.clientWidth);
+  const atStart = nav.scrollLeft <= 1;
+  const atEnd   = nav.scrollLeft >= max - 1;
+  nav.classList.toggle("has-left", !atStart);
+  nav.classList.toggle("has-right", !atEnd);
 }
