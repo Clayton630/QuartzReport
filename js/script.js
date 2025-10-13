@@ -321,12 +321,12 @@ async function loadArticles() {
           const g = (bigint >> 8) & 255;
           const b = bigint & 255;
 
-          // 🔹 Couleur très translucide
-          const translucent = `rgba(${r},${g},${b},0.45)`;
+          // 🎨 Couleur légèrement plus opaque (0.55), contour fort, texte plus doux
+          const translucent = `rgba(${r},${g},${b},0.55)`;
           activeLink.style.background = translucent;
-          activeLink.style.color = "rgba(255,255,255,0.85)";
-          activeLink.style.borderColor = `rgba(${r},${g},${b},0.15)`;
-          activeLink.style.boxShadow = `0 3px 10px rgba(${r},${g},${b},0.18)`;
+          activeLink.style.color = "rgba(255,255,255,0.78)";
+          activeLink.style.borderColor = `rgba(${r},${g},${b},1)`;
+          activeLink.style.boxShadow = `0 3px 10px rgba(${r},${g},${b},0.2)`;
         }
       };
 
