@@ -666,23 +666,3 @@ body, button, input, textarea, select {
     border-radius: 36px;
   }
 }
-
-/* Style stroke coloré flouté pour la catégorie active */
-.main-nav a.colored-active {
-  position: relative;
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.1);
-  z-index: 1;
-  overflow: hidden;
-}
-
-.main-nav a.colored-active::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  box-shadow: 0 0 0 4px var(--cat-color), inset 0 0 12px var(--cat-color);
-  filter: blur(1.5px);
-  opacity: 0.9;
-}
