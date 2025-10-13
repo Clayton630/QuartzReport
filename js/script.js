@@ -265,7 +265,6 @@ async function loadArticles() {
 
       const cats = Array.from(new Set(list.map(a => a.category)));
 
-      // 🎨 Attribution dynamique
       const categoryColors = {};
       const palette = [
         "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
@@ -302,11 +301,16 @@ async function loadArticles() {
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (activeLink) {
+          // ✅ Catégorie "Tous" → fond original, texte noir
           if (catName === "Tous") {
-            activeLink.style.background = "rgba(255,255,255,0.8)";
+            activeLink.style.background =
+              `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
+               radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
+               rgba(255,255,255,0.65)`;
             activeLink.style.color = "#111";
-            activeLink.style.borderColor = "rgba(0,0,0,0.08)";
-            activeLink.style.boxShadow = "0 3px 12px rgba(0,0,0,0.05)";
+            activeLink.style.borderColor = "rgba(255,255,255,0.35)";
+            activeLink.style.boxShadow =
+              "inset 0.8px 0.8px 0 rgba(255,255,255,0.85), inset -0.8px -0.8px 0 rgba(255,255,255,0.75), 0 2px 20px rgba(0,0,0,0.1)";
             return;
           }
 
@@ -317,11 +321,12 @@ async function loadArticles() {
           const g = (bigint >> 8) & 255;
           const b = bigint & 255;
 
-          const translucent = `rgba(${r},${g},${b},0.85)`;
+          // 🔹 Couleur très translucide
+          const translucent = `rgba(${r},${g},${b},0.45)`;
           activeLink.style.background = translucent;
-          activeLink.style.color = "rgba(255,255,255,0.9)";
-          activeLink.style.borderColor = `rgba(${r},${g},${b},0.2)`;
-          activeLink.style.boxShadow = `0 3px 14px rgba(${r},${g},${b},0.25)`;
+          activeLink.style.color = "rgba(255,255,255,0.85)";
+          activeLink.style.borderColor = `rgba(${r},${g},${b},0.15)`;
+          activeLink.style.boxShadow = `0 3px 10px rgba(${r},${g},${b},0.18)`;
         }
       };
 
@@ -340,7 +345,6 @@ async function loadArticles() {
       });
     }
 
-    // Première construction
     buildCategories(all, "Tous");
     await render(all);
 
