@@ -313,14 +313,15 @@ document.addEventListener("DOMContentLoaded", () => {
 // ==============================
 function initCategoryNavFades() {
   const nav = document.querySelector(".main-nav");
-  if (!nav) return;
+  const wrapper = document.querySelector(".main-nav-wrapper");
+  if (!nav || !wrapper) return;
 
   const sync = () => {
     const max = Math.max(0, nav.scrollWidth - nav.clientWidth);
     const atStart = nav.scrollLeft <= 1;
     const atEnd = nav.scrollLeft >= max - 1;
-    nav.classList.toggle("has-left", !atStart);
-    nav.classList.toggle("has-right", !atEnd);
+    wrapper.classList.toggle("has-left", !atStart);
+    wrapper.classList.toggle("has-right", !atEnd);
   };
 
   nav.addEventListener("scroll", sync, { passive: true });
