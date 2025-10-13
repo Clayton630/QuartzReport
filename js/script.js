@@ -30,7 +30,7 @@ function base64ToUtf8(base64) {
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
-  const categoriesContainer = document.getElementById("categories"); // <ul id="categories">
+  const categoriesContainer = document.getElementById("categories");
 
   const repo = "Clayton630/QuartzReport";
   const branch = "main";
@@ -280,7 +280,6 @@ async function loadArticles() {
         categoryColors[cat] = palette[colorIndex % palette.length];
         colorIndex++;
       }
-      console.log("🎨 Couleurs des catégories :", categoryColors);
 
       const html =
         `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""}">Tous</a></li>` +
@@ -293,12 +292,34 @@ async function loadArticles() {
         });
       }
 
+      // ✅ Applique la couleur dynamique à la catégorie active
+      const applyActiveColor = (catName) => {
+        categoriesContainer.querySelectorAll("a").forEach(a => {
+          a.style.background = "";
+          a.style.borderColor = "";
+          a.style.boxShadow = "";
+          a.style.color = "#111";
+        });
+
+        const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
+        if (activeLink) {
+          const color = categoryColors[catName] || "#fff";
+          activeLink.style.background = color;
+          activeLink.style.color = "#fff";
+          activeLink.style.borderColor = "rgba(0,0,0,0.15)";
+          activeLink.style.boxShadow = `0 3px 12px ${color}40`;
+        }
+      };
+
+      applyActiveColor(active);
+
       categoriesContainer.querySelectorAll("a").forEach(link => {
         link.addEventListener("click", e => {
           e.preventDefault();
           const cat = link.getAttribute("data-category");
           categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
           link.classList.add("active");
+          applyActiveColor(cat);
           const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
           render(filtered);
         });
