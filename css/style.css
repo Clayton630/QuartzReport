@@ -206,20 +206,11 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Navigation (catégories) — version finale scrollable + fades précis
+   Navigation (catégories dynamiques)
    ========================= */
-.main-nav-wrapper {
+.main-nav {
   position: relative;
   width: 100%;
-  overflow: hidden; /* ✅ clippe les fades sans bloquer le scroll */
-}
-
-/* Conteneur scrollable */
-.main-nav {
-  --edge-pad: 16px;
-  --fadeW: 40px;
-
-  display: block;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
@@ -233,14 +224,12 @@ body, button, input, textarea, select {
   display: none;
 }
 
-/* Liste interne */
 .main-nav ul {
   display: flex;
   gap: 12px;
   list-style: none;
-  padding: 0 calc(var(--edge-pad) + var(--fadeW)) 0 var(--edge-pad);
+  padding: 0 20px;
   margin: 0;
-  width: max-content;
 }
 
 .main-nav li {
@@ -265,11 +254,11 @@ body, button, input, textarea, select {
   font-size: 1.02rem;
   color: #111;
   text-decoration: none;
+  transition: all 0.25s ease;
   box-shadow:
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
     0 2px 20px rgba(0,0,0,0.1);
-  transition: all 0.25s ease;
 }
 
 .main-nav a:hover {
@@ -284,41 +273,33 @@ body, button, input, textarea, select {
   transform: scale(1.03);
 }
 
-/* =========================
-   🌈 Fades — parfaitement positionnés
-   ========================= */
-.main-nav-wrapper::before,
-.main-nav-wrapper::after {
+/* ✅ Fades internes (aucun wrapper nécessaire) */
+.main-nav::before,
+.main-nav::after {
   content: "";
-  position: absolute;
+  position: sticky;
   top: 0;
-  width: var(--fadeW);
+  width: 40px;
   height: 100%;
   pointer-events: none;
-  z-index: 3;
+  z-index: 2;
   opacity: 0;
   transition: opacity 0.25s ease;
 }
 
-/* Fade gauche */
-.main-nav-wrapper::before {
+.main-nav::before {
   left: 0;
-  background: linear-gradient(to right,
-    rgba(243,246,251,1),
-    rgba(243,246,251,0));
+  background: linear-gradient(to right, rgba(243,246,251,1), rgba(243,246,251,0));
 }
 
-/* Fade droite */
-.main-nav-wrapper::after {
+.main-nav::after {
   right: 0;
-  background: linear-gradient(to left,
-    rgba(243,246,251,1),
-    rgba(243,246,251,0));
+  background: linear-gradient(to left, rgba(243,246,251,1), rgba(243,246,251,0));
 }
 
-/* Activation dynamique */
-.main-nav-wrapper.has-left::before { opacity: 1; }
-.main-nav-wrapper.has-right::after { opacity: 1; }
+/* Activation automatique */
+.main-nav.has-left::before { opacity: 1; }
+.main-nav.has-right::after { opacity: 1; }
 /* =========================
    Section Hottest
    ========================= */
