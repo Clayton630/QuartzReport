@@ -657,4 +657,23 @@ a:focus-visible, button:focus-visible {
 
 img { max-width: 100%; height: auto; }
 
-/* Fin du fichier */
+/* =========================
+   Ajustements mobiles + marges virtuelles pour ombres
+   ========================= */
+
+/* 🧱 Laisse de la place en haut/bas sans décaler la page */
+.main-nav {
+  padding-top: 8px;    /* espace interne haut */
+  padding-bottom: 8px; /* espace interne bas */
+  box-sizing: content-box;
+  overflow: visible;   /* laisse les ombres dépasser */
+}
+
+/* 📱 Catégories légèrement agrandies sur mobile */
+@media (max-width: 480px) {
+  .main-nav a {
+    padding: 10px 18px;
+    font-size: 1.02rem;
+    border-radius: 36px;
+  }
+}
