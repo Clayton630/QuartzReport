@@ -657,19 +657,19 @@ a:focus-visible, button:focus-visible {
 
 img { max-width: 100%; height: auto; }
 
-/* =========================
-   Ajustements mobiles + marges virtuelles pour ombres
-   ========================= */
-
-/* 🧱 Laisse de la place en haut/bas sans décaler la page */
+/* ===== Nav: keep horizontal scroll, show shadows, don't change layout height ===== */
 .main-nav {
-  padding-top: 8px;    /* espace interne haut */
-  padding-bottom: 8px; /* espace interne bas */
-  box-sizing: content-box;
-  overflow: visible;   /* laisse les ombres dépasser */
+  overflow-x: auto;         /* keep swipe */
+  overflow-y: visible;      /* let shadows render outside */
+  -webkit-overflow-scrolling: touch;
+
+  padding-top: 8px;         /* internal space for shadows */
+  padding-bottom: 8px;
+  margin-top: -8px;         /* neutralize so layout height stays identical */
+  margin-bottom: -8px;
 }
 
-/* 📱 Catégories légèrement agrandies sur mobile */
+/* 📱 Slightly larger pills on mobile (without affecting layout height) */
 @media (max-width: 480px) {
   .main-nav a {
     padding: 10px 18px;
