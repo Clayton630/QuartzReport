@@ -4,81 +4,53 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>QuartzReport</title>
+
+  <!-- CSS principal -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7-icons/css/framework7-icons.css">
 
-  <!-- ✅ Couleur de la barre de statut -->
+  <!-- ✅ Couleur et intégration iOS -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#4b73fa">
 </head>
 
 <body>
-  <!-- =========================
-       Header
-       ========================= -->
+  <!-- Header -->
   <header class="site-header">
     <div class="logo">
       <img src="img/logo.svg" alt="Quartz Report" class="logo-img">
     </div>
-    <div class="icons">
-      <i class="f7-icons search-icon">search</i>
-      <i class="f7-icons menu-icon">menu</i>
-    </div>
+    <div class="icons unified-btn">
+  <button class="dual-icon-btn">
+    <i class="f7-icons search-icon">search</i>
+    <i class="f7-icons menu-icon">menu</i>
+  </button>
+</div>
   </header>
 
-  <!-- =========================
-       Navigation (catégories dynamiques)
-       ========================= -->
-  <div class="main-nav-wrapper">
-    <nav class="main-nav">
-      <ul id="categories"></ul>
-    </nav>
+  <!-- Navigation (catégories dynamiques) -->
+  <nav class="main-nav">
+    <ul id="categories"></ul>
+  </nav>
+
+  <!-- Section Hottest -->
+<section class="hottest">
+  <div class="hottest-wrapper">
+    <div class="hottest-grid" id="hottest"></div>
   </div>
+</section>
 
-  <!-- =========================
-       Section Hottest
-       ========================= -->
-  <section class="hottest">
-    <h2>Hottest :</h2>
-    <div class="hottest-wrapper">
-      <div class="hottest-grid" id="hottest"></div>
-    </div>
-  </section>
+<!-- ✅ Ajout du titre "Tous les articles" -->
+<h2 class="all-articles-title">Tous les articles</h2>
 
-  <!-- =========================
-       Section Articles récents
-       ========================= -->
+  <!-- Section Articles récents -->
   <section class="articles" id="articles"></section>
 
-  <!-- =========================
-       Librairies et scripts
-       ========================= -->
+  <!-- Librairie de rendu Markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="js/script.js"></script>
 
-  <!-- ===============================
-       🩹 Correctif flicker iOS Safari (scroll après reload)
-       =============================== -->
-  <script>
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-    window.addEventListener("load", () => {
-      requestAnimationFrame(() => {
-        // Force Safari à réinitialiser le pipeline GPU du blur
-        document.querySelectorAll(".icons i, .main-nav a, body").forEach(el => {
-          el.style.webkitTransform = "translateZ(0)";
-          el.style.transform = "translateZ(0)";
-        });
-        // Supprime la propriété après stabilisation
-        setTimeout(() => {
-          document.querySelectorAll(".icons i, .main-nav a, body").forEach(el => {
-            el.style.webkitTransform = "";
-            el.style.transform = "";
-          });
-        }, 150);
-      });
-    });
-  }
-  </script>
+  <!-- Ton script principal (corrigé) -->
+  <script src="js/script.js"></script>
 </body>
 </html>
