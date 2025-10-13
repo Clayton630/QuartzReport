@@ -285,11 +285,7 @@ async function loadArticles() {
         cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
 
-      if (nav) {
-        requestAnimationFrame(() => {
-          nav.scrollLeft = prevScroll;
-        });
-      }
+      if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
 
       const applyActiveColor = (catName) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
@@ -297,11 +293,12 @@ async function loadArticles() {
           a.style.borderColor = "";
           a.style.boxShadow = "";
           a.style.color = "#111";
+          a.style.borderWidth = "0.5px";
         });
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (activeLink) {
-          // ✅ Catégorie "Tous" → fond original, texte noir
+          // ✅ Catégorie "Tous"
           if (catName === "Tous") {
             activeLink.style.background =
               `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
@@ -321,12 +318,13 @@ async function loadArticles() {
           const g = (bigint >> 8) & 255;
           const b = bigint & 255;
 
-          // 🎨 Couleur légèrement plus opaque (0.55), contour fort, texte plus doux
-          const translucent = `rgba(${r},${g},${b},0.55)`;
+          // 🎨 Fond plus opaque, contour plus marqué
+          const translucent = `rgba(${r},${g},${b},0.68)`; // plus opaque
           activeLink.style.background = translucent;
-          activeLink.style.color = "rgba(255,255,255,0.78)";
-          activeLink.style.borderColor = `rgba(${r},${g},${b},1)`;
-          activeLink.style.boxShadow = `0 3px 10px rgba(${r},${g},${b},0.2)`;
+          activeLink.style.color = "rgba(255,255,255,0.75)"; // texte légèrement plus doux
+          activeLink.style.borderColor = `rgba(${r},${g},${b},1)`; // contour couleur pleine
+          activeLink.style.borderWidth = "1.2px"; // contour plus épais
+          activeLink.style.boxShadow = `0 3px 12px rgba(${r},${g},${b},0.25)`; // ombre harmonisée
         }
       };
 
