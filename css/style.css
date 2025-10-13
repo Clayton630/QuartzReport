@@ -634,3 +634,8 @@ body, button, input, textarea, select {
   font-weight: 500;
   transform: scale(1.03);
 }
+
+/* Fix largeur intrinsèque de la rangée de catégories pour le scroll */
+.main-nav ul {
+  min-width: max-content; /* ✅ garantit que tout le contenu s’étale et que l’extrémité droite est atteignable */
+}
