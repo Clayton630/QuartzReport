@@ -309,23 +309,22 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==============================
-// Fades dynamiques des catégories
+// Fades dynamiques des catégories (sans wrapper)
 // ==============================
 function initCategoryNavFades() {
   const nav = document.querySelector(".main-nav");
-  const wrapper = document.querySelector(".main-nav-wrapper");
-  if (!nav || !wrapper) return;
+  if (!nav) return;
 
-  const sync = () => {
-    const max = Math.max(0, nav.scrollWidth - nav.clientWidth);
-    const atStart = nav.scrollLeft <= 1;
-    const atEnd = nav.scrollLeft >= max - 1;
-    wrapper.classList.toggle("has-left", !atStart);
-    wrapper.classList.toggle("has-right", !atEnd);
+  const updateFades = () => {
+    const maxScroll = nav.scrollWidth - nav.clientWidth;
+    const showLeft = nav.scrollLeft > 5;
+    const showRight = nav.scrollLeft < maxScroll - 5;
+
+    nav.classList.toggle("has-left", showLeft);
+    nav.classList.toggle("has-right", showRight);
   };
 
-  nav.addEventListener("scroll", sync, { passive: true });
-  window.addEventListener("resize", sync);
-  requestAnimationFrame(sync);
-  setTimeout(sync, 60);
+  nav.addEventListener("scroll", updateFades, { passive: true });
+  window.addEventListener("resize", updateFades);
+  updateFades();
 }
