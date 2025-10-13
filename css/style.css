@@ -1,3 +1,25 @@
+/* =========================================================
+   QuartzReport — CSS complet (consolidé)
+   ========================================================= */
+
+/* =========================
+   Variables globales
+   ========================= */
+:root {
+  /* marge horizontale de page (utilisée partout) */
+  --page-x: 20px;
+  --page-x-mobile: 20px;
+  --bg-grad-a: #f3f6fb;
+  --bg-grad-b: #f7f7f7;
+}
+
+/* Ajuste l’offset avec les zones sûres (iOS) et petites largeurs */
+@supports(padding:max(0px)) {
+  :root {
+    --page-x-mobile: max(16px, env(safe-area-inset-left));
+  }
+}
+
 /* =========================
    Reset & bases
    ========================= */
@@ -6,7 +28,7 @@ html {
   padding: 0;
   height: 100%;
   overflow-x: hidden;
-  background: linear-gradient(135deg, #f3f6fb, #f7f7f7);
+  background: linear-gradient(135deg, var(--bg-grad-a), var(--bg-grad-b));
 }
 
 body {
@@ -22,7 +44,9 @@ body {
   padding-top: env(safe-area-inset-top);
   position: relative;
   isolation: isolate;
-  background: linear-gradient(135deg, #f3f6fb, #f7f7f7);
+  background: linear-gradient(135deg, var(--bg-grad-a), var(--bg-grad-b));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* =========================
@@ -101,7 +125,7 @@ body, button, input, textarea, select {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: calc(12px + env(safe-area-inset-top)) 16px 12px 16px;
+  padding: calc(12px + env(safe-area-inset-top)) var(--page-x) 12px var(--page-x);
   background: none;
   border: none;
   box-shadow: none;
@@ -125,9 +149,7 @@ body, button, input, textarea, select {
   z-index: -1;
 }
 
-/* =========================
-   ✅ Logo QuartzReport
-   ========================= */
+/* ✅ Logo QuartzReport */
 .logo {
   display: flex;
   align-items: center;
@@ -141,9 +163,7 @@ body, button, input, textarea, select {
   transition: transform 0.2s ease;
 }
 .logo-img:hover { transform: scale(1.05); }
-@media (min-width: 768px) {
-  .logo-img { height: 26px; }
-}
+@media (min-width: 768px) { .logo-img { height: 26px; } }
 
 /* =========================
    💧 Bouton combiné (recherche + menu)
@@ -189,10 +209,9 @@ body, button, input, textarea, select {
   line-height: 0;
   transition: transform 0.2s ease;
 }
-
 .dual-icon-btn i:hover { transform: scale(1.15); }
 
-/* Mobile */
+/* Mobile bouton combiné */
 @media (max-width: 768px) {
   .dual-icon-btn {
     height: 44px;
@@ -200,14 +219,13 @@ body, button, input, textarea, select {
     padding: 0 10px;
     justify-content: space-between;
   }
-  .dual-icon-btn i {
-    font-size: 1.55rem;
-  }
+  .dual-icon-btn i { font-size: 1.55rem; }
 }
 
 /* =========================
-   Navigation (catégories dynamiques) — version corrigée et finale
+   Navigation (catégories dynamiques)
    ========================= */
+/* Conteneur scrollable sans snap, parfaitement aligné avec le reste */
 .main-nav {
   width: 100%;
   overflow-x: auto;
@@ -215,27 +233,33 @@ body, button, input, textarea, select {
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
   scroll-snap-type: none; /* ✅ pas de snap */
-  padding: 10px 0;
   margin: 8px 0 0 0;
+  padding: 0; /* on gère les marges via l’UL */
 }
 
-.main-nav::-webkit-scrollbar {
-  display: none;
-}
+.main-nav::-webkit-scrollbar { display: none; }
 
+/* Rangée de catégories : alignement identique aux autres sections */
 .main-nav ul {
   display: flex;
   gap: 12px;
   list-style: none;
   margin: 0;
-  padding-left: 20px;   /* ✅ padding gauche visible */
-  padding-right: 20px;  /* ✅ padding droit identique pour que la dernière catégorie ne soit jamais coupée */
+  padding: 0 var(--page-x);   /* ✅ mêmes marges que hottest/articles */
+  min-width: max-content;     /* ✅ garantit l’étalement et le scroll jusqu’au bout */
+  align-items: center;
 }
 
-.main-nav li {
-  flex: 0 0 auto;
+/* Spacer logique à droite pour que la dernière catégorie ne soit pas mangée */
+.main-nav ul::after {
+  content: "";
+  flex: 0 0 var(--page-x);
 }
 
+/* Items */
+.main-nav li { flex: 0 0 auto; }
+
+/* Lien/pill de catégorie (style unifié) */
 .main-nav a {
   display: inline-flex;
   align-items: center;
@@ -252,6 +276,7 @@ body, button, input, textarea, select {
   font-family: "QuartzSans", -apple-system, BlinkMacSystemFont, "Segoe UI",
                Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
   font-weight: 440;
+  font-variation-settings: "wght" 440;
   font-size: 1rem;
   color: #111;
   text-decoration: none;
@@ -260,6 +285,7 @@ body, button, input, textarea, select {
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
     0 2px 20px rgba(0,0,0,0.1);
+  line-height: 1;
 }
 
 .main-nav a:hover {
@@ -275,11 +301,17 @@ body, button, input, textarea, select {
   transform: scale(1.03);
 }
 
-/* ✅ Responsive */
+/* Mobile — hauteur réellement réduite (sans changer la taille police trop) */
 @media (max-width: 480px) {
+  .main-nav ul {
+    padding-left: var(--page-x-mobile);
+    padding-right: var(--page-x-mobile);
+  }
   .main-nav a {
-    padding: 8px 14px;
-    font-size: 0.95rem;
+    padding: 8px 16px;
+    font-size: 0.97rem;
+    line-height: 1;
+    border-radius: 34px;
   }
 }
 
@@ -293,8 +325,8 @@ body, button, input, textarea, select {
 
 .hottest-wrapper {
   position: relative;
-  z-index: 1; /* ✅ dessous de la nav */
-  padding: 0 20px;
+  z-index: 1;
+  padding: 0 var(--page-x);
   overflow: visible;
 }
 
@@ -307,14 +339,15 @@ body, button, input, textarea, select {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-  padding-top: 30px;
-  padding-bottom: 30px;
-  margin-top: -30px;
-  margin-bottom: -30px;
+  padding-top: 30px;      /* espace visuel au-dessus */
+  padding-bottom: 30px;   /* espace visuel au-dessous */
+  margin-top: -30px;      /* neutralise le padding visuellement */
+  margin-bottom: -30px;   /* ne décale plus les autres sections */
 }
 
 .hottest-grid::-webkit-scrollbar { display: none; }
 
+/* ✅ Cartes HOTTEST ancrées vers le bas */
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -323,6 +356,8 @@ body, button, input, textarea, select {
   color: inherit;
   display: flex;
   flex-direction: column;
+  justify-content: flex-start;
+  transform-origin: bottom;
   border-radius: 28px;
   background: rgba(255,255,255,0.35);
   border: 1px solid rgba(255,255,255,0.5);
@@ -336,17 +371,21 @@ body, button, input, textarea, select {
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
 
+/* ✅ Image 16:9 forcée et stable visuellement */
 .hottest-grid .card > img {
+  display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 16 / 9;
   object-fit: cover;
-  display: block;
+  transform-origin: bottom;
+  flex-shrink: 0;
   border: none;
   margin: 0;
   padding: 0;
-  flex-shrink: 0;
 }
 
+/* ✅ Contenu */
 .card-content {
   flex: 1;
   padding: 14px 16px 16px;
@@ -369,14 +408,20 @@ body, button, input, textarea, select {
 /* =========================
    Articles du feed
    ========================= */
-.articles { padding: 20px; overflow: visible; }
+.articles {
+  padding: 20px var(--page-x);
+  overflow: visible;
+}
+
 .day-block {
   background: #fff;
   border-radius: 23px;
   padding: 14px 14px 8px 14px;
   margin-bottom: 26px;
   box-shadow: 0 3px 12px rgba(0,0,0,0.04);
+  box-sizing: border-box;
 }
+
 .day-title {
   font-size: 1.1rem;
   font-weight: 600;
@@ -384,12 +429,14 @@ body, button, input, textarea, select {
   margin: 0 0 12px 4px;
   text-transform: capitalize;
 }
+
 .day-article {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 6px 0;
 }
+
 .day-article-link {
   display: flex;
   align-items: center;
@@ -398,6 +445,7 @@ body, button, input, textarea, select {
   text-decoration: none;
   color: inherit;
 }
+
 .thumb {
   width: 72px;
   height: 72px;
@@ -407,12 +455,15 @@ body, button, input, textarea, select {
   background-repeat: no-repeat;
   flex-shrink: 0;
 }
+
 .day-article-info { flex: 1; }
+
 .day-meta {
   margin: 0;
   font-size: 0.85rem;
   color: #777;
 }
+
 .day-article-info h4 {
   margin: 4px 0 0;
   font-size: 1rem;
@@ -420,6 +471,7 @@ body, button, input, textarea, select {
   color: #111;
   line-height: 1.3;
 }
+
 .day-separator {
   height: 1px;
   background: rgba(0,0,0,0.06);
@@ -443,26 +495,34 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   Responsive
+   Responsive global
    ========================= */
 @media (max-width: 480px) {
   .logo-img { height: 27px; }
-  .main-nav { padding-left: 8px; padding-right: 16px; }
-  .main-nav a { font-size: 1.05rem; }
+
+  /* catégories : taille/padding plus compact */
+  .main-nav a { font-size: 0.97rem; padding: 8px 16px; border-radius: 34px; }
+
   .hottest-grid .card { flex: 0 0 65%; max-width: 260px; }
   .card-content h3 { font-size: 1.05rem; }
+
   .article-header h3 { font-size: 1.3rem; }
   .article-body { font-size: 0.95rem; }
   .thumb { width: 64px; height: 64px; }
   .day-title { font-size: 1rem; margin-bottom: 8px; }
   .day-article-info h4 { font-size: 0.95rem; }
+
+  /* alignement horizontal cohérent au mobile */
+  .hottest-wrapper { padding: 0 var(--page-x-mobile); }
+  .articles { padding: 20px var(--page-x-mobile); }
 }
 
 /* =========================
-   Feed regroupé par jour / semaine
+   Feed regroupé par jour / semaine (desktop)
    ========================= */
 @media (min-width: 769px) {
   .week-block { margin-bottom: 36px; }
+
   .week-title {
     font-size: 1.2rem;
     font-weight: 600;
@@ -470,6 +530,7 @@ body, button, input, textarea, select {
     margin: 0 0 16px 4px;
     text-transform: capitalize;
   }
+
   .week-carousel {
     --day-card-w: 320px;
     display: flex;
@@ -479,6 +540,7 @@ body, button, input, textarea, select {
     padding: 0 4px;
     align-items: flex-start;
   }
+
   .week-carousel .day-block {
     flex: 0 0 var(--day-card-w);
     width: var(--day-card-w);
@@ -503,33 +565,39 @@ body, button, input, textarea, select {
   max-height: 55vh;
   border-radius: 0;
 }
+
 .article-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+
 .article-header {
   text-align: center;
-  padding: 0 1.2rem;
+  padding: 0 var(--page-x);
 }
+
 .article-header h1 {
   font-size: 1.8rem;
   font-weight: 700;
   margin: 0.2rem 0 0.6rem;
   color: #111;
 }
+
 .article-meta {
   font-size: 0.9rem;
   color: #666;
   margin: 0 0 1.8rem;
 }
+
 .article-body {
   font-size: 1rem;
   color: #111;
   line-height: 1.6;
-  padding: 0 1.2rem 2.5rem;
+  padding: 0 var(--page-x) 2.5rem;
 }
+
 .article-body img {
   width: 100%;
   height: auto;
@@ -545,7 +613,7 @@ body, button, input, textarea, select {
   font-size: 1.5rem;
   font-weight: 600;
   color: #111;
-  margin: 32px 20px 14px 20px;
+  margin: 32px var(--page-x) 14px var(--page-x);
   line-height: 1.3;
   text-align: left;
 }
@@ -555,10 +623,12 @@ body, button, input, textarea, select {
    ========================= */
 @media (max-width: 768px) {
   .hottest-wrapper { margin-top: 10px; }
+
   .hottest-grid .card {
     flex: 0 0 65%;
     max-width: 260px;
   }
+
   .hottest-grid .card > img {
     width: 100%;
     aspect-ratio: 16 / 9;
@@ -566,105 +636,25 @@ body, button, input, textarea, select {
     display: block;
     height: auto;
   }
+
   .card-content {
     padding: 12px 14px 14px;
   }
+
   .card-content h3 {
     font-size: 1rem;
   }
 }
 
 /* =========================
-   Catégories — réduction réelle de hauteur mobile
+   Petits raffinements / accessibilité
    ========================= */
-@media (max-width: 480px) {
-  .main-nav li a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 3px 14px;          /* ✅ réduit nettement la hauteur */
-    height: 30px;               /* ✅ force la hauteur totale du bouton */
-    min-height: 0;              /* ✅ supprime héritage précédent */
-    line-height: 1;             /* ✅ empêche le texte d’étirer la pill */
-    border-radius: 34px;        /* ✅ toujours arrondi */
-    font-weight: 500;           /* ✅ normal */
-    font-size: 0.95rem;         /* ✅ garde la lisibilité */
-    box-sizing: border-box;     /* ✅ compatibilité iOS Safari */
-  }
-
-  /* Ajustement pour compenser visuel si le texte semble collé */
-  .main-nav ul {
-    gap: 10px;
-  }
+a:focus-visible, button:focus-visible {
+  outline: 2px solid rgba(58,123,213,0.65);
+  outline-offset: 2px;
+  border-radius: 12px;
 }
 
-/* =========================
-   Catégories — version raffinée (padding ajusté subtilement)
-   ========================= */
-@font-face {
-  font-family: "QuartzSans";
-  src: local("SF Pro Text Regular"),
-       local("SF Pro Display Regular"),
-       local("Inter Variable"),
-       local("Inter"),
-       url("https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLT9R6fdtO.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+img { max-width: 100%; height: auto; }
 
-.main-nav li a {
-  font-family: "QuartzSans", -apple-system, BlinkMacSystemFont, "Segoe UI",
-               Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif !important;
-  font-weight: 440 !important;           
-  font-variation-settings: "wght" 440;
-  font-size: 1.02rem;                    
-  letter-spacing: -0.15px;
-  padding: 18px 16px;                    /* ✅ padding horizontal légèrement réduit */
-  border-radius: 60px;
-}
-
-/* =========================
-   Catégorie active — état sélectionné
-   ========================= */
-.main-nav a.active {
-  background: rgba(255, 255, 255, 1);
-  border: 0.5px solid rgba(0,0,0,0.1);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  font-weight: 500;
-  transform: scale(1.03);
-}
-
-/* Fix largeur intrinsèque de la rangée de catégories pour le scroll */
-.main-nav ul {
-  min-width: max-content; /* ✅ garantit que tout le contenu s’étale et que l’extrémité droite est atteignable */
-}
-
-/* Spacer à droite pour que la dernière catégorie ne soit jamais mangée */
-.main-nav ul::after {
-  content: "";
-  flex: 0 0 max(20px, env(safe-area-inset-right)); /* espace final visible */
-}
-
-/* s’assure que l’UL peut étirer ses items et le spacer */
-.main-nav ul {
-  display: flex;
-  min-width: max-content;      /* déjà ajouté, on le confirme */
-  padding-left: 20px;          /* ton padding gauche actuel */
-  padding-right: 0;            /* on laisse le spacer gérer le bord droit */
-}
-
-/* =========================
-   Alignement horizontal universel des catégories
-   ========================= */
-@media (max-width: 768px) {
-  .main-nav ul {
-    padding-left: calc(20px + env(safe-area-inset-left, 0px));  /* 👈 même marge que hottest et articles */
-  }
-}
-
-@media (min-width: 769px) {
-  .main-nav ul {
-    padding-left: 20px;  /* 👈 cohérent avec le layout desktop */
-  }
-}
+/* Fin du fichier */
