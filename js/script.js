@@ -42,9 +42,7 @@ async function loadArticles() {
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
-    const resp = await fetch(
-      `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`
-    );
+    const resp = await fetch(`${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`);
     if (!resp.ok) throw new Error("Erreur chargement liste articles");
 
     const files = await resp.json();
@@ -56,19 +54,16 @@ async function loadArticles() {
     for (const file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      const apiResp = await fetch(
-        `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}`
-      );
+      const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}`);
       const apiData = await apiResp.json();
       const text = base64ToUtf8(apiData.content);
 
       const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
-      let meta = {},
-        body = text;
+      let meta = {}, body = text;
       if (match) {
         const yaml = match[1].trim();
         body = match[2].trim();
-        yaml.split("\n").forEach((line) => {
+        yaml.split("\n").forEach(line => {
           const [k, ...rest] = line.split(":");
           meta[k.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
         });
@@ -90,7 +85,7 @@ async function loadArticles() {
         thumbnail: cover,
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
-        body,
+        body
       });
     }
 
@@ -101,12 +96,10 @@ async function loadArticles() {
     // SECTION HOTTEST
     // ======================
     hottestContainer.innerHTML = "";
-    const hottest = all.filter((a) => a.important).slice(0, 3);
-    hottest.forEach((article) => {
+    const hottest = all.filter(a => a.important).slice(0, 3);
+    hottest.forEach(article => {
       const link = document.createElement("a");
-      link.href = `article.html?slug=${encodeURIComponent(
-        article.slug
-      )}&file=${encodeURIComponent(article.filename)}`;
+      link.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
       link.className = "card";
 
       const now = new Date();
@@ -117,16 +110,10 @@ async function loadArticles() {
 
       let dateDisplay;
       if (isToday) {
-        const time = article.date.toLocaleTimeString("fr-FR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+        const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
         dateDisplay = `à ${time}`;
       } else {
-        dateDisplay = article.date.toLocaleDateString("fr-FR", {
-          day: "numeric",
-          month: "short",
-        });
+        dateDisplay = article.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
       }
 
       link.innerHTML = `
@@ -147,21 +134,16 @@ async function loadArticles() {
 
       if (isMobile) {
         const byDay = {};
-        list.forEach((a) => {
+        list.forEach(a => {
           const key = ymdKey(a.date);
           if (!byDay[key]) byDay[key] = [];
           byDay[key].push(a);
         });
 
-        const sortedDays = Object.keys(byDay).sort(
-          (a, b) => new Date(b) - new Date(a)
-        );
+        const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
         for (const k of sortedDays) {
           const d = new Date(k);
-          const dateStr = d.toLocaleDateString("fr-FR", {
-            day: "numeric",
-            month: "long",
-          });
+          const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
           const block = document.createElement("div");
           block.className = "day-block";
           block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
@@ -169,16 +151,11 @@ async function loadArticles() {
 
           const articles = byDay[k].sort((a, b) => b.date - a.date);
           for (const article of articles) {
-            const time = article.date.toLocaleTimeString("fr-FR", {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+            const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
             const el = document.createElement("div");
             el.className = "day-article";
             el.innerHTML = `
-              <a href="article.html?slug=${encodeURIComponent(
-                article.slug
-              )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+              <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
                 <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
                 <div class="day-article-info">
                   <p class="day-meta">Par ${article.author}, à ${time}</p>
@@ -195,7 +172,7 @@ async function loadArticles() {
         const mondayPrev = addDays(mondayThis, -7);
 
         const weeks = { current: {}, previous: {}, others: {} };
-        list.forEach((article) => {
+        list.forEach(article => {
           const d = normalizeDate(article.date);
           const dayKey = ymdKey(d);
           const dTime = d.getTime();
@@ -223,35 +200,23 @@ async function loadArticles() {
 
           const carousel = document.createElement("div");
           carousel.className = "week-carousel";
-          const sortedDays = Object.keys(daysMap).sort(
-            (a, b) => new Date(b) - new Date(a)
-          );
+          const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
 
           for (const dayKey of sortedDays) {
             const d = new Date(dayKey);
-            const label = d.toLocaleDateString("fr-FR", {
-              day: "numeric",
-              month: "long",
-            });
+            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
             const dayBlock = document.createElement("div");
             dayBlock.className = "day-block";
             dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
 
             const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
             for (const article of articles) {
-              const time = article.date.toLocaleTimeString("fr-FR", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
+              const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
               const el = document.createElement("div");
               el.className = "day-article";
               el.innerHTML = `
-                <a href="article.html?slug=${encodeURIComponent(
-                  article.slug
-                )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                  <div class="thumb" style="background-image:url('${
-                    article.thumbnail
-                  }')"></div>
+                <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                  <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
                   <div class="day-article-info">
                     <p class="day-meta">Par ${article.author}, à ${time}</p>
                     <h4>${article.title}</h4>
@@ -273,77 +238,63 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES — stroke interne blanc épais et visible
+    // CATÉGORIES — pseudo-élément pour vrai stroke interne blanc
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
-      let cats = Array.from(new Set(list.map((a) => a.category)));
-      cats = cats.filter((c) => c !== "Autre");
+      let cats = Array.from(new Set(list.map(a => a.category)));
+      cats = cats.filter(c => c !== "Autre");
       cats.push("Autre");
 
       const palette = [
-        "#4B73FA",
-        "#FF6F61",
-        "#2ECC71",
-        "#F4C542",
-        "#9B59B6",
-        "#00B8D9",
-        "#E67E22",
-        "#1ABC9C",
-        "#E84393",
-        "#16A085",
+        "#4B73FA","#FF6F61","#2ECC71","#F4C542","#9B59B6","#00B8D9",
+        "#E67E22","#1ABC9C","#E84393","#16A085"
       ];
       const catColors = { Tous: "none", Autre: "#555555" };
       let colorIndex = 0;
       for (const c of cats) {
-        if (c !== "Tous" && c !== "Autre")
-          catColors[c] = palette[colorIndex++ % palette.length];
+        if (c !== "Tous" && c !== "Autre") catColors[c] = palette[colorIndex++ % palette.length];
       }
 
       categoriesContainer.innerHTML =
-        `<li><a href="#" data-category="Tous" class="${
-          active === "Tous" ? "active" : ""
-        }">Tous</a></li>` +
-        cats
-          .map(
-            (c) =>
-              `<li><a href="#" data-category="${c}" class="${
-                active === c ? "active" : ""
-              }">${c}</a></li>`
-          )
-          .join("");
+        `<li><a href="#" data-category="Tous" class="${active==="Tous"?"active":""}">Tous</a></li>` +
+        cats.map(c => `<li><a href="#" data-category="${c}" class="${active===c?"active":""}">${c}</a></li>`).join("");
 
-      if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
+      if (nav) requestAnimationFrame(() => nav.scrollLeft = prevScroll);
 
-      // ✅ Stroke interne blanc + halo doux
+      // ✅ Style global pour le stroke via pseudo-élément
       if (!document.getElementById("inner-stroke-style")) {
         const s = document.createElement("style");
         s.id = "inner-stroke-style";
         s.textContent = `
           .main-nav a.stroke-inner {
             position: relative;
-            box-shadow:
-              inset 0 0 0 2px rgba(255,255,255,0.8),
-              inset 0 0 4px rgba(255,255,255,0.25);
+          }
+          .main-nav a.stroke-inner::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            border: 2px solid rgba(255,255,255,0.8);
+            pointer-events: none;
+            z-index: 1;
           }
         `;
         document.head.appendChild(s);
       }
 
       const apply = (c) => {
-        categoriesContainer.querySelectorAll("a").forEach((a) => {
+        categoriesContainer.querySelectorAll("a").forEach(a => {
           a.classList.remove("stroke-inner");
           a.style.background = "";
           a.style.color = "";
           a.style.boxShadow = "";
         });
 
-        const link = categoriesContainer.querySelector(
-          `a[data-category="${c}"]`
-        );
+        const link = categoriesContainer.querySelector(`a[data-category="${c}"]`);
         if (!link) return;
         const color = catColors[c] || "#4B73FA";
 
@@ -361,17 +312,14 @@ async function loadArticles() {
 
       apply(active);
 
-      categoriesContainer.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", (e) => {
+      categoriesContainer.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", e => {
           e.preventDefault();
           const cat = link.dataset.category;
-          categoriesContainer
-            .querySelectorAll("a")
-            .forEach((a) => a.classList.remove("active"));
+          categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
           link.classList.add("active");
           apply(cat);
-          const filtered =
-            cat === "Tous" ? all : all.filter((a) => a.category === cat);
+          const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
           render(filtered);
         });
       });
@@ -379,11 +327,10 @@ async function loadArticles() {
 
     buildCategories(all, "Tous");
     await render(all);
+
   } catch (err) {
     console.error(err);
-    const container = document.getElementById("articles");
-    if (container)
-      container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
+    if (container) container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
 
@@ -397,14 +344,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const menuIcon = document.querySelector(".menu-icon");
 
   if (searchIcon) {
-    searchIcon.addEventListener("click", (e) => {
+    searchIcon.addEventListener("click", e => {
       e.stopPropagation();
       console.log("Recherche ouverte");
     });
   }
 
   if (menuIcon) {
-    menuIcon.addEventListener("click", (e) => {
+    menuIcon.addEventListener("click", e => {
       e.stopPropagation();
       console.log("Menu ouvert");
     });
