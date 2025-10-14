@@ -264,8 +264,6 @@ async function loadArticles() {
       const prevScroll = nav ? nav.scrollLeft : 0;
 
       let cats = Array.from(new Set(list.map(a => a.category)));
-
-      // ✅ "Autre" toujours à la fin
       cats = cats.filter(c => c !== "Autre");
       cats.push("Autre");
 
@@ -295,24 +293,24 @@ async function loadArticles() {
         categoriesContainer.querySelectorAll("a").forEach(a => {
           a.style.background = "";
           a.style.color = "#111";
-          a.style.boxShadow = "none";
+          a.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
         });
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (!activeLink) return;
 
         if (catName === "Tous") {
-          // ✅ Ultra transparent
-          activeLink.style.background =
-            "rgba(255,255,255,0.25)";
+          activeLink.style.background = "rgba(255,255,255,0.25)";
           activeLink.style.backdropFilter = "blur(10px)";
           activeLink.style.color = "#111";
-          activeLink.style.boxShadow = "inset 0 0 0 1px rgba(255,255,255,0.4)";
+          activeLink.style.boxShadow =
+            "0 2px 12px rgba(0,0,0,0.08), 0 0 0 1.5px rgba(255,255,255,0.7)";
         } else {
           const baseColor = categoryColors[catName] || "#4B73FA";
           activeLink.style.background = baseColor;
           activeLink.style.color = "rgba(255,255,255,0.85)";
-          activeLink.style.boxShadow = "inset 0 0 0 1px rgba(255,255,255,0.6)";
+          activeLink.style.boxShadow =
+            "0 2px 12px rgba(0,0,0,0.08), 0 0 0 1.5px rgba(255,255,255,0.7)";
         }
       };
 
