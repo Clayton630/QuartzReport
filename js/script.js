@@ -120,14 +120,13 @@ async function loadArticles() {
     });
 
     // ======================
-    // RENDER PRINCIPAL (Feed)
+    // RENDER PRINCIPAL
     // ======================
     async function render(list) {
       container.innerHTML = "";
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
       if (isMobile) {
-        // === VERSION MOBILE ===
         const byDay = {};
         list.forEach(a => {
           const key = ymdKey(a.date);
@@ -257,7 +256,7 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES — dynamiques, couleurs et stroke intérieur
+    // CATÉGORIES — dynamiques, couleurs et stroke interne bord à bord
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
@@ -304,14 +303,16 @@ async function loadArticles() {
           activeLink.style.background = "rgba(255,255,255,0.22)";
           activeLink.style.backdropFilter = "blur(10px)";
           activeLink.style.color = "#111";
+          // ✅ stroke intérieur blanc bord à bord
           activeLink.style.boxShadow =
-            "0 2px 12px rgba(0,0,0,0.08), inset 0 0 0 0.6px rgba(255,255,255,0.55)";
+            "0 2px 12px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.5)";
         } else {
           const baseColor = categoryColors[catName] || "#4B73FA";
           activeLink.style.background = baseColor;
           activeLink.style.color = "rgba(255,255,255,0.82)";
+          // ✅ stroke intérieur bord à bord — spread négatif léger pour coller la limite
           activeLink.style.boxShadow =
-            "0 2px 14px rgba(0,0,0,0.1), inset 0 0 0 0.6px rgba(255,255,255,0.55)";
+            "0 2px 14px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.5), inset 0 0 1px -0.25px rgba(255,255,255,0.4)";
         }
       };
 
