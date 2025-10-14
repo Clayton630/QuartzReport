@@ -90,7 +90,6 @@ async function loadArticles() {
     // ======================
     hottestContainer.innerHTML = "";
     const hottest = all.filter(a => a.important).slice(0, 3);
-
     hottest.forEach(article => {
       const link = document.createElement("a");
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
@@ -128,7 +127,7 @@ async function loadArticles() {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
       if (isMobile) {
-        // === VERSION MOBILE — par jour ===
+        // === VERSION MOBILE ===
         const byDay = {};
         list.forEach(a => {
           const key = ymdKey(a.date);
@@ -169,7 +168,7 @@ async function loadArticles() {
           }
         }
       } else {
-        // === VERSION DESKTOP — par semaine ===
+        // === VERSION DESKTOP ===
         const mondayThis = startOfWeekMonday(new Date());
         const mondayNext = addDays(mondayThis, 7);
         const mondayPrev = addDays(mondayThis, -7);
@@ -258,19 +257,17 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES — ordonnées, stylisées, dynamiques
+    // CATÉGORIES — dynamiques, couleurs et stroke intérieur
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
-      // 1) Ordre avec « Autre » en dernier
       let cats = Array.from(new Set(list.map(a => a.category)));
       cats = cats.filter(c => c !== "Autre");
       cats.push("Autre");
 
-      // 2) Couleurs dynamiques
       const categoryColors = {};
       const palette = [
         "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
@@ -286,49 +283,40 @@ async function loadArticles() {
         colorIndex++;
       }
 
-      // 3) Construction du HTML
       const html =
         `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""}">Tous</a></li>` +
         cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
 
-      // Restaure la position de scroll horizontale
       if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
 
-      // 4) Styles dynamiques applicables à la sélection
       const applyActiveColor = (catName) => {
-        // reset de base (on laisse l'apparence des non-sélectionnées au CSS)
         categoriesContainer.querySelectorAll("a").forEach(a => {
           a.style.background = "";
           a.style.color = "";
-          a.style.boxShadow = ""; // on laisse l’ombre CSS par défaut
-          a.style.opacity = "";
+          a.style.boxShadow = "";
         });
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (!activeLink) return;
 
         if (catName === "Tous") {
-          // Fond très translucide + texte noir
           activeLink.style.background = "rgba(255,255,255,0.22)";
           activeLink.style.backdropFilter = "blur(10px)";
           activeLink.style.color = "#111";
-          // Ombre externe douce + stroke intérieur blanc plus léger
           activeLink.style.boxShadow =
-            "0 2px 12px rgba(0,0,0,0.08), inset 0 0 0 1.25px rgba(255,255,255,0.45)";
+            "0 2px 12px rgba(0,0,0,0.08), inset 0 0 0 0.6px rgba(255,255,255,0.55)";
         } else {
           const baseColor = categoryColors[catName] || "#4B73FA";
           activeLink.style.background = baseColor;
-          activeLink.style.color = "rgba(255,255,255,0.82)"; // texte légèrement translucide
-          // Ombre externe + stroke intérieur blanc (légèrement réduit)
+          activeLink.style.color = "rgba(255,255,255,0.82)";
           activeLink.style.boxShadow =
-            "0 2px 14px rgba(0,0,0,0.10), inset 0 0 0 1.25px rgba(255,255,255,0.45)";
+            "0 2px 14px rgba(0,0,0,0.1), inset 0 0 0 0.6px rgba(255,255,255,0.55)";
         }
       };
 
       applyActiveColor(active);
 
-      // 5) Gestion des clics sur les catégories
       categoriesContainer.querySelectorAll("a").forEach(link => {
         link.addEventListener("click", e => {
           e.preventDefault();
@@ -343,7 +331,6 @@ async function loadArticles() {
       });
     }
 
-    // Première construction + affichage
     buildCategories(all, "Tous");
     await render(all);
 
