@@ -318,14 +318,14 @@ async function loadArticles() {
 
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 
-      // ✅ Stroke interne : box-shadow inset très précis
+      // ✅ Stroke interne blanc translucide, épaisseur 1.5px
       if (!document.getElementById("inner-stroke-style")) {
         const s = document.createElement("style");
         s.id = "inner-stroke-style";
         s.textContent = `
           .main-nav a.stroke-inner {
             position: relative;
-            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.55);
+            box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.65);
           }
         `;
         document.head.appendChild(s);
