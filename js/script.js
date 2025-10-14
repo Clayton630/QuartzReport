@@ -30,7 +30,7 @@ function base64ToUtf8(base64) {
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
-  const categoriesContainer = document.getElementById("categories"); // <ul id="categories">
+  const categoriesContainer = document.getElementById("categories");
 
   const repo = "Clayton630/QuartzReport";
   const branch = "main";
@@ -43,7 +43,6 @@ async function loadArticles() {
     const files = await resp.json();
     const all = [];
 
-    // ======= Lecture des fichiers et métadonnées =======
     for (const file of files) {
       if (!file.name.endsWith(".md")) continue;
 
@@ -82,7 +81,6 @@ async function loadArticles() {
       });
     }
 
-    // Tri du plus récent au plus ancien
     all.sort((a, b) => b.date - a.date);
 
     // ======================
@@ -171,8 +169,8 @@ async function loadArticles() {
         const mondayThis = startOfWeekMonday(new Date());
         const mondayNext = addDays(mondayThis, 7);
         const mondayPrev = addDays(mondayThis, -7);
-
         const weeks = { current: {}, previous: {}, others: {} };
+
         list.forEach(article => {
           const d = normalizeDate(article.date);
           const dayKey = ymdKey(d);
@@ -181,11 +179,11 @@ async function loadArticles() {
           const mondayNextTime = mondayNext.getTime();
           const mondayPrevTime = mondayPrev.getTime();
 
-          if (dTime >= mondayThisTime && dTime < mondayNextTime) {
+          if (dTime >= mondayThisTime && dTime < mondayNextTime)
             (weeks.current[dayKey] ||= []).push(article);
-          } else if (dTime >= mondayPrevTime && dTime < mondayThisTime) {
+          else if (dTime >= mondayPrevTime && dTime < mondayThisTime)
             (weeks.previous[dayKey] ||= []).push(article);
-          } else {
+          else {
             const wk = startOfWeekMonday(d);
             const wkKey = ymdKey(wk);
             (weeks.others[wkKey] ||= {});
@@ -209,11 +207,10 @@ async function loadArticles() {
             const dayBlock = document.createElement("div");
             dayBlock.className = "day-block";
             dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
-
             const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
             for (let i = 0; i < articles.length; i += 4) {
               const chunk = articles.slice(i, i + 4);
-              chunk.forEach((article, idx) => {
+              chunk.forEach(article => {
                 const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
                 const el = document.createElement("div");
                 el.className = "day-article";
@@ -227,36 +224,23 @@ async function loadArticles() {
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
-                if (idx < chunk.length - 1 || i + chunk.length < articles.length)
-                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+                dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
               });
               await new Promise(res => setTimeout(res, 200));
             }
             carousel.appendChild(dayBlock);
           }
-
           weekBlock.appendChild(carousel);
           container.appendChild(weekBlock);
         }
 
         await renderWeek("Cette semaine", weeks.current);
         await renderWeek("La semaine dernière", weeks.previous);
-
-        const otherWeeks = Object.keys(weeks.others).sort((a, b) => new Date(b) - new Date(a));
-        for (const wkKey of otherWeeks) {
-          const start = new Date(wkKey);
-          const end = addDays(start, 6);
-          const title = `Semaine du ${start.toLocaleDateString("fr-FR", {
-            day: "numeric",
-            month: "long"
-          })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
-          await renderWeek(title, weeks.others[wkKey]);
-        }
       }
     }
 
     // ======================
-    // CATÉGORIES — dynamiques, couleurs et stroke interne bord à bord
+    // CATÉGORIES — stroke bord à bord via pseudo
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
@@ -270,8 +254,7 @@ async function loadArticles() {
       const categoryColors = {};
       const palette = [
         "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
-        "#00B8D9", "#E67E22", "#1ABC9C", "#E84393", "#16A085",
-        "#F39C12", "#2980B9", "#C0392B"
+        "#00B8D9", "#E67E22", "#1ABC9C", "#E84393", "#16A085"
       ];
       categoryColors["Tous"] = "none";
       categoryColors["Autre"] = "#555555";
@@ -286,11 +269,11 @@ async function loadArticles() {
         `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""}">Tous</a></li>` +
         cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
-
       if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
 
       const applyActiveColor = (catName) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
+          a.classList.remove("has-stroke");
           a.style.background = "";
           a.style.color = "";
           a.style.boxShadow = "";
@@ -299,22 +282,42 @@ async function loadArticles() {
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (!activeLink) return;
 
+        const baseColor = categoryColors[catName] || "#4B73FA";
+
         if (catName === "Tous") {
           activeLink.style.background = "rgba(255,255,255,0.22)";
-          activeLink.style.backdropFilter = "blur(10px)";
           activeLink.style.color = "#111";
-          // ✅ stroke intérieur blanc bord à bord
-          activeLink.style.boxShadow =
-            "0 2px 12px rgba(0,0,0,0.08), inset 0 0 0 1px rgba(255,255,255,0.5)";
+          activeLink.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
         } else {
-          const baseColor = categoryColors[catName] || "#4B73FA";
           activeLink.style.background = baseColor;
           activeLink.style.color = "rgba(255,255,255,0.82)";
-          // ✅ stroke intérieur bord à bord — spread négatif léger pour coller la limite
-          activeLink.style.boxShadow =
-            "0 2px 14px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.5), inset 0 0 1px -0.25px rgba(255,255,255,0.4)";
+          activeLink.style.boxShadow = "0 2px 14px rgba(0,0,0,0.1)";
         }
+
+        // ✅ stroke interne bord à bord via pseudo
+        activeLink.classList.add("has-stroke");
       };
+
+      // Injection CSS globale une seule fois
+      if (!document.getElementById("dynamic-stroke-style")) {
+        const style = document.createElement("style");
+        style.id = "dynamic-stroke-style";
+        style.textContent = `
+          .main-nav a.has-stroke::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            border: 1px solid rgba(255,255,255,0.55);
+            pointer-events: none;
+            box-sizing: border-box;
+          }
+          .main-nav a {
+            position: relative;
+          }
+        `;
+        document.head.appendChild(style);
+      }
 
       applyActiveColor(active);
 
@@ -325,7 +328,6 @@ async function loadArticles() {
           categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
           link.classList.add("active");
           applyActiveColor(cat);
-
           const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
           render(filtered);
         });
@@ -337,8 +339,7 @@ async function loadArticles() {
 
   } catch (err) {
     console.error(err);
-    const container = document.getElementById("articles");
-    if (container) container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
+    container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
 
@@ -350,14 +351,12 @@ document.addEventListener("DOMContentLoaded", loadArticles);
 document.addEventListener("DOMContentLoaded", () => {
   const searchIcon = document.querySelector(".search-icon");
   const menuIcon = document.querySelector(".menu-icon");
-
   if (searchIcon) {
     searchIcon.addEventListener("click", e => {
       e.stopPropagation();
       console.log("Recherche ouverte");
     });
   }
-
   if (menuIcon) {
     menuIcon.addEventListener("click", e => {
       e.stopPropagation();
