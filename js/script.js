@@ -30,7 +30,7 @@ function base64ToUtf8(base64) {
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
-  const categoriesContainer = document.getElementById("categories");
+  const categoriesContainer = document.getElementById("categories"); // <ul id="categories">
 
   const repo = "Clayton630/QuartzReport";
   const branch = "main";
@@ -43,6 +43,7 @@ async function loadArticles() {
     const files = await resp.json();
     const all = [];
 
+    // ======= Lecture et parsing des fichiers =======
     for (const file of files) {
       if (!file.name.endsWith(".md")) continue;
 
@@ -81,6 +82,7 @@ async function loadArticles() {
       });
     }
 
+    // Tri du plus récent au plus ancien
     all.sort((a, b) => b.date - a.date);
 
     // ======================
@@ -108,7 +110,7 @@ async function loadArticles() {
       }
 
       link.innerHTML = `
-        <img src="${article.thumbnail}" alt="">
+        <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager">
         <div class="card-content">
           <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
           <h3>${article.title}</h3>
@@ -169,8 +171,8 @@ async function loadArticles() {
         const mondayThis = startOfWeekMonday(new Date());
         const mondayNext = addDays(mondayThis, 7);
         const mondayPrev = addDays(mondayThis, -7);
-        const weeks = { current: {}, previous: {}, others: {} };
 
+        const weeks = { current: {}, previous: {}, others: {} };
         list.forEach(article => {
           const d = normalizeDate(article.date);
           const dayKey = ymdKey(d);
@@ -179,11 +181,11 @@ async function loadArticles() {
           const mondayNextTime = mondayNext.getTime();
           const mondayPrevTime = mondayPrev.getTime();
 
-          if (dTime >= mondayThisTime && dTime < mondayNextTime)
+          if (dTime >= mondayThisTime && dTime < mondayNextTime) {
             (weeks.current[dayKey] ||= []).push(article);
-          else if (dTime >= mondayPrevTime && dTime < mondayThisTime)
+          } else if (dTime >= mondayPrevTime && dTime < mondayThisTime) {
             (weeks.previous[dayKey] ||= []).push(article);
-          else {
+          } else {
             const wk = startOfWeekMonday(d);
             const wkKey = ymdKey(wk);
             (weeks.others[wkKey] ||= {});
@@ -207,10 +209,11 @@ async function loadArticles() {
             const dayBlock = document.createElement("div");
             dayBlock.className = "day-block";
             dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
+
             const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
             for (let i = 0; i < articles.length; i += 4) {
               const chunk = articles.slice(i, i + 4);
-              chunk.forEach(article => {
+              chunk.forEach((article, idx) => {
                 const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
                 const el = document.createElement("div");
                 el.className = "day-article";
@@ -224,12 +227,14 @@ async function loadArticles() {
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
-                dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+                if (idx < chunk.length - 1 || i + chunk.length < articles.length)
+                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
               });
               await new Promise(res => setTimeout(res, 200));
             }
             carousel.appendChild(dayBlock);
           }
+
           weekBlock.appendChild(carousel);
           container.appendChild(weekBlock);
         }
@@ -240,7 +245,7 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES — stroke bord à bord via pseudo
+    // CATÉGORIES — stroke bord à bord (mask XOR)
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
@@ -251,17 +256,15 @@ async function loadArticles() {
       cats = cats.filter(c => c !== "Autre");
       cats.push("Autre");
 
-      const categoryColors = {};
       const palette = [
         "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
         "#00B8D9", "#E67E22", "#1ABC9C", "#E84393", "#16A085"
       ];
-      categoryColors["Tous"] = "none";
-      categoryColors["Autre"] = "#555555";
+      const catColors = { "Tous": "none", "Autre": "#555555" };
       let colorIndex = 0;
       for (const cat of cats) {
         if (cat === "Tous" || cat === "Autre") continue;
-        categoryColors[cat] = palette[colorIndex % palette.length];
+        catColors[cat] = palette[colorIndex % palette.length];
         colorIndex++;
       }
 
@@ -269,55 +272,60 @@ async function loadArticles() {
         `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""}">Tous</a></li>` +
         cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
+
       if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
 
-      const applyActiveColor = (catName) => {
-        categoriesContainer.querySelectorAll("a").forEach(a => {
-          a.classList.remove("has-stroke");
-          a.style.background = "";
-          a.style.color = "";
-          a.style.boxShadow = "";
-        });
-
-        const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
-        if (!activeLink) return;
-
-        const baseColor = categoryColors[catName] || "#4B73FA";
-
-        if (catName === "Tous") {
-          activeLink.style.background = "rgba(255,255,255,0.22)";
-          activeLink.style.color = "#111";
-          activeLink.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
-        } else {
-          activeLink.style.background = baseColor;
-          activeLink.style.color = "rgba(255,255,255,0.82)";
-          activeLink.style.boxShadow = "0 2px 14px rgba(0,0,0,0.1)";
-        }
-
-        // ✅ stroke interne bord à bord via pseudo
-        activeLink.classList.add("has-stroke");
-      };
-
-      // Injection CSS globale une seule fois
-      if (!document.getElementById("dynamic-stroke-style")) {
+      // Injection du style global (mask XOR pour stroke interne exact)
+      if (!document.getElementById("mask-xor-style")) {
         const style = document.createElement("style");
-        style.id = "dynamic-stroke-style";
+        style.id = "mask-xor-style";
         style.textContent = `
-          .main-nav a.has-stroke::after {
+          .main-nav a {
+            position: relative;
+            overflow: hidden;
+          }
+          .main-nav a.stroke-mask::after {
             content: "";
             position: absolute;
             inset: 0;
             border-radius: inherit;
             border: 1px solid rgba(255,255,255,0.55);
             pointer-events: none;
+            padding: 1px;
             box-sizing: border-box;
-          }
-          .main-nav a {
-            position: relative;
+            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
           }
         `;
         document.head.appendChild(style);
       }
+
+      const applyActiveColor = (catName) => {
+        categoriesContainer.querySelectorAll("a").forEach(a => {
+          a.classList.remove("stroke-mask");
+          a.style.background = "";
+          a.style.color = "";
+          a.style.boxShadow = "";
+        });
+
+        const link = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
+        if (!link) return;
+        const baseColor = catColors[catName] || "#4B73FA";
+
+        if (catName === "Tous") {
+          link.style.background = "rgba(255,255,255,0.22)";
+          link.style.color = "#111";
+          link.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
+        } else {
+          link.style.background = baseColor;
+          link.style.color = "rgba(255,255,255,0.82)";
+          link.style.boxShadow = "0 2px 14px rgba(0,0,0,0.1)";
+        }
+
+        link.classList.add("stroke-mask");
+      };
 
       applyActiveColor(active);
 
@@ -334,12 +342,14 @@ async function loadArticles() {
       });
     }
 
+    // Construction initiale
     buildCategories(all, "Tous");
     await render(all);
 
   } catch (err) {
     console.error(err);
-    container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
+    const container = document.getElementById("articles");
+    if (container) container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
 
@@ -351,12 +361,14 @@ document.addEventListener("DOMContentLoaded", loadArticles);
 document.addEventListener("DOMContentLoaded", () => {
   const searchIcon = document.querySelector(".search-icon");
   const menuIcon = document.querySelector(".menu-icon");
+
   if (searchIcon) {
     searchIcon.addEventListener("click", e => {
       e.stopPropagation();
       console.log("Recherche ouverte");
     });
   }
+
   if (menuIcon) {
     menuIcon.addEventListener("click", e => {
       e.stopPropagation();
