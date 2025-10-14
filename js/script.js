@@ -299,8 +299,8 @@ async function loadArticles() {
         st.id = "stroke-style";
         st.textContent = `
           .main-nav a.stroke-inner {
-            outline: 2px solid rgba(255,255,255,0.85);
-            outline-offset: -2px;        /* ✨ bord à bord interne */
+            outline: 1.5px solid rgba(255,255,255,0.85);
+            outline-offset: -1.5px;        /* ✨ bord à bord interne */
             box-shadow: 
               inset 0 0 0 0 rgba(255,255,255,0), /* neutralise d'anciens insets */
               0 2px 12px rgba(0,0,0,0.08);       /* remet l’ombre */
