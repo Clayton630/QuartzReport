@@ -238,7 +238,7 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES — pseudo-élément pour vrai stroke interne blanc
+    // CATÉGORIES — stroke interne ajusté
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
@@ -250,8 +250,8 @@ async function loadArticles() {
       cats.push("Autre");
 
       const palette = [
-        "#4B73FA","#FF6F61","#2ECC71","#F4C542","#9B59B6","#00B8D9",
-        "#E67E22","#1ABC9C","#E84393","#16A085"
+        "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
+        "#00B8D9", "#E67E22", "#1ABC9C", "#E84393", "#16A085"
       ];
       const catColors = { Tous: "none", Autre: "#555555" };
       let colorIndex = 0;
@@ -265,22 +265,14 @@ async function loadArticles() {
 
       if (nav) requestAnimationFrame(() => nav.scrollLeft = prevScroll);
 
-      // ✅ Style global pour le stroke via pseudo-élément
+      // ✅ Stroke blanc translucide bien visible (2px)
       if (!document.getElementById("inner-stroke-style")) {
         const s = document.createElement("style");
         s.id = "inner-stroke-style";
         s.textContent = `
           .main-nav a.stroke-inner {
             position: relative;
-          }
-          .main-nav a.stroke-inner::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            border-radius: inherit;
-            border: 2px solid rgba(255,255,255,0.8);
-            pointer-events: none;
-            z-index: 1;
+            box-shadow: inset 0 0 0 2px rgba(255,255,255,0.75);
           }
         `;
         document.head.appendChild(s);
