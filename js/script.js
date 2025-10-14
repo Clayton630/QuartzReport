@@ -273,7 +273,7 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES — couleurs dynamiques + stroke interne visible
+    // CATÉGORIES — stroke interne blanc épais et visible
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
@@ -318,14 +318,16 @@ async function loadArticles() {
 
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 
-      // ✅ Stroke interne blanc translucide, épaisseur 1.5px
+      // ✅ Stroke interne blanc + halo doux
       if (!document.getElementById("inner-stroke-style")) {
         const s = document.createElement("style");
         s.id = "inner-stroke-style";
         s.textContent = `
           .main-nav a.stroke-inner {
             position: relative;
-            box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.65);
+            box-shadow:
+              inset 0 0 0 2px rgba(255,255,255,0.8),
+              inset 0 0 4px rgba(255,255,255,0.25);
           }
         `;
         document.head.appendChild(s);
