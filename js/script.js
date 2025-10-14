@@ -256,14 +256,18 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES (couleurs dynamiques opaques)
+    // CATÉGORIES — ordonnées, stylisées
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
-      const cats = Array.from(new Set(list.map(a => a.category)));
+      let cats = Array.from(new Set(list.map(a => a.category)));
+
+      // ✅ "Autre" toujours à la fin
+      cats = cats.filter(c => c !== "Autre");
+      cats.push("Autre");
 
       const categoryColors = {};
       const palette = [
@@ -291,22 +295,24 @@ async function loadArticles() {
         categoriesContainer.querySelectorAll("a").forEach(a => {
           a.style.background = "";
           a.style.color = "#111";
+          a.style.boxShadow = "none";
         });
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
-        if (activeLink) {
-          if (catName === "Tous") {
-            activeLink.style.background =
-              `radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
-               radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
-               rgba(255,255,255,0.65)`;
-            activeLink.style.color = "#111";
-            return;
-          }
+        if (!activeLink) return;
 
+        if (catName === "Tous") {
+          // ✅ Ultra transparent
+          activeLink.style.background =
+            "rgba(255,255,255,0.25)";
+          activeLink.style.backdropFilter = "blur(10px)";
+          activeLink.style.color = "#111";
+          activeLink.style.boxShadow = "inset 0 0 0 1px rgba(255,255,255,0.4)";
+        } else {
           const baseColor = categoryColors[catName] || "#4B73FA";
-          activeLink.style.background = baseColor; // fond opaque
-          activeLink.style.color = "rgba(255,255,255,0.85)"; // texte légèrement translucide
+          activeLink.style.background = baseColor;
+          activeLink.style.color = "rgba(255,255,255,0.85)";
+          activeLink.style.boxShadow = "inset 0 0 0 1px rgba(255,255,255,0.6)";
         }
       };
 
