@@ -30,7 +30,7 @@ function base64ToUtf8(base64) {
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
-  const categoriesContainer = document.getElementById("categories");
+  const categoriesContainer = document.getElementById("categories"); // <ul id="categories">
 
   const repo = "Clayton630/QuartzReport";
   const branch = "main";
@@ -43,6 +43,7 @@ async function loadArticles() {
     const files = await resp.json();
     const all = [];
 
+    // ======= Lecture des fichiers et métadonnées =======
     for (const file of files) {
       if (!file.name.endsWith(".md")) continue;
 
@@ -89,6 +90,7 @@ async function loadArticles() {
     // ======================
     hottestContainer.innerHTML = "";
     const hottest = all.filter(a => a.important).slice(0, 3);
+
     hottest.forEach(article => {
       const link = document.createElement("a");
       link.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
@@ -109,7 +111,7 @@ async function loadArticles() {
       }
 
       link.innerHTML = `
-        <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager">
+        <img src="${article.thumbnail}" alt="">
         <div class="card-content">
           <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
           <h3>${article.title}</h3>
@@ -119,13 +121,14 @@ async function loadArticles() {
     });
 
     // ======================
-    // RENDER PRINCIPAL
+    // RENDER PRINCIPAL (Feed)
     // ======================
     async function render(list) {
       container.innerHTML = "";
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
       if (isMobile) {
+        // === VERSION MOBILE — par jour ===
         const byDay = {};
         list.forEach(a => {
           const key = ymdKey(a.date);
@@ -159,14 +162,14 @@ async function loadArticles() {
                   </div>
                 </a>`;
               block.appendChild(el);
-              if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
+              if (idx < chunk.length - 1 || i + chunk.length < articles.length)
                 block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
-              }
             });
             await new Promise(res => setTimeout(res, 200));
           }
         }
       } else {
+        // === VERSION DESKTOP — par semaine ===
         const mondayThis = startOfWeekMonday(new Date());
         const mondayNext = addDays(mondayThis, 7);
         const mondayPrev = addDays(mondayThis, -7);
@@ -226,9 +229,8 @@ async function loadArticles() {
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
-                if (idx < chunk.length - 1 || i + chunk.length < articles.length) {
+                if (idx < chunk.length - 1 || i + chunk.length < articles.length)
                   dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
-                }
               });
               await new Promise(res => setTimeout(res, 200));
             }
@@ -256,17 +258,19 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES — ordonnées, stylisées
+    // CATÉGORIES — ordonnées, stylisées, dynamiques
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
+      // 1) Ordre avec « Autre » en dernier
       let cats = Array.from(new Set(list.map(a => a.category)));
       cats = cats.filter(c => c !== "Autre");
       cats.push("Autre");
 
+      // 2) Couleurs dynamiques
       const categoryColors = {};
       const palette = [
         "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
@@ -274,7 +278,7 @@ async function loadArticles() {
         "#F39C12", "#2980B9", "#C0392B"
       ];
       categoryColors["Tous"] = "none";
-      categoryColors["Autre"] = "#555";
+      categoryColors["Autre"] = "#555555";
       let colorIndex = 0;
       for (const cat of cats) {
         if (cat === "Tous" || cat === "Autre") continue;
@@ -282,40 +286,49 @@ async function loadArticles() {
         colorIndex++;
       }
 
+      // 3) Construction du HTML
       const html =
         `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""}">Tous</a></li>` +
         cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
 
+      // Restaure la position de scroll horizontale
       if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
 
+      // 4) Styles dynamiques applicables à la sélection
       const applyActiveColor = (catName) => {
+        // reset de base (on laisse l'apparence des non-sélectionnées au CSS)
         categoriesContainer.querySelectorAll("a").forEach(a => {
           a.style.background = "";
-          a.style.color = "#111";
-          a.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
+          a.style.color = "";
+          a.style.boxShadow = ""; // on laisse l’ombre CSS par défaut
+          a.style.opacity = "";
         });
 
         const activeLink = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
         if (!activeLink) return;
 
         if (catName === "Tous") {
-          activeLink.style.background = "rgba(255,255,255,0.25)";
+          // Fond très translucide + texte noir
+          activeLink.style.background = "rgba(255,255,255,0.22)";
           activeLink.style.backdropFilter = "blur(10px)";
           activeLink.style.color = "#111";
+          // Ombre externe douce + stroke intérieur blanc plus léger
           activeLink.style.boxShadow =
-            "0 2px 12px rgba(0,0,0,0.08), 0 0 0 1.5px rgba(255,255,255,0.7)";
+            "0 2px 12px rgba(0,0,0,0.08), inset 0 0 0 1.25px rgba(255,255,255,0.45)";
         } else {
           const baseColor = categoryColors[catName] || "#4B73FA";
           activeLink.style.background = baseColor;
-          activeLink.style.color = "rgba(255,255,255,0.85)";
+          activeLink.style.color = "rgba(255,255,255,0.82)"; // texte légèrement translucide
+          // Ombre externe + stroke intérieur blanc (légèrement réduit)
           activeLink.style.boxShadow =
-            "0 2px 12px rgba(0,0,0,0.08), 0 0 0 1.5px rgba(255,255,255,0.7)";
+            "0 2px 14px rgba(0,0,0,0.10), inset 0 0 0 1.25px rgba(255,255,255,0.45)";
         }
       };
 
       applyActiveColor(active);
 
+      // 5) Gestion des clics sur les catégories
       categoriesContainer.querySelectorAll("a").forEach(link => {
         link.addEventListener("click", e => {
           e.preventDefault();
@@ -323,17 +336,20 @@ async function loadArticles() {
           categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
           link.classList.add("active");
           applyActiveColor(cat);
+
           const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
           render(filtered);
         });
       });
     }
 
+    // Première construction + affichage
     buildCategories(all, "Tous");
     await render(all);
 
   } catch (err) {
     console.error(err);
+    const container = document.getElementById("articles");
     if (container) container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
