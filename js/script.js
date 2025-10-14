@@ -2,27 +2,32 @@
 function normalizeDate(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
 }
+
 function addDays(d, n) {
   const x = new Date(d);
   x.setDate(x.getDate() + n);
   return x;
 }
+
 function startOfWeekMonday(d) {
   const x = normalizeDate(d);
   const day = x.getDay() || 7;
   x.setDate(x.getDate() - (day - 1));
   return normalizeDate(x);
 }
+
 function ymdKey(d) {
   return d.toISOString().split("T")[0];
 }
+
 function parseDate(str) {
   const d = new Date(str);
   return isNaN(d) ? new Date() : d;
 }
+
 function base64ToUtf8(base64) {
   const binary = atob(base64.replace(/\n/g, ""));
-  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
   return new TextDecoder("utf-8").decode(bytes);
 }
 
@@ -30,33 +35,40 @@ function base64ToUtf8(base64) {
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
-  const categoriesContainer = document.getElementById("categories"); // <ul id="categories">
+  const categoriesContainer = document.getElementById("categories");
 
   const repo = "Clayton630/QuartzReport";
   const branch = "main";
   const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
-    const resp = await fetch(`${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`);
+    const resp = await fetch(
+      `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`
+    );
     if (!resp.ok) throw new Error("Erreur chargement liste articles");
 
     const files = await resp.json();
     const all = [];
 
-    // ======= Lecture et parsing des fichiers =======
+    // ======================
+    // Lecture des fichiers
+    // ======================
     for (const file of files) {
       if (!file.name.endsWith(".md")) continue;
 
-      const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}`);
+      const apiResp = await fetch(
+        `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}`
+      );
       const apiData = await apiResp.json();
       const text = base64ToUtf8(apiData.content);
 
       const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
-      let meta = {}, body = text;
+      let meta = {},
+        body = text;
       if (match) {
         const yaml = match[1].trim();
         body = match[2].trim();
-        yaml.split("\n").forEach(line => {
+        yaml.split("\n").forEach((line) => {
           const [k, ...rest] = line.split(":");
           meta[k.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
         });
@@ -78,7 +90,7 @@ async function loadArticles() {
         thumbnail: cover,
         category: meta.category || "Autre",
         important: meta.important === "true" || meta.important === true,
-        body
+        body,
       });
     }
 
@@ -89,10 +101,12 @@ async function loadArticles() {
     // SECTION HOTTEST
     // ======================
     hottestContainer.innerHTML = "";
-    const hottest = all.filter(a => a.important).slice(0, 3);
-    hottest.forEach(article => {
+    const hottest = all.filter((a) => a.important).slice(0, 3);
+    hottest.forEach((article) => {
       const link = document.createElement("a");
-      link.href = `article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}`;
+      link.href = `article.html?slug=${encodeURIComponent(
+        article.slug
+      )}&file=${encodeURIComponent(article.filename)}`;
       link.className = "card";
 
       const now = new Date();
@@ -103,10 +117,16 @@ async function loadArticles() {
 
       let dateDisplay;
       if (isToday) {
-        const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+        const time = article.date.toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
         dateDisplay = `à ${time}`;
       } else {
-        dateDisplay = article.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+        dateDisplay = article.date.toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "short",
+        });
       }
 
       link.innerHTML = `
@@ -120,7 +140,7 @@ async function loadArticles() {
     });
 
     // ======================
-    // RENDER PRINCIPAL
+    // FONCTION DE RENDER
     // ======================
     async function render(list) {
       container.innerHTML = "";
@@ -128,16 +148,21 @@ async function loadArticles() {
 
       if (isMobile) {
         const byDay = {};
-        list.forEach(a => {
+        list.forEach((a) => {
           const key = ymdKey(a.date);
           if (!byDay[key]) byDay[key] = [];
           byDay[key].push(a);
         });
 
-        const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
+        const sortedDays = Object.keys(byDay).sort(
+          (a, b) => new Date(b) - new Date(a)
+        );
         for (const k of sortedDays) {
           const d = new Date(k);
-          const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+          const dateStr = d.toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+          });
           const block = document.createElement("div");
           block.className = "day-block";
           block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
@@ -147,12 +172,19 @@ async function loadArticles() {
           for (let i = 0; i < articles.length; i += 4) {
             const chunk = articles.slice(i, i + 4);
             chunk.forEach((article, idx) => {
-              const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+              const time = article.date.toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
               const el = document.createElement("div");
               el.className = "day-article";
               el.innerHTML = `
-                <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                  <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                <a href="article.html?slug=${encodeURIComponent(
+                  article.slug
+                )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                  <div class="thumb" style="background-image:url('${
+                    article.thumbnail
+                  }')"></div>
                   <div class="day-article-info">
                     <p class="day-meta">Par ${article.author}, à ${time}</p>
                     <h4>${article.title}</h4>
@@ -161,19 +193,22 @@ async function loadArticles() {
                 </a>`;
               block.appendChild(el);
               if (idx < chunk.length - 1 || i + chunk.length < articles.length)
-                block.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+                block.appendChild(
+                  Object.assign(document.createElement("div"), {
+                    className: "day-separator",
+                  })
+                );
             });
-            await new Promise(res => setTimeout(res, 200));
+            await new Promise((res) => setTimeout(res, 200));
           }
         }
       } else {
-        // === VERSION DESKTOP ===
         const mondayThis = startOfWeekMonday(new Date());
         const mondayNext = addDays(mondayThis, 7);
         const mondayPrev = addDays(mondayThis, -7);
 
         const weeks = { current: {}, previous: {}, others: {} };
-        list.forEach(article => {
+        list.forEach((article) => {
           const d = normalizeDate(article.date);
           const dayKey = ymdKey(d);
           const dTime = d.getTime();
@@ -201,11 +236,16 @@ async function loadArticles() {
 
           const carousel = document.createElement("div");
           carousel.className = "week-carousel";
-          const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
+          const sortedDays = Object.keys(daysMap).sort(
+            (a, b) => new Date(b) - new Date(a)
+          );
 
           for (const dayKey of sortedDays) {
             const d = new Date(dayKey);
-            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+            const label = d.toLocaleDateString("fr-FR", {
+              day: "numeric",
+              month: "long",
+            });
             const dayBlock = document.createElement("div");
             dayBlock.className = "day-block";
             dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
@@ -214,23 +254,39 @@ async function loadArticles() {
             for (let i = 0; i < articles.length; i += 4) {
               const chunk = articles.slice(i, i + 4);
               chunk.forEach((article, idx) => {
-                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+                const time = article.date.toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
                 const el = document.createElement("div");
                 el.className = "day-article";
                 el.innerHTML = `
-                  <a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
-                    <div class="thumb" style="background-image:url('${article.thumbnail}')"></div>
+                  <a href="article.html?slug=${encodeURIComponent(
+                    article.slug
+                  )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                    <div class="thumb" style="background-image:url('${
+                      article.thumbnail
+                    }')"></div>
                     <div class="day-article-info">
-                      <p class="day-meta">Par ${article.author}, à ${time}</p>
+                      <p class="day-meta">Par ${
+                        article.author
+                      }, à ${time}</p>
                       <h4>${article.title}</h4>
                       <p class="day-desc">${article.description}</p>
                     </div>
                   </a>`;
                 dayBlock.appendChild(el);
-                if (idx < chunk.length - 1 || i + chunk.length < articles.length)
-                  dayBlock.appendChild(Object.assign(document.createElement("div"), { className: "day-separator" }));
+                if (
+                  idx < chunk.length - 1 ||
+                  i + chunk.length < articles.length
+                )
+                  dayBlock.appendChild(
+                    Object.assign(document.createElement("div"), {
+                      className: "day-separator",
+                    })
+                  );
               });
-              await new Promise(res => setTimeout(res, 200));
+              await new Promise((res) => setTimeout(res, 200));
             }
             carousel.appendChild(dayBlock);
           }
@@ -245,98 +301,112 @@ async function loadArticles() {
     }
 
     // ======================
-    // CATÉGORIES — stroke bord à bord (mask XOR)
+    // CATÉGORIES — stroke interne exact
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
-      let cats = Array.from(new Set(list.map(a => a.category)));
-      cats = cats.filter(c => c !== "Autre");
+      let cats = Array.from(new Set(list.map((a) => a.category)));
+      cats = cats.filter((c) => c !== "Autre");
       cats.push("Autre");
 
       const palette = [
-        "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
-        "#00B8D9", "#E67E22", "#1ABC9C", "#E84393", "#16A085"
+        "#4B73FA",
+        "#FF6F61",
+        "#2ECC71",
+        "#F4C542",
+        "#9B59B6",
+        "#00B8D9",
+        "#E67E22",
+        "#1ABC9C",
+        "#E84393",
+        "#16A085",
       ];
-      const catColors = { "Tous": "none", "Autre": "#555555" };
-      let colorIndex = 0;
-      for (const cat of cats) {
-        if (cat === "Tous" || cat === "Autre") continue;
-        catColors[cat] = palette[colorIndex % palette.length];
-        colorIndex++;
+      const catColors = { Tous: "none", Autre: "#555555" };
+      let idx = 0;
+      for (const c of cats) {
+        if (c !== "Tous" && c !== "Autre")
+          catColors[c] = palette[idx++ % palette.length];
       }
 
-      const html =
-        `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""}">Tous</a></li>` +
-        cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
-      categoriesContainer.innerHTML = html;
+      categoriesContainer.innerHTML =
+        `<li><a href="#" data-category="Tous" class="${
+          active === "Tous" ? "active" : ""
+        }">Tous</a></li>` +
+        cats
+          .map(
+            (c) =>
+              `<li><a href="#" data-category="${c}" class="${
+                active === c ? "active" : ""
+              }">${c}</a></li>`
+          )
+          .join("");
 
-      if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
+      if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 
-      // Injection du style global (mask XOR pour stroke interne exact)
-      if (!document.getElementById("mask-xor-style")) {
+      // Style global du stroke exact
+      if (!document.getElementById("inner-outline-style")) {
         const style = document.createElement("style");
-        style.id = "mask-xor-style";
+        style.id = "inner-outline-style";
         style.textContent = `
-          .main-nav a {
-            position: relative;
-            overflow: hidden;
-          }
-          .main-nav a.stroke-mask::after {
+          .main-nav a { position: relative; overflow: hidden; }
+          .main-nav a.stroke-inner::after {
             content: "";
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            border: 1px solid rgba(255,255,255,0.55);
+            outline: 1px solid rgba(255,255,255,0.45);
+            outline-offset: -1px;
+            clip-path: inset(1px round 60px);
             pointer-events: none;
-            padding: 1px;
-            box-sizing: border-box;
-            mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
           }
         `;
         document.head.appendChild(style);
       }
 
-      const applyActiveColor = (catName) => {
-        categoriesContainer.querySelectorAll("a").forEach(a => {
-          a.classList.remove("stroke-mask");
+      const apply = (cat) => {
+        categoriesContainer.querySelectorAll("a").forEach((a) => {
+          a.classList.remove("stroke-inner");
           a.style.background = "";
           a.style.color = "";
           a.style.boxShadow = "";
         });
 
-        const link = categoriesContainer.querySelector(`a[data-category="${catName}"]`);
+        const link = categoriesContainer.querySelector(
+          `a[data-category="${cat}"]`
+        );
         if (!link) return;
-        const baseColor = catColors[catName] || "#4B73FA";
 
-        if (catName === "Tous") {
+        const color = catColors[cat] || "#4B73FA";
+
+        if (cat === "Tous") {
           link.style.background = "rgba(255,255,255,0.22)";
           link.style.color = "#111";
           link.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
         } else {
-          link.style.background = baseColor;
+          link.style.background = color;
           link.style.color = "rgba(255,255,255,0.82)";
           link.style.boxShadow = "0 2px 14px rgba(0,0,0,0.1)";
         }
 
-        link.classList.add("stroke-mask");
+        link.classList.add("stroke-inner");
       };
 
-      applyActiveColor(active);
+      apply(active);
 
-      categoriesContainer.querySelectorAll("a").forEach(link => {
-        link.addEventListener("click", e => {
+      categoriesContainer.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", (e) => {
           e.preventDefault();
-          const cat = link.getAttribute("data-category");
-          categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+          const cat = link.dataset.category;
+          categoriesContainer
+            .querySelectorAll("a")
+            .forEach((a) => a.classList.remove("active"));
           link.classList.add("active");
-          applyActiveColor(cat);
-          const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+          apply(cat);
+          const filtered =
+            cat === "Tous" ? all : all.filter((a) => a.category === cat);
           render(filtered);
         });
       });
@@ -345,11 +415,9 @@ async function loadArticles() {
     // Construction initiale
     buildCategories(all, "Tous");
     await render(all);
-
   } catch (err) {
     console.error(err);
-    const container = document.getElementById("articles");
-    if (container) container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
+    container.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
 
@@ -363,14 +431,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const menuIcon = document.querySelector(".menu-icon");
 
   if (searchIcon) {
-    searchIcon.addEventListener("click", e => {
+    searchIcon.addEventListener("click", (e) => {
       e.stopPropagation();
       console.log("Recherche ouverte");
     });
   }
 
   if (menuIcon) {
-    menuIcon.addEventListener("click", e => {
+    menuIcon.addEventListener("click", (e) => {
       e.stopPropagation();
       console.log("Menu ouvert");
     });
