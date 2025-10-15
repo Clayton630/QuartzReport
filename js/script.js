@@ -300,18 +300,10 @@ if (!document.getElementById("stroke-style")) {
   st.textContent = `
     .main-nav a.stroke-inner {
       position: relative;
-      z-index: 0; /* garde les ombres et le blur au-dessus */
-    }
-
-    .main-nav a.stroke-inner::after {
-      content: "";
-      position: absolute;
-      inset: calc(0px + 1px); /* ✅ bord à bord interne précis */
-      border-radius: inherit;
-      border: 1.6px solid rgba(255,255,255,0.85);
-      pointer-events: none;
-      z-index: 1;
-      box-sizing: border-box;
+      z-index: 0;
+      box-shadow:
+        inset 0 0 0 2px rgba(255,255,255,0.85),   /* ✅ trait interne net et uniforme */
+        0 2px 12px rgba(0,0,0,0.08);             /* ✅ conserve l’ombre d’origine */
     }
   `;
   document.head.appendChild(st);
