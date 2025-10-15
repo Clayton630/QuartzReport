@@ -52,14 +52,15 @@ function getStrokeWidthPx() {
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
+  // ✅ stroke légèrement plus épais (base augmentée à 0.8px)
   const baseW = 0.8;
   const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  // ✅ stroke rouge pour test
-  const strokeColor = `rgba(255,0,0,${whiteAlpha})`;
+  const strokeColor = `rgba(255,255,255,${whiteAlpha})`;
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
+  // ✅ reflets croisés nets et centrés
   const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;
   const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;
 
