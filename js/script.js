@@ -54,12 +54,13 @@ function getStrokeWidthPx() {
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
   const w = getStrokeWidthPx();
   const hint = colorHint
-    ? colorHint + "40" // halo coloré semi-transparent
+    ? colorHint + "40"
     : "rgba(0,0,0,0.15)";
 
   linkEl.style.boxShadow = `
     inset 0 0 0 ${w}px rgba(255,255,255,0.78),
-    0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)
+    0 6px 26px ${hint},
+    0 2px 8px rgba(0,0,0,0.15)
   `;
   linkEl.style.border = "none";
 }
@@ -325,8 +326,11 @@ async function loadArticles() {
 
       const applyActive = (cat) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
-          a.style.background = "";
-          a.style.color = "";
+          const c = a.getAttribute("data-category");
+
+          // ✅ Fond par défaut identique pour toutes les catégories non sélectionnées
+          a.style.background = "rgba(255,255,255,0.25)";
+          a.style.color = "#111";
           clearInnerStroke(a);
         });
 
@@ -334,16 +338,18 @@ async function loadArticles() {
         if (!link) return;
 
         if (cat === "Tous") {
+          // 🧊 Catégorie "Tous" sélectionnée → fond clair + texte noir
           link.style.background = "rgba(255,255,255,0.22)";
           link.style.color = "#111";
         } else {
-  // Couleur légèrement translucide + effet de verre
-  const baseColor = colorMap[cat] || "#4B73FA";
-  link.style.background = baseColor + "CC"; // ~80 % d’opacité
-  link.style.color = "rgba(255,255,255,0.88)";
-  link.style.backdropFilter = "blur(6px) saturate(180%)";
-  link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
-}
+          // 🎨 Catégories sélectionnées → couleur de fond dynamique + flou
+          const baseColor = colorMap[cat] || "#4B73FA";
+          link.style.background = baseColor + "CC"; // ~80 % d’opacité
+          link.style.color = "rgba(255,255,255,0.88)";
+          link.style.backdropFilter = "blur(6px) saturate(180%)";
+          link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
+        }
+
         applyInnerStroke(link, 0.9, cat === "Tous" ? null : colorMap[cat]);
       };
 
