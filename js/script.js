@@ -54,15 +54,51 @@ function getStrokeWidthPx() {
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
   const w = getStrokeWidthPx();
   const hint = colorHint
-    ? colorHint + "40" // halo coloré semi-transparent
+    ? colorHint + "40"
     : "rgba(0,0,0,0.15)";
 
+  // Stroke original intact
   linkEl.style.boxShadow = `
     inset 0 0 0 ${w}px rgba(255,255,255,0.78),
     0 6px 26px ${hint},
     0 2px 8px rgba(0,0,0,0.15)
   `;
   linkEl.style.border = "none";
+  linkEl.style.position = "relative";
+  linkEl.style.overflow = "hidden"; // garantit le clipping parfait
+
+  // Supprime un éventuel masque précédent
+  if (linkEl._fadeMask) {
+    linkEl._fadeMask.remove();
+    linkEl._fadeMask = null;
+  }
+
+  // Crée un pseudo-overlay invisible appliquant le masque diagonal
+  const mask = document.createElement("div");
+  mask.style.position = "absolute";
+  mask.style.inset = "0";
+  mask.style.borderRadius = getComputedStyle(linkEl).borderRadius;
+  mask.style.pointerEvents = "none";
+  mask.style.zIndex = "1";
+  mask.style.background = `
+    conic-gradient(
+      from 45deg,
+      rgba(0,0,0,0) 0deg,
+      rgba(0,0,0,1) 90deg,
+      rgba(0,0,0,1) 270deg,
+      rgba(0,0,0,0) 360deg
+    )
+  `;
+
+  // Applique le masque sur le bouton
+  linkEl.style.webkitMaskImage = "none"; // reset
+  linkEl.style.maskImage = "none";
+  linkEl.appendChild(mask);
+  linkEl._fadeMask = mask;
+
+  // Masque appliqué à l’ensemble du stroke via blend
+  mask.style.mixBlendMode = "destination-out";
+  mask.style.opacity = "0.4"; // ✅ contrôle la progressivité de la disparition
 }
 
 function clearInnerStroke(linkEl) {
