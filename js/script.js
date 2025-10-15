@@ -52,27 +52,33 @@ function getStrokeWidthPx() {
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
+  const strokeColor = `rgba(255,255,255,${whiteAlpha})`;
+  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
   const w = getStrokeWidthPx();
-  const hint = colorHint
-    ? colorHint + "40"
-    : "rgba(0,0,0,0.15)";
 
-  // ✅ Stabilisation du modèle de boîte pour éviter les asymétries de sous-pixel
-  linkEl.style.boxSizing = "border-box";
-  linkEl.style.overflow = "hidden";
+  // Nettoyage de tout ancien stroke
+  const oldStroke = linkEl.querySelector(".stroke-layer");
+  if (oldStroke) oldStroke.remove();
+
+  // ✅ Création d’un pseudo-calque stable
+  const stroke = document.createElement("span");
+  stroke.className = "stroke-layer";
+  Object.assign(stroke.style, {
+    position: "absolute",
+    inset: `${w}px`,
+    borderRadius: "inherit",
+    pointerEvents: "none",
+    boxShadow: `0 0 0 ${w}px ${strokeColor} inset`,
+    filter: "brightness(1.02)",
+    zIndex: "2",
+  });
+
+  // ✅ Effet de halo doux et symétrique
   linkEl.style.position = "relative";
-  linkEl.style.willChange = "transform";
+  linkEl.style.boxShadow = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
-  // ✅ Stroke uniforme, centré et contraint par le clip interne
-  linkEl.style.boxShadow = `
-    inset 0 0 0 ${w}px rgba(255,255,255,0.78),
-    0 6px 26px ${hint},
-    0 2px 8px rgba(0,0,0,0.15)
-  `;
-
-  // ✅ Recalage visuel micro (évite l’étirement asymétrique à gauche/droite)
-  linkEl.style.transform = "translateZ(0.0001px)";
-  linkEl.style.border = "none";
+  // Ajout du calque interne (par-dessus le fond)
+  linkEl.appendChild(stroke);
 }
 function clearInnerStroke(linkEl) {
   linkEl.style.boxShadow = "";
