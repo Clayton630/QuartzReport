@@ -46,9 +46,9 @@ function buildCategoryColorMap(categories) {
 // ========= Stroke interne + halo coloré =========
 function getStrokeWidthPx() {
   const dpr = window.devicePixelRatio || 1;
-  if (dpr >= 3) return 1.1;
-  if (dpr >= 2) return 1.0;
-  return 0.9;
+  if (dpr >= 3) return 0.9;
+  if (dpr >= 2) return 0.8;
+  return 0.7;
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
@@ -58,7 +58,7 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
     : "rgba(0,0,0,0.15)";
 
   linkEl.style.boxShadow = `
-    inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}),
+    inset 0 0 0 ${w}px rgba(255,255,255,0.65),
     0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)
   `;
   linkEl.style.border = "none";
