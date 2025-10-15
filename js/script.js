@@ -56,16 +56,14 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
   const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  // ✅ Stroke rouge de test
   const strokeColor = `rgba(255,0,0,${whiteAlpha})`;
-  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)`;
+  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // ✅ Reflets équilibrés : diagonales + verticales ajustées
-  const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;     // bas-droite
-  const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;   // haut-gauche
-  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;               // bas (plus fin)
-  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;              // haut (plus fin)
-
+  // ✅ Reflets équilibrés haut/bas et diagonales
+  const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;      // bas-droite
+  const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;    // haut-gauche
+  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                // bas
+  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;               // haut
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
   // ✅ Application combinée
