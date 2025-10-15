@@ -294,20 +294,28 @@ async function loadArticles() {
       categoriesContainer.innerHTML = html;
 
       // injecte le style “stroke blanc interne” si pas déjà présent
-      if (!document.getElementById("stroke-style")) {
-        const st = document.createElement("style");
-        st.id = "stroke-style";
-        st.textContent = `
-          .main-nav a.stroke-inner {
-            outline: 1.5px solid rgba(255,255,255,0.85);
-            outline-offset: -1.5px;        /* ✨ bord à bord interne */
-            box-shadow: 
-              inset 0 0 0 0 rgba(255,255,255,0), /* neutralise d'anciens insets */
-              0 2px 12px rgba(0,0,0,0.08);       /* remet l’ombre */
-          }
-        `;
-        document.head.appendChild(st);
-      }
+if (!document.getElementById("stroke-style")) {
+  const st = document.createElement("style");
+  st.id = "stroke-style";
+  st.textContent = `
+    .main-nav a.stroke-inner {
+      position: relative;
+      z-index: 0; /* garde les ombres et le blur au-dessus */
+    }
+
+    .main-nav a.stroke-inner::after {
+      content: "";
+      position: absolute;
+      inset: calc(0px + 1px); /* ✅ bord à bord interne précis */
+      border-radius: inherit;
+      border: 1.6px solid rgba(255,255,255,0.85);
+      pointer-events: none;
+      z-index: 1;
+      box-sizing: border-box;
+    }
+  `;
+  document.head.appendChild(st);
+}
 
       // Applique l’état sélectionné (fond + texte + stroke)
       const applyActive = (cat) => {
