@@ -52,33 +52,23 @@ function getStrokeWidthPx() {
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
+  const w = getStrokeWidthPx();
   const strokeColor = `rgba(255,255,255,${whiteAlpha})`;
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
-  const w = getStrokeWidthPx();
 
-  // Nettoyage de tout ancien stroke
-  const oldStroke = linkEl.querySelector(".stroke-layer");
-  if (oldStroke) oldStroke.remove();
+  // ✅ Rendu identique à l’ancien, mais verrouillé en pixels entiers
+  const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  // ✅ Création d’un pseudo-calque stable
-  const stroke = document.createElement("span");
-  stroke.className = "stroke-layer";
-  Object.assign(stroke.style, {
-    position: "absolute",
-    inset: `${w}px`,
-    borderRadius: "inherit",
-    pointerEvents: "none",
-    boxShadow: `0 0 0 ${w}px ${strokeColor} inset`,
-    filter: "brightness(1.02)",
-    zIndex: "2",
-  });
+  linkEl.style.boxShadow = `
+    inset 0 0 0 ${pixelAligned}px ${strokeColor},
+    0 6px 26px ${hint},
+    0 2px 8px rgba(0,0,0,0.15)
+  `;
 
-  // ✅ Effet de halo doux et symétrique
-  linkEl.style.position = "relative";
-  linkEl.style.boxShadow = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
-
-  // Ajout du calque interne (par-dessus le fond)
-  linkEl.appendChild(stroke);
+  // ✅ Empêche les écarts de sous-pixels sans altérer la couleur ou l’opacité
+  linkEl.style.border = "none";
+  linkEl.style.backfaceVisibility = "hidden";
+  linkEl.style.webkitTransform = "translateZ(0)";
 }
 function clearInnerStroke(linkEl) {
   linkEl.style.boxShadow = "";
