@@ -58,14 +58,14 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
     : "rgba(0,0,0,0.15)";
 
   linkEl.style.boxShadow = `
-    /* Stroke blanc de base */
+    /* 🎯 Double stroke : 45° et -45° */
+    inset ${w}px ${w}px 0 rgba(255,255,255,${whiteAlpha}),
+    inset -${w}px -${w}px 0 rgba(255,255,255,${whiteAlpha * 0.75}),
+
+    /* 🌈 Liseré interne principal */
     inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}),
 
-    /* Double reflet croisé (à 45° et -45°) */
-    inset ${w}px ${w}px ${w * 1.2}px rgba(255,255,255,0.35),
-    inset -${w}px -${w}px ${w * 1.2}px rgba(255,255,255,0.25),
-
-    /* Halo et ombre externe d’origine */
+    /* ☁️ Halo externe coloré et ombre douce */
     0 6px 26px ${hint},
     0 2px 8px rgba(0,0,0,0.15)
   `;
