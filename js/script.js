@@ -337,10 +337,13 @@ async function loadArticles() {
           link.style.background = "rgba(255,255,255,0.22)";
           link.style.color = "#111";
         } else {
-          const bg = colorMap[cat] || "#4B73FA";
-          link.style.background = bg;
-          link.style.color = "rgba(255,255,255,0.88)";
-        }
+  // Couleur légèrement translucide + effet de verre
+  const baseColor = colorMap[cat] || "#4B73FA";
+  link.style.background = baseColor + "CC"; // ~80 % d’opacité
+  link.style.color = "rgba(255,255,255,0.88)";
+  link.style.backdropFilter = "blur(6px) saturate(180%)";
+  link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
+}
         applyInnerStroke(link, 0.9, cat === "Tous" ? null : colorMap[cat]);
       };
 
