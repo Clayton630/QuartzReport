@@ -646,16 +646,22 @@ body, button, input, textarea, select {
   }
 }
 
-/* ===== Nav: keep horizontal scroll, full shadow breathing, no layout shift ===== */
+/* ===== Nav: full shadow breathing, optical padding with no layout shift ===== */
 .main-nav {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 
-  padding-top: 14px;
-  padding-bottom: 14px;
-  margin-top: -14px;
-  margin-bottom: -14px;
+  /* On crée une zone tampon au-dessus et en dessous pour les ombres */
+  padding-top: 28px;
+  padding-bottom: 28px;
+
+  /* On neutralise visuellement ce padding pour ne rien décaler */
+  margin-top: -28px;
+  margin-bottom: -28px;
+
+  position: relative;
+  z-index: 2; /* garantit que les ombres ne soient pas masquées */
 }
 
 /* 📱 Catégories légèrement plus petites mais toujours confortables */
