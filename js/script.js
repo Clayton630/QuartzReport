@@ -52,7 +52,6 @@ function getStrokeWidthPx() {
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
-  // ✅ stroke plus fin : réduit à 0.6px base
   const baseW = 0.6;
   const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
@@ -60,9 +59,11 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
   const strokeColor = `rgba(255,255,255,${whiteAlpha})`;
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // ✅ reflets croisés nets, plus fins et translucides
-  const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;
-  const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;
+  // ✅ reflets ajustés : légèrement rapprochés du centre
+  // bas-droite (remonté un peu)
+  const stroke1 = `inset ${pixelAligned * 0.6}px ${pixelAligned * 0.6}px 0 0 ${strokeColor}`;
+  // haut-gauche (descendu un peu)
+  const stroke2 = `inset -${pixelAligned * 0.6}px -${pixelAligned * 0.6}px 0 0 ${strokeColor}`;
 
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
