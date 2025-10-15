@@ -54,12 +54,20 @@ function getStrokeWidthPx() {
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
   const w = getStrokeWidthPx();
   const hint = colorHint
-    ? colorHint + "40" // halo coloré semi-transparent
+    ? colorHint + "40"
     : "rgba(0,0,0,0.15)";
 
   linkEl.style.boxShadow = `
-    inset 0 0 0 ${w}px rgba(255,255,255,0.78),
-    0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)
+    /* Stroke blanc de base */
+    inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}),
+
+    /* Double reflet croisé (à 45° et -45°) */
+    inset ${w}px ${w}px ${w * 1.2}px rgba(255,255,255,0.35),
+    inset -${w}px -${w}px ${w * 1.2}px rgba(255,255,255,0.25),
+
+    /* Halo et ombre externe d’origine */
+    0 6px 26px ${hint},
+    0 2px 8px rgba(0,0,0,0.15)
   `;
   linkEl.style.border = "none";
 }
