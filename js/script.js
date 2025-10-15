@@ -56,30 +56,30 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
   const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  const strokeColor = `rgba(255,0,0,${whiteAlpha})`; // test rouge
+  const strokeColor = `rgba(255,255,255,${whiteAlpha})`; // blanc translucide
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // ✅ Stroke principal : plus opaque sur le coin
-  const strokeMain1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;
-  const strokeMain2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;
+  // ✅ Stroke haut-gauche (fade vers bas/droite)
+  const strokeTopLeft1 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 rgba(255,255,255,${whiteAlpha})`;
+  const strokeTopLeft2 = `inset -${pixelAligned * 1.5}px -${pixelAligned * 1.5}px 0 0 rgba(255,255,255,${whiteAlpha * 0.6})`;
+  const strokeTopLeft3 = `inset -${pixelAligned * 2}px -${pixelAligned * 2}px 0 0 rgba(255,255,255,${whiteAlpha * 0.3})`;
 
-  // ✅ Couches additionnelles pour dégradé (décroissance progressive)
-  const strokeFade1 = `inset ${pixelAligned * 1.5}px ${pixelAligned * 1.5}px 0 0 rgba(255,0,0,${whiteAlpha * 0.45})`;
-  const strokeFade2 = `inset -${pixelAligned * 1.5}px -${pixelAligned * 1.5}px 0 0 rgba(255,0,0,${whiteAlpha * 0.45})`;
-  const strokeFade3 = `inset ${pixelAligned * 2}px ${pixelAligned * 2}px 0 0 rgba(255,0,0,${whiteAlpha * 0.25})`;
-  const strokeFade4 = `inset -${pixelAligned * 2}px -${pixelAligned * 2}px 0 0 rgba(255,0,0,${whiteAlpha * 0.25})`;
+  // ✅ Stroke bas-droite (fade vers haut/gauche)
+  const strokeBottomRight1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 rgba(255,255,255,${whiteAlpha})`;
+  const strokeBottomRight2 = `inset ${pixelAligned * 1.5}px ${pixelAligned * 1.5}px 0 0 rgba(255,255,255,${whiteAlpha * 0.6})`;
+  const strokeBottomRight3 = `inset ${pixelAligned * 2}px ${pixelAligned * 2}px 0 0 rgba(255,255,255,${whiteAlpha * 0.3})`;
 
-  // ✅ Verticales conservées
-  const strokeTop = `inset 0 -${pixelAligned * 0.7}px 0 0 rgba(255,0,0,${whiteAlpha * 0.8})`;
-  const strokeBottom = `inset 0 ${pixelAligned * 0.7}px 0 0 rgba(255,0,0,${whiteAlpha * 0.8})`;
+  // ✅ Haut et bas fixes pour garder le cadre cohérent
+  const strokeTop = `inset 0 -${pixelAligned * 0.7}px 0 0 rgba(255,255,255,${whiteAlpha * 0.6})`;
+  const strokeBottom = `inset 0 ${pixelAligned * 0.7}px 0 0 rgba(255,255,255,${whiteAlpha * 0.6})`;
 
+  // ✅ Ombre douce inchangée
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
-  // ✅ Application combinée
+  // ✅ Application complète
   linkEl.style.boxShadow = [
-    strokeMain1, strokeMain2,
-    strokeFade1, strokeFade2,
-    strokeFade3, strokeFade4,
+    strokeTopLeft1, strokeTopLeft2, strokeTopLeft3,
+    strokeBottomRight1, strokeBottomRight2, strokeBottomRight3,
     strokeTop, strokeBottom,
     shadowSoft
   ].join(", ");
