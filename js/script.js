@@ -59,7 +59,7 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
 
   linkEl.style.boxShadow = `
     inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}),
-    0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.35)
+    0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.20)
   `;
   linkEl.style.border = "none";
 }
