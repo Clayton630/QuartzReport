@@ -172,7 +172,6 @@ async function loadArticles() {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
       if (isMobile) {
-        // === VERSION MOBILE — par jour ===
         const byDay = {};
         list.forEach(a => {
           const key = ymdKey(a.date);
@@ -213,7 +212,6 @@ async function loadArticles() {
           }
         }
       } else {
-        // === VERSION DESKTOP — par semaine ===
         const mondayThis = startOfWeekMonday(new Date());
         const mondayNext = addDays(mondayThis, 7);
         const mondayPrev = addDays(mondayThis, -7);
@@ -337,22 +335,24 @@ async function loadArticles() {
           link.style.background = "rgba(255,255,255,0.22)";
           link.style.color = "#111";
         } else {
-  // Couleur légèrement translucide + effet de verre
-  const baseColor = colorMap[cat] || "#4B73FA";
-  link.style.background = baseColor + "CC"; // ~80 % d’opacité
-  link.style.color = "rgba(255,255,255,0.88)";
-  link.style.backdropFilter = "blur(6px) saturate(180%)";
-  link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
-}
+          const baseColor = colorMap[cat] || "#4B73FA";
+          link.style.background = baseColor + "CC";
+          link.style.color = "rgba(255,255,255,0.88)";
+          link.style.backdropFilter = "blur(6px) saturate(180%)";
+          link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
+        }
         applyInnerStroke(link, 0.9, cat === "Tous" ? null : colorMap[cat]);
       };
 
       if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
 
+      // ✅ Correction : gestion correcte de la classe .active
       categoriesContainer.querySelectorAll("a").forEach(link => {
         link.addEventListener("click", e => {
           e.preventDefault();
           const cat = link.getAttribute("data-category");
+          categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+          link.classList.add("active");
           applyActive(cat);
           const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
           render(filtered);
