@@ -52,19 +52,29 @@ function getStrokeWidthPx() {
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
-  const w = getStrokeWidthPx();
+  const dpr = window.devicePixelRatio || 1;
+
+  // ✅ on normalise la largeur du trait à un multiple cohérent selon le DPI
+  let w = getStrokeWidthPx();
+  w = Math.round(w * dpr) / dpr; // arrondi "physique" pixel-perfect
+
   const hint = colorHint
     ? colorHint + "40" // halo coloré semi-transparent
     : "rgba(0,0,0,0.15)";
 
+  // ✅ pour éviter tout décalage d'alignement ou double rendu, on force un rendu à la limite intérieure
   linkEl.style.boxShadow = `
     inset 0 0 0 ${w}px rgba(255,255,255,0.78),
+    inset 0 0 0.001px rgba(255,255,255,0.001),
     0 6px 26px ${hint},
     0 2px 8px rgba(0,0,0,0.15)
   `;
-  linkEl.style.border = "none";
-}
 
+  // ✅ aucune bordure physique pour ne pas déclencher d’arrondi double
+  linkEl.style.border = "none";
+  linkEl.style.outline = "none";
+  linkEl.style.overflow = "visible";
+}
 function clearInnerStroke(linkEl) {
   linkEl.style.boxShadow = "";
   linkEl.style.border = "";
