@@ -43,19 +43,27 @@ function buildCategoryColorMap(categories) {
   return colorMap;
 }
 
-// ========= Stroke interne uniforme (fix double stroke) =========
+// ========= Stroke interne + halo coloré =========
 function getStrokeWidthPx() {
   const dpr = window.devicePixelRatio || 1;
-  if (dpr >= 3) return 2.1;
-  if (dpr >= 2) return 1.8;
-  return 1.5;
+  if (dpr >= 3) return 1.4;
+  if (dpr >= 2) return 1.3;
+  return 1.2;
 }
-function applyInnerStroke(linkEl, whiteAlpha = 0.85) {
+
+function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
   const w = getStrokeWidthPx();
-  linkEl.style.boxShadow =
-    `inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}), 0 2px 12px rgba(0,0,0,0.08)`;
+  const hint = colorHint
+    ? colorHint + "40" // halo coloré semi-transparent
+    : "rgba(0,0,0,0.15)";
+
+  linkEl.style.boxShadow = `
+    inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}),
+    0 4px 20px ${hint}
+  `;
   linkEl.style.border = "none";
 }
+
 function clearInnerStroke(linkEl) {
   linkEl.style.boxShadow = "";
   linkEl.style.border = "";
@@ -333,7 +341,7 @@ async function loadArticles() {
           link.style.background = bg;
           link.style.color = "rgba(255,255,255,0.88)";
         }
-        applyInnerStroke(link, 0.85);
+        applyInnerStroke(link, 0.9, cat === "Tous" ? null : colorMap[cat]);
       };
 
       if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
