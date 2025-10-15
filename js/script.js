@@ -56,16 +56,18 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
   const strokeColor = `rgba(255,255,255,${whiteAlpha})`;
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // ✅ Rendu identique à l’ancien, mais verrouillé en pixels entiers
+  // ✅ alignement sous-pixel stable
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  linkEl.style.boxShadow = `
-    inset 0 0 0 ${pixelAligned}px ${strokeColor},
-    0 6px 26px ${hint},
-    0 2px 8px rgba(0,0,0,0.15)
-  `;
+  // ✅ reflets croisés : un liseré orienté bas-droite, un haut-gauche
+  const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px ${pixelAligned}px -${pixelAligned}px ${strokeColor}`;
+  const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px ${pixelAligned}px -${pixelAligned}px ${strokeColor}`;
 
-  // ✅ Empêche les écarts de sous-pixels sans altérer la couleur ou l’opacité
+  // ✅ halo + profondeur identiques à avant
+  const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
+
+  // ✅ combinaison équilibrée
+  linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${shadowSoft}`;
   linkEl.style.border = "none";
   linkEl.style.backfaceVisibility = "hidden";
   linkEl.style.webkitTransform = "translateZ(0)";
