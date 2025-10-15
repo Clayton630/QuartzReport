@@ -33,7 +33,7 @@ function buildCategoryColorMap(categories) {
     "#00B8D9", "#E67E22", "#1ABC9C", "#E84393", "#16A085",
     "#D35400", "#2980B9", "#C0392B", "#27AE60", "#8E44AD"
   ];
-  const colorMap = { Tous: "none", Autre: "#555555" }; // fixes
+  const colorMap = { Tous: "none", Autre: "#555555" };
   let i = 0;
   for (const c of categories) {
     if (c === "Tous" || c === "Autre") continue;
@@ -43,32 +43,29 @@ function buildCategoryColorMap(categories) {
   return colorMap;
 }
 
-// ===== Stroke interne: helpers =====
+// ========= Stroke interne uniforme (fix double stroke) =========
 function getStrokeWidthPx() {
   const dpr = window.devicePixelRatio || 1;
-  // un peu plus épais sur écrans denses pour être visible sans “grossir”
-  if (dpr >= 3) return 2.4;
-  if (dpr >= 2) return 2.1;
-  return 1.8;
+  if (dpr >= 3) return 2.1;
+  if (dpr >= 2) return 1.8;
+  return 1.5;
 }
-function applyInnerStroke(linkEl, whiteAlpha = 0.8) {
+function applyInnerStroke(linkEl, whiteAlpha = 0.85) {
   const w = getStrokeWidthPx();
-  // Stroke blanc interne + ombre douce d’origine
   linkEl.style.boxShadow =
     `inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}), 0 2px 12px rgba(0,0,0,0.08)`;
-  // aucune bordure extérieure pour éviter le double contour
   linkEl.style.border = "none";
 }
 function clearInnerStroke(linkEl) {
-  linkEl.style.boxShadow = ""; // revient au CSS de base
-  linkEl.style.border = "";    // revient au CSS de base
+  linkEl.style.boxShadow = "";
+  linkEl.style.border = "";
 }
 
 // ========= Chargement principal (feed) =========
 async function loadArticles() {
   const container = document.getElementById("articles");
   const hottestContainer = document.getElementById("hottest");
-  const categoriesContainer = document.getElementById("categories"); // <ul id="categories">
+  const categoriesContainer = document.getElementById("categories");
 
   const repo = "Clayton630/QuartzReport";
   const branch = "main";
@@ -91,7 +88,7 @@ async function loadArticles() {
       const apiData = await apiResp.json();
       const text = base64ToUtf8(apiData.content);
 
-      const match = text.match(/^---([\.s\S]*?)---([\s\S]*)$/);
+      const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
       let meta = {}, body = text;
       if (match) {
         const yaml = match[1].trim();
@@ -136,13 +133,21 @@ async function loadArticles() {
       link.className = "card";
 
       const now = new Date();
-      const isToday = article.date.toDateString() === now.toDateString();
-      const dateDisplay = isToday
-        ? `à ${article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
-        : article.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+      const isToday =
+        article.date.getDate() === now.getDate() &&
+        article.date.getMonth() === now.getMonth() &&
+        article.date.getFullYear() === now.getFullYear();
+
+      let dateDisplay;
+      if (isToday) {
+        const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+        dateDisplay = `à ${time}`;
+      } else {
+        dateDisplay = article.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+      }
 
       link.innerHTML = `
-        <img src="${article.thumbnail}" alt="" width="320" height="180" decoding="sync" loading="eager">
+        <img src="${article.thumbnail}" alt="">
         <div class="card-content">
           <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
           <h3>${article.title}</h3>
@@ -296,55 +301,43 @@ async function loadArticles() {
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
 
-      // mémorise la position de scroll
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
-      // liste + ordre (“Autre” toujours à droite)
       let cats = [...new Set(list.map(a => a.category))];
       cats = cats.filter(c => c !== "Autre");
       cats.push("Autre");
 
-      // Map couleur
       const colorMap = buildCategoryColorMap(cats);
 
-      // HTML
       const html =
         `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""}">Tous</a></li>` +
         cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
 
-      // Applique l’état sélectionné (fond + texte + stroke)
       const applyActive = (cat) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
-          a.classList.remove("active");
           a.style.background = "";
           a.style.color = "";
-          clearInnerStroke(a); // enlève notre stroke interne
+          clearInnerStroke(a);
         });
 
         const link = categoriesContainer.querySelector(`a[data-category="${cat}"]`);
         if (!link) return;
 
-        // on n’utilise plus .active pour éviter ses styles (bordure sombre)
-        // on gère tout en inline ici
         if (cat === "Tous") {
-          // 🧊 Restaure le fond “verre” original très léger, texte noir
           link.style.background = "rgba(255,255,255,0.22)";
           link.style.color = "#111";
-          applyInnerStroke(link, 0.8); // trait blanc interne discret
         } else {
           const bg = colorMap[cat] || "#4B73FA";
           link.style.background = bg;
-          link.style.color = "rgba(255,255,255,0.88)"; // texte légèrement translucide
-          applyInnerStroke(link, 0.8); // trait blanc interne
+          link.style.color = "rgba(255,255,255,0.88)";
         }
+        applyInnerStroke(link, 0.85);
       };
 
-      // Restaure scroll
       if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
 
-      // Bind clics
       categoriesContainer.querySelectorAll("a").forEach(link => {
         link.addEventListener("click", e => {
           e.preventDefault();
@@ -355,11 +348,9 @@ async function loadArticles() {
         });
       });
 
-      // Applique l’état initial
       applyActive(active);
     }
 
-    // Première construction + rendu
     buildCategories(all, "Tous");
     await render(all);
 
