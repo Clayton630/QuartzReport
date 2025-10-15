@@ -52,21 +52,24 @@ function getStrokeWidthPx() {
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
-  // ✅ stroke légèrement plus épais (base augmentée à 0.8px)
   const baseW = 0.8;
   const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  const strokeColor = `rgba(255,255,255,${whiteAlpha})`;
-  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
+  // ✅ Stroke rouge de test
+  const strokeColor = `rgba(255,0,0,${whiteAlpha})`;
+  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)`;
 
-  // ✅ reflets croisés nets et centrés
-  const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;
-  const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;
+  // ✅ Reflets équilibrés : diagonales + verticales ajustées
+  const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;     // bas-droite
+  const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;   // haut-gauche
+  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;               // bas (plus fin)
+  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;              // haut (plus fin)
 
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
-  linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${shadowSoft}`;
+  // ✅ Application combinée
+  linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${stroke3}, ${stroke4}, ${shadowSoft}`;
   linkEl.style.border = "none";
   linkEl.style.backfaceVisibility = "hidden";
   linkEl.style.webkitTransform = "translateZ(0)";
