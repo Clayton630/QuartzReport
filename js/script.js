@@ -56,17 +56,33 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
   const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  const strokeColor = `rgba(255,0,0,${whiteAlpha})`;
+  const strokeColor = `rgba(255,0,0,${whiteAlpha})`; // test rouge
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // ✅ Reflets équilibrés, côtés plus fins
-  const stroke1 = `inset ${pixelAligned * 0.6}px ${pixelAligned}px 0 0 ${strokeColor}`;     // bas-droite (droite réduite)
-  const stroke2 = `inset -${pixelAligned * 0.6}px -${pixelAligned}px 0 0 ${strokeColor}`;   // haut-gauche (gauche réduite)
-  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                     // bas
-  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                    // haut
+  // ✅ Stroke principal : plus opaque sur le coin
+  const strokeMain1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;
+  const strokeMain2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;
+
+  // ✅ Couches additionnelles pour dégradé (décroissance progressive)
+  const strokeFade1 = `inset ${pixelAligned * 1.5}px ${pixelAligned * 1.5}px 0 0 rgba(255,0,0,${whiteAlpha * 0.45})`;
+  const strokeFade2 = `inset -${pixelAligned * 1.5}px -${pixelAligned * 1.5}px 0 0 rgba(255,0,0,${whiteAlpha * 0.45})`;
+  const strokeFade3 = `inset ${pixelAligned * 2}px ${pixelAligned * 2}px 0 0 rgba(255,0,0,${whiteAlpha * 0.25})`;
+  const strokeFade4 = `inset -${pixelAligned * 2}px -${pixelAligned * 2}px 0 0 rgba(255,0,0,${whiteAlpha * 0.25})`;
+
+  // ✅ Verticales conservées
+  const strokeTop = `inset 0 -${pixelAligned * 0.7}px 0 0 rgba(255,0,0,${whiteAlpha * 0.8})`;
+  const strokeBottom = `inset 0 ${pixelAligned * 0.7}px 0 0 rgba(255,0,0,${whiteAlpha * 0.8})`;
+
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
-  linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${stroke3}, ${stroke4}, ${shadowSoft}`;
+  // ✅ Application combinée
+  linkEl.style.boxShadow = [
+    strokeMain1, strokeMain2,
+    strokeFade1, strokeFade2,
+    strokeFade3, strokeFade4,
+    strokeTop, strokeBottom,
+    shadowSoft
+  ].join(", ");
   linkEl.style.border = "none";
   linkEl.style.backfaceVisibility = "hidden";
   linkEl.style.webkitTransform = "translateZ(0)";
