@@ -54,13 +54,12 @@ function getStrokeWidthPx() {
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
   const w = getStrokeWidthPx();
   const hint = colorHint
-    ? colorHint + "40"
+    ? colorHint + "40" // halo coloré semi-transparent
     : "rgba(0,0,0,0.15)";
 
   linkEl.style.boxShadow = `
     inset 0 0 0 ${w}px rgba(255,255,255,0.78),
-    0 6px 26px ${hint},
-    0 2px 8px rgba(0,0,0,0.15)
+    0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)
   `;
   linkEl.style.border = "none";
 }
@@ -173,6 +172,7 @@ async function loadArticles() {
       const isMobile = window.matchMedia("(max-width: 768px)").matches;
 
       if (isMobile) {
+        // === VERSION MOBILE — par jour ===
         const byDay = {};
         list.forEach(a => {
           const key = ymdKey(a.date);
@@ -213,9 +213,11 @@ async function loadArticles() {
           }
         }
       } else {
+        // === VERSION DESKTOP — par semaine ===
         const mondayThis = startOfWeekMonday(new Date());
         const mondayNext = addDays(mondayThis, 7);
         const mondayPrev = addDays(mondayThis, -7);
+
         const weeks = { current: {}, previous: {}, others: {} };
 
         list.forEach(article => {
@@ -243,15 +245,18 @@ async function loadArticles() {
           const weekBlock = document.createElement("div");
           weekBlock.className = "week-block";
           weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
+
           const carousel = document.createElement("div");
           carousel.className = "week-carousel";
           const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
+
           for (const dayKey of sortedDays) {
             const d = new Date(dayKey);
             const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
             const dayBlock = document.createElement("div");
             dayBlock.className = "day-block";
             dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
+
             const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
             for (let i = 0; i < articles.length; i += 4) {
               const chunk = articles.slice(i, i + 4);
@@ -277,12 +282,14 @@ async function loadArticles() {
             }
             carousel.appendChild(dayBlock);
           }
+
           weekBlock.appendChild(carousel);
           container.appendChild(weekBlock);
         }
 
         await renderWeek("Cette semaine", weeks.current);
         await renderWeek("La semaine dernière", weeks.previous);
+
         const otherWeeks = Object.keys(weeks.others).sort((a, b) => new Date(b) - new Date(a));
         for (const wkKey of otherWeeks) {
           const start = new Date(wkKey);
@@ -301,6 +308,7 @@ async function loadArticles() {
     // ======================
     function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
+
       const nav = categoriesContainer.closest(".main-nav");
       const prevScroll = nav ? nav.scrollLeft : 0;
 
@@ -317,8 +325,8 @@ async function loadArticles() {
 
       const applyActive = (cat) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
-          a.style.background = "rgba(255,255,255,0.25)";
-          a.style.color = "#111";
+          a.style.background = "";
+          a.style.color = "";
           clearInnerStroke(a);
         });
 
@@ -329,13 +337,13 @@ async function loadArticles() {
           link.style.background = "rgba(255,255,255,0.22)";
           link.style.color = "#111";
         } else {
-          const baseColor = colorMap[cat] || "#4B73FA";
-          link.style.background = baseColor + "CC";
-          link.style.color = "rgba(255,255,255,0.88)";
-          link.style.backdropFilter = "blur(6px) saturate(180%)";
-          link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
-        }
-
+  // Couleur légèrement translucide + effet de verre
+  const baseColor = colorMap[cat] || "#4B73FA";
+  link.style.background = baseColor + "CC"; // ~80 % d’opacité
+  link.style.color = "rgba(255,255,255,0.88)";
+  link.style.backdropFilter = "blur(6px) saturate(180%)";
+  link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
+}
         applyInnerStroke(link, 0.9, cat === "Tous" ? null : colorMap[cat]);
       };
 
