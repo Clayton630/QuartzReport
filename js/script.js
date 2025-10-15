@@ -52,24 +52,57 @@ function getStrokeWidthPx() {
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
+  clearInnerStroke(linkEl);
+
   const w = getStrokeWidthPx();
-  const hint = colorHint
-    ? colorHint + "40"
-    : "rgba(0,0,0,0.15)";
+  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
+  // Stroke interne de base (léger halo + ombre)
   linkEl.style.boxShadow = `
-    /* 🎯 Double stroke : 45° et -45° */
-    inset ${w}px ${w}px 0 rgba(255,255,255,${whiteAlpha}),
-    inset -${w}px -${w}px 0 rgba(255,255,255,${whiteAlpha * 0.75}),
-
-    /* 🌈 Liseré interne principal */
-    inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}),
-
-    /* ☁️ Halo externe coloré et ombre douce */
+    inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha * 0.75}),
     0 6px 26px ${hint},
     0 2px 8px rgba(0,0,0,0.15)
   `;
-  linkEl.style.border = "none";
+
+  // Supprime un éventuel overlay précédent
+  if (linkEl._strokeOverlay) {
+    linkEl._strokeOverlay.remove();
+    linkEl._strokeOverlay = null;
+  }
+
+  // Crée le dégradé diagonal lumineux via un SVG inline
+  const svg = document.createElement("div");
+  svg.style.position = "absolute";
+  svg.style.inset = "0";
+  svg.style.borderRadius = getComputedStyle(linkEl).borderRadius;
+  svg.style.pointerEvents = "none";
+  svg.style.zIndex = "1";
+  svg.style.mixBlendMode = "screen"; // effet de fusion lumineux
+
+  // Deux reflets diagonaux à 45° et -45°
+  svg.style.background = `
+    conic-gradient(
+      from 45deg,
+      rgba(255,255,255,${whiteAlpha}) 0deg,
+      rgba(255,255,255,${whiteAlpha * 0.4}) 20deg,
+      rgba(255,255,255,0) 90deg,
+      rgba(255,255,255,0) 270deg,
+      rgba(255,255,255,${whiteAlpha * 0.4}) 340deg,
+      rgba(255,255,255,${whiteAlpha}) 360deg
+    )
+  `;
+
+  svg.style.mask = `
+    radial-gradient(circle at center,
+      rgba(0,0,0,1) 70%,
+      rgba(0,0,0,0.3) 85%,
+      rgba(0,0,0,0) 100%)
+  `;
+  svg.style.webkitMask = svg.style.mask;
+
+  linkEl.style.position = "relative";
+  linkEl.appendChild(svg);
+  linkEl._strokeOverlay = svg;
 }
 
 function clearInnerStroke(linkEl) {
