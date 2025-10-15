@@ -57,18 +57,22 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
     ? colorHint + "40"
     : "rgba(0,0,0,0.15)";
 
-  // ✅ Stroke inchangé
+  // ✅ Stabilisation du modèle de boîte pour éviter les asymétries de sous-pixel
+  linkEl.style.boxSizing = "border-box";
+  linkEl.style.overflow = "hidden";
+  linkEl.style.position = "relative";
+  linkEl.style.willChange = "transform";
+
+  // ✅ Stroke uniforme, centré et contraint par le clip interne
   linkEl.style.boxShadow = `
     inset 0 0 0 ${w}px rgba(255,255,255,0.78),
     0 6px 26px ${hint},
     0 2px 8px rgba(0,0,0,0.15)
   `;
-  linkEl.style.border = "none";
 
-  // ✅ Compensation optique : un filtre de contraste micro-négatif
-  linkEl.style.webkitTransform = "translateZ(0)"; // force le GPU
-  linkEl.style.backfaceVisibility = "hidden";     // stabilise le rendu
-  linkEl.style.willChange = "transform";
+  // ✅ Recalage visuel micro (évite l’étirement asymétrique à gauche/droite)
+  linkEl.style.transform = "translateZ(0.0001px)";
+  linkEl.style.border = "none";
 }
 function clearInnerStroke(linkEl) {
   linkEl.style.boxShadow = "";
