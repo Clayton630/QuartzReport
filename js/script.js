@@ -59,14 +59,14 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
   // ✅ alignement sous-pixel stable
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  // ✅ reflets croisés : un liseré orienté bas-droite, un haut-gauche
-  const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px ${pixelAligned}px -${pixelAligned}px ${strokeColor}`;
-  const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px ${pixelAligned}px -${pixelAligned}px ${strokeColor}`;
+  // ✅ reflets nets à 45° et -45°, sans diffusion ni flou
+  const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;
+  const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;
 
-  // ✅ halo + profondeur identiques à avant
+  // ✅ halo/ombre standard pour la profondeur
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
-  // ✅ combinaison équilibrée
+  // ✅ combinaison finale : deux reflets nets croisés + ombre
   linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${shadowSoft}`;
   linkEl.style.border = "none";
   linkEl.style.backfaceVisibility = "hidden";
