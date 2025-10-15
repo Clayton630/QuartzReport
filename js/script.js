@@ -43,6 +43,27 @@ function buildCategoryColorMap(categories) {
   return colorMap;
 }
 
+// ===== Stroke interne: helpers =====
+function getStrokeWidthPx() {
+  const dpr = window.devicePixelRatio || 1;
+  // un peu plus épais sur écrans denses pour être visible sans “grossir”
+  if (dpr >= 3) return 2.4;
+  if (dpr >= 2) return 2.1;
+  return 1.8;
+}
+function applyInnerStroke(linkEl, whiteAlpha = 0.8) {
+  const w = getStrokeWidthPx();
+  // Stroke blanc interne + ombre douce d’origine
+  linkEl.style.boxShadow =
+    `inset 0 0 0 ${w}px rgba(255,255,255,${whiteAlpha}), 0 2px 12px rgba(0,0,0,0.08)`;
+  // aucune bordure extérieure pour éviter le double contour
+  linkEl.style.border = "none";
+}
+function clearInnerStroke(linkEl) {
+  linkEl.style.boxShadow = ""; // revient au CSS de base
+  linkEl.style.border = "";    // revient au CSS de base
+}
+
 // ========= Chargement principal (feed) =========
 async function loadArticles() {
   const container = document.getElementById("articles");
@@ -70,7 +91,7 @@ async function loadArticles() {
       const apiData = await apiResp.json();
       const text = base64ToUtf8(apiData.content);
 
-      const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
+      const match = text.match(/^---([\.s\S]*?)---([\s\S]*)$/);
       let meta = {}, body = text;
       if (match) {
         const yaml = match[1].trim();
@@ -293,45 +314,31 @@ async function loadArticles() {
         cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
 
-      // injecte le style “stroke blanc interne” si pas déjà présent
-if (!document.getElementById("stroke-style")) {
-  const st = document.createElement("style");
-  st.id = "stroke-style";
-  st.textContent = `
-    .main-nav a.stroke-inner {
-      position: relative;
-      z-index: 0;
-      box-shadow:
-        inset 0 0 0 2px rgba(255,255,255,0.85),   /* ✅ trait interne net et uniforme */
-        0 2px 12px rgba(0,0,0,0.08);             /* ✅ conserve l’ombre d’origine */
-    }
-  `;
-  document.head.appendChild(st);
-}
-
       // Applique l’état sélectionné (fond + texte + stroke)
       const applyActive = (cat) => {
         categoriesContainer.querySelectorAll("a").forEach(a => {
-          a.classList.remove("stroke-inner");
+          a.classList.remove("active");
           a.style.background = "";
           a.style.color = "";
-          a.style.borderColor = ""; // si jamais
+          clearInnerStroke(a); // enlève notre stroke interne
         });
 
         const link = categoriesContainer.querySelector(`a[data-category="${cat}"]`);
         if (!link) return;
 
+        // on n’utilise plus .active pour éviter ses styles (bordure sombre)
+        // on gère tout en inline ici
         if (cat === "Tous") {
-          // 🧊 Restaure le fond “verre” original (ultra léger), texte noir
+          // 🧊 Restaure le fond “verre” original très léger, texte noir
           link.style.background = "rgba(255,255,255,0.22)";
           link.style.color = "#111";
+          applyInnerStroke(link, 0.8); // trait blanc interne discret
         } else {
-          // Couleur pleine pour les catégories, texte légèrement translucide
           const bg = colorMap[cat] || "#4B73FA";
           link.style.background = bg;
-          link.style.color = "rgba(255,255,255,0.88)";
+          link.style.color = "rgba(255,255,255,0.88)"; // texte légèrement translucide
+          applyInnerStroke(link, 0.8); // trait blanc interne
         }
-        link.classList.add("stroke-inner");
       };
 
       // Restaure scroll
@@ -342,12 +349,7 @@ if (!document.getElementById("stroke-style")) {
         link.addEventListener("click", e => {
           e.preventDefault();
           const cat = link.getAttribute("data-category");
-
-          categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
-          link.classList.add("active");
-
           applyActive(cat);
-
           const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
           render(filtered);
         });
