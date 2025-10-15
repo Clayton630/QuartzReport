@@ -51,22 +51,21 @@ function getStrokeWidthPx() {
   return 0.7;
 }
 
-function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
-  const w = getStrokeWidthPx();
+function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
+  // ✅ stroke plus fin : réduit à 0.6px base
+  const baseW = 0.6;
+  const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
+  const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
+
   const strokeColor = `rgba(255,255,255,${whiteAlpha})`;
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // ✅ alignement sous-pixel stable
-  const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
-
-  // ✅ reflets nets à 45° et -45°, sans diffusion ni flou
+  // ✅ reflets croisés nets, plus fins et translucides
   const stroke1 = `inset ${pixelAligned}px ${pixelAligned}px 0 0 ${strokeColor}`;
   const stroke2 = `inset -${pixelAligned}px -${pixelAligned}px 0 0 ${strokeColor}`;
 
-  // ✅ halo/ombre standard pour la profondeur
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
-  // ✅ combinaison finale : deux reflets nets croisés + ombre
   linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${shadowSoft}`;
   linkEl.style.border = "none";
   linkEl.style.backfaceVisibility = "hidden";
