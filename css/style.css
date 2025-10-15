@@ -646,22 +646,32 @@ body, button, input, textarea, select {
   }
 }
 
-/* ===== Nav: full shadow breathing, optical padding with no layout shift ===== */
+/* ===== Nav: extended breathing space for shadows (desktop + mobile) ===== */
 .main-nav {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 
-  /* On crée une zone tampon au-dessus et en dessous pour les ombres */
-  padding-top: 28px;
-  padding-bottom: 28px;
+  /* espace généreux pour ombres supérieures/inférieures */
+  padding-top: 32px;
+  padding-bottom: 42px;
 
-  /* On neutralise visuellement ce padding pour ne rien décaler */
-  margin-top: -28px;
-  margin-bottom: -28px;
+  /* neutralisation visuelle pour ne pas impacter la mise en page */
+  margin-top: -32px;
+  margin-bottom: -42px;
 
   position: relative;
-  z-index: 2; /* garantit que les ombres ne soient pas masquées */
+  z-index: 2;
+}
+
+/* 📱 Variante mobile : ombres encore plus respirantes */
+@media (max-width: 768px) {
+  .main-nav {
+    padding-top: 36px;
+    padding-bottom: 52px;
+    margin-top: -36px;
+    margin-bottom: -52px;
+  }
 }
 
 /* 📱 Catégories légèrement plus petites mais toujours confortables */
