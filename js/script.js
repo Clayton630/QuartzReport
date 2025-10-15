@@ -51,22 +51,26 @@ function getStrokeWidthPx() {
   return 0.7;
 }
 
-function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
-  const w = getStrokeWidthPx();
+function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
+  const baseW = 0.8;
+  const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
+  const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  // Deux dégradés rouges opposés, nets et non floutés
-  const gradientTopLeft = `linear-gradient(135deg, rgba(255,0,0,0.85) 0%, rgba(255,0,0,0) 100%)`;
-  const gradientBottomRight = `linear-gradient(-45deg, rgba(255,0,0,0.85) 0%, rgba(255,0,0,0) 100%)`;
+  const strokeColor = `rgba(255,0,0,${whiteAlpha})`; // test rouge
+  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // Application du double stroke par pseudo-couches internes
-  linkEl.style.boxShadow = `
-    inset 0 0 0 ${w}px rgba(255,255,255,0), /* neutralise l'ancien stroke */
-    0 0 0 ${w}px rgba(255,255,255,0)        /* couche de base neutre */
-  `;
-  linkEl.style.backgroundImage = `${gradientTopLeft}, ${gradientBottomRight}`;
-  linkEl.style.backgroundOrigin = "border-box";
-  linkEl.style.backgroundClip = "padding-box, border-box";
+  // ✅ Stroke équilibré haut/bas, côtés plus fins
+  const stroke1 = `inset ${pixelAligned * 0.6}px ${pixelAligned}px 0 0 ${strokeColor}`;     // bas-droite
+  const stroke2 = `inset -${pixelAligned * 0.6}px -${pixelAligned}px 0 0 ${strokeColor}`;   // haut-gauche
+  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                     // bas
+  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                    // haut
+  const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
+
+  // ✅ Application propre et stable
+  linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${stroke3}, ${stroke4}, ${shadowSoft}`;
   linkEl.style.border = "none";
+  linkEl.style.backfaceVisibility = "hidden";
+  linkEl.style.webkitTransform = "translateZ(0)";
 }
 function clearInnerStroke(linkEl) {
   linkEl.style.boxShadow = "";
