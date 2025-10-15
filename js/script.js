@@ -46,9 +46,9 @@ function buildCategoryColorMap(categories) {
 // ========= Stroke interne + halo coloré =========
 function getStrokeWidthPx() {
   const dpr = window.devicePixelRatio || 1;
-  if (dpr >= 3) return 1.4;
-  if (dpr >= 2) return 1.3;
-  return 1.2;
+  if (dpr >= 3) return 1.1;
+  if (dpr >= 2) return 1.0;
+  return 0.9;
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.9, colorHint = null) {
