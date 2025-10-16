@@ -59,11 +59,11 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.5, colorHint = null) {
   const strokeColor = `rgba(255,255,255,${whiteAlpha})`; // ✅ Blanc adouci
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // ✅ Stroke équilibré haut/bas, côtés plus fins
-  const stroke1 = `inset ${pixelAligned * 0.6}px ${pixelAligned}px 0 0 ${strokeColor}`;     // bas-droite
-  const stroke2 = `inset -${pixelAligned * 0.6}px -${pixelAligned}px 0 0 ${strokeColor}`;   // haut-gauche
-  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                     // bas
-  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                    // haut
+  // ✅ Version plus dense, équilibrée, sans décalage sur iPad
+  const stroke1 = `inset ${pixelAligned * 0.55}px ${pixelAligned * 1.05}px 0 0 ${strokeColor}`;   // bas-droite
+  const stroke2 = `inset -${pixelAligned * 0.55}px -${pixelAligned * 1.05}px 0 0 ${strokeColor}`; // haut-gauche
+  const stroke3 = `inset 0 ${pixelAligned * 0.95}px 0 0 ${strokeColor}`;                         // bas
+  const stroke4 = `inset 0 -${pixelAligned * 0.95}px 0 0 ${strokeColor}`;                        // haut
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
   // ✅ Application propre et stable
