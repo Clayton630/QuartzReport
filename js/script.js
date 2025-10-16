@@ -119,8 +119,9 @@ function ensureThumbObserver() {
       const real = el.getAttribute("data-bg");
       if (real) {
         el.style.backgroundImage = `url('${real}')`;
+        el.style.transition = "filter 0.4s ease-out";
         el.style.filter = "blur(0px)";
-        el.style.transition = "filter 0.3s ease-out";
+        setTimeout(() => { el.style.filter = "blur(0px)"; }, 20);
         el.removeAttribute("data-bg");
         queueIdlePreload(real);
       }
