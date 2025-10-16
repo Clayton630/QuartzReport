@@ -88,14 +88,14 @@ function clearInnerStroke(linkEl) {
 }
 
 /* =========================
-   Capping dynamique de résolution images (feed + hottest)
+   Capping dynamique via Cloudflare Worker (feed + hottest)
    ========================= */
 function getOptimizedImageUrl(url, maxWidth) {
   try {
     if (!url.startsWith("http")) return url;
-    if (/[\?&](w|width)=/i.test(url)) return url;
-    const sep = url.includes("?") ? "&" : "?";
-    return url + sep + "w=" + maxWidth + "&q=85";
+    // utilise ton worker Cloudflare
+    const base = "https://quartzreport-oauth.claytonelhorga.workers.dev/img";
+    return `${base}?src=${encodeURIComponent(url)}&w=${maxWidth}&q=85`;
   } catch {
     return url;
   }
@@ -229,6 +229,7 @@ async function loadArticles() {
       var frag = document.createDocumentFragment();
       for (var j = 0; j < hottest.length; j++) {
         var article = hottest[j];
+        // 🔥 utilisation du worker pour images 1280px
         var optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
         var link = document.createElement("a");
         link.href = "article.html?slug=" + encodeURIComponent(article.slug) + "&file=" + encodeURIComponent(article.filename);
@@ -304,7 +305,8 @@ async function loadArticles() {
                 '  </div>' +
                 '</a>';
               var t = el.querySelector(".thumb");
-              prepareThumb(t, article.thumbnail);
+              // ⚡️ feed = images 800px max
+              prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
               frag.appendChild(el);
               if (idx < chunk.length - 1 || i4 + chunk.length < articles.length) {
                 var sep = document.createElement("div");
@@ -380,7 +382,7 @@ async function loadArticles() {
                   '  </div>' +
                   '</a>';
                 var t = el.querySelector(".thumb");
-                prepareThumb(t, article.thumbnail);
+                prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
                 frag.appendChild(el);
                 if (idx < chunk.length - 1 || i5 + chunk.length < articles.length) {
                   var sep = document.createElement("div");
