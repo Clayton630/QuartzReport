@@ -52,32 +52,22 @@ function getStrokeWidthPx() {
 }
 
 function applyInnerStroke(linkEl, whiteAlpha = 0.5, colorHint = null) {
-  const dpr = window.devicePixelRatio || 1;
+  const baseW = 0.8;
+  const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
+  const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  // Helper to land exactly on the device pixel grid
-  const pxAlign = (v) => Math.max(1 / dpr, Math.round(v * dpr) / dpr);
+  const strokeColor = `rgba(255,255,255,${whiteAlpha})`; // ✅ Blanc adouci
+  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // 👉 Main uniform ring thickness (no x/y offset → no overlap)
-  const ring = pxAlign(dpr >= 3 ? 1.2 : dpr >= 2 ? 1.05 : 0.95);
-
-  // 👉 Very subtle directional accents (keep tiny so they don’t shift the ring)
-  const accent = pxAlign(ring * 0.35);
-
-  const strokeColor = `rgba(255,255,255,${whiteAlpha})`;
-  const accentColor = `rgba(255,255,255,${whiteAlpha * 0.5})`;
-  const hint = colorHint ? `${colorHint}26` : "rgba(0,0,0,0.12)"; // ~15% opacity
-
-  // 1) Uniform inner ring (sharp, centered, stable)
-  const stroke = `inset 0 0 0 ${ring}px ${strokeColor}`;
-
-  // 2) Tiny diagonal sheens (don’t affect perceived thickness/position)
-  const sheen1 = `inset ${accent}px ${pxAlign(accent * 1.6)}px 0 0 ${accentColor}`;   // bottom-right
-  const sheen2 = `inset -${accent}px -${pxAlign(accent * 1.6)}px 0 0 ${accentColor}`; // top-left
-
-  // 3) Keep your soft drop shadows
+  // ✅ Stroke équilibré haut/bas, côtés plus fins
+  const stroke1 = `inset ${pixelAligned * 0.6}px ${pixelAligned}px 0 0 ${strokeColor}`;     // bas-droite
+  const stroke2 = `inset -${pixelAligned * 0.6}px -${pixelAligned}px 0 0 ${strokeColor}`;   // haut-gauche
+  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                     // bas
+  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                    // haut
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
-  linkEl.style.boxShadow = `${stroke}, ${sheen1}, ${sheen2}, ${shadowSoft}`;
+  // ✅ Application propre et stable
+  linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${stroke3}, ${stroke4}, ${shadowSoft}`;
   linkEl.style.border = "none";
   linkEl.style.backfaceVisibility = "hidden";
   linkEl.style.webkitTransform = "translateZ(0)";
