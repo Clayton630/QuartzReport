@@ -51,50 +51,23 @@ function getStrokeWidthPx() {
   return 0.7;
 }
 
-function applyInnerStroke(linkEl, whiteAlpha = 0.65, colorHint = null) {
-  // largeur "logique" + alignement pixel parfait (évite les demi-pixels qui créent des écarts)
+function applyInnerStroke(linkEl, whiteAlpha = 0.55, colorHint = null) {
   const baseW = 0.8;
-  const dpr = window.devicePixelRatio || 1;
-  const w = baseW * (dpr >= 2 ? 0.9 : 1);
-  const px = Math.round(w * dpr) / dpr;
+  const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
+  const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
 
-  // couleur (rouge test) + halo doux existant
-  const stroke = a => `rgba(255,0,0,${a})`;
+  const strokeColor = `rgba(255,255,255,${whiteAlpha})`; // ✅ Blanc adouci
   const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
-  // ===== Dégradés d'opacité le long des deux diagonales =====
-  // On empile des "inset shadows" très fins, du plus opaque (proche du coin)
-  // au plus transparent (en s'en éloignant). Pas de blur => net & sharp.
-  const steps = 7;          // plus de steps = dégradé plus doux
-  const falloff = 1.35;     // courbe d'atténuation (1 = linéaire; >1 = plus rapide)
-
-  const buildDiagonal = (dx, dy) => {
-    const layers = [];
-    for (let i = 0; i < steps; i++) {
-      const t = i / (steps - 1);                    // 0 .. 1
-      const alpha = whiteAlpha * Math.pow(1 - t, falloff);
-      // on décale progressivement vers l'intérieur le long de la diagonale
-      const ox = dx * (px + t * 2 * px);
-      const oy = dy * (px + t * 2 * px);
-      layers.push(`inset ${ox}px ${oy}px 0 0 ${stroke(alpha)}`);
-    }
-    return layers;
-  };
-
-  // Bas-droite (45°) et Haut-gauche (-135°) : les deux traits visibles
-  const diagBR = buildDiagonal(+1, +1);
-  const diagTL = buildDiagonal(-1, -1);
-
-  // Liserés haut/bas pour homogénéiser l’épaisseur perçue (plus léger)
-  const sideAlpha = whiteAlpha * 0.75;
-  const strokeTop    = `inset 0 -${px * 0.8}px 0 0 ${stroke(sideAlpha)}`;
-  const strokeBottom = `inset 0  ${px * 0.8}px 0 0 ${stroke(sideAlpha)}`;
-
-  // Ombre douce existante (inchangée)
+  // ✅ Stroke équilibré haut/bas, côtés plus fins
+  const stroke1 = `inset ${pixelAligned * 0.6}px ${pixelAligned}px 0 0 ${strokeColor}`;     // bas-droite
+  const stroke2 = `inset -${pixelAligned * 0.6}px -${pixelAligned}px 0 0 ${strokeColor}`;   // haut-gauche
+  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                     // bas
+  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;                    // haut
   const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
 
-  // Application
-  linkEl.style.boxShadow = [...diagBR, ...diagTL, strokeTop, strokeBottom, shadowSoft].join(", ");
+  // ✅ Application propre et stable
+  linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${stroke3}, ${stroke4}, ${shadowSoft}`;
   linkEl.style.border = "none";
   linkEl.style.backfaceVisibility = "hidden";
   linkEl.style.webkitTransform = "translateZ(0)";
