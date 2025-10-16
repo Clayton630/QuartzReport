@@ -349,7 +349,7 @@ async function loadArticles() {
           link.style.backdropFilter = "blur(6px) saturate(180%)";
           link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
         }
-        applyInnerStroke(link, 0.9, cat === "Tous" ? null : colorMap[cat]);
+        applyInnerStroke(link, 0.5, cat === "Tous" ? null : colorMap[cat]);
       };
 
       if (nav) requestAnimationFrame(() => { nav.scrollLeft = prevScroll; });
