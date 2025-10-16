@@ -88,15 +88,16 @@ function clearInnerStroke(linkEl) {
 }
 
 /* =========================
-   Capping dynamique via Cloudflare Worker (feed + hottest)
+   Redirection forcée des images via Cloudflare Worker
    ========================= */
 function getOptimizedImageUrl(url, maxWidth) {
   try {
-    if (!url.startsWith("http")) return url;
-    // utilise ton worker Cloudflare
+    if (!url || !url.startsWith("http")) return url;
+    const cleanSrc = url.split("?")[0];
     const base = "https://quartzreport-oauth.claytonelhorga.workers.dev/img";
-    return `${base}?src=${encodeURIComponent(url)}&w=${maxWidth}&q=85`;
-  } catch {
+    return `${base}?src=${encodeURIComponent(cleanSrc)}&w=${maxWidth}&q=85`;
+  } catch (e) {
+    console.error("getOptimizedImageUrl failed:", e);
     return url;
   }
 }
@@ -149,7 +150,7 @@ async function loadArticles() {
     if (!resp.ok) throw new Error("Erreur chargement liste articles");
 
     var files = await resp.json();
-    var mdFiles = files.filter(function (f) { return /\.md$/i.test(f.name); });
+    var mdFiles = files.filter(f => /\.md$/i.test(f.name));
 
     async function fetchAllWithLimit(urls, limit) {
       var results = [];
@@ -160,7 +161,7 @@ async function loadArticles() {
         try {
           var r = await fetch(urls[idx], { cache: "force-cache" });
           results[idx] = await r.json();
-        } catch (e) {
+        } catch {
           results[idx] = null;
         }
         return next();
@@ -171,10 +172,9 @@ async function loadArticles() {
       return results;
     }
 
-    var urls = mdFiles.map(function (file) {
-      return workerBase + "/repos/" + repo + "/contents/articles/" + file.name + "?ref=" + branch;
-    });
-
+    var urls = mdFiles.map(file =>
+      workerBase + "/repos/" + repo + "/contents/articles/" + file.name + "?ref=" + branch
+    );
     var apiDatas = await fetchAllWithLimit(urls, 6);
 
     var all = [];
@@ -189,7 +189,7 @@ async function loadArticles() {
       if (match) {
         var yaml = match[1].trim();
         body = match[2].trim();
-        yaml.split("\n").forEach(function (line) {
+        yaml.split("\n").forEach(line => {
           var parts = line.split(":");
           var k = parts.shift().trim();
           var rest = parts.join(":").trim().replace(/^"|"$/g, "");
@@ -217,185 +217,141 @@ async function loadArticles() {
       });
     }
 
-    all.sort(function (a, b) { return b.date - a.date; });
+    all.sort((a, b) => b.date - a.date);
 
     /* ======================
        SECTION HOTTEST
        ====================== */
     hottestContainer.innerHTML = "";
-    var hottest = all.filter(function (a) { return a.important; }).slice(0, 3);
+    var hottest = all.filter(a => a.important).slice(0, 3);
+    var fragHot = document.createDocumentFragment();
+    hottest.forEach((article, j) => {
+      const optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
+      const link = document.createElement("a");
+      link.href = "article.html?slug=" + encodeURIComponent(article.slug) + "&file=" + encodeURIComponent(article.filename);
+      link.className = "card";
 
-    (function renderHottest() {
-      var frag = document.createDocumentFragment();
-      for (var j = 0; j < hottest.length; j++) {
-        var article = hottest[j];
-        // 🔥 utilisation du worker pour images 1280px
-        var optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
-        var link = document.createElement("a");
-        link.href = "article.html?slug=" + encodeURIComponent(article.slug) + "&file=" + encodeURIComponent(article.filename);
-        link.className = "card";
+      const now = new Date();
+      const isToday =
+        article.date.getDate() === now.getDate() &&
+        article.date.getMonth() === now.getMonth() &&
+        article.date.getFullYear() === now.getFullYear();
+      const dateDisplay = isToday
+        ? "à " + article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+        : article.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 
-        var now = new Date();
-        var isToday =
-          article.date.getDate() === now.getDate() &&
-          article.date.getMonth() === now.getMonth() &&
-          article.date.getFullYear() === now.getFullYear();
+      const loadingAttr = j === 0 ? "eager" : "lazy";
+      link.innerHTML =
+        '<img src="' + optimizedThumb + '" alt="" decoding="async" loading="' + loadingAttr + '">' +
+        '<div class="card-content">' +
+        '<p class="card-meta">Par ' + article.author + ', ' + dateDisplay + '</p>' +
+        '<h3>' + article.title + '</h3>' +
+        '</div>';
+      fragHot.appendChild(link);
+    });
+    hottestContainer.appendChild(fragHot);
 
-        var dateDisplay = isToday
-          ? "à " + article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
-          : article.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
-
-        var loadingAttr = j === 0 ? "eager" : "lazy";
-
-        link.innerHTML =
-          '<img src="' + optimizedThumb + '" alt="" decoding="async" loading="' + loadingAttr + '">' +
-          '<div class="card-content">' +
-          '  <p class="card-meta">Par ' + article.author + ', ' + dateDisplay + '</p>' +
-          '  <h3>' + article.title + '</h3>' +
-          '</div>';
-
-        frag.appendChild(link);
-      }
-      hottestContainer.appendChild(frag);
-    })();
-
-     
     /* ======================
-       RENDER PRINCIPAL (mobile/desktop)
+       RENDER PRINCIPAL (feed)
        ====================== */
     async function render(list) {
       container.innerHTML = "";
       var isMobile = window.matchMedia("(max-width: 768px)").matches;
-
       if (isMobile) {
-        var byDay = {};
-        list.forEach(function (a) {
-          var key = ymdKey(a.date);
-          (byDay[key] || (byDay[key] = [])).push(a);
-        });
-
-        var sortedDays = Object.keys(byDay).sort(function (a, b) { return new Date(b) - new Date(a); });
-
-        for (var dIdx = 0; dIdx < sortedDays.length; dIdx++) {
-          var k = sortedDays[dIdx];
-          var d = new Date(k);
-          var dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-
-          var block = document.createElement("div");
+        const byDay = {};
+        list.forEach(a => (byDay[ymdKey(a.date)] ||= []).push(a));
+        const sortedDays = Object.keys(byDay).sort((a, b) => new Date(b) - new Date(a));
+        for (const k of sortedDays) {
+          const d = new Date(k);
+          const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+          const block = document.createElement("div");
           block.className = "day-block";
-          block.innerHTML = '<h3 class="day-title">' + dateStr + '</h3>';
+          block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
           container.appendChild(block);
-
-          var articles = byDay[k].sort(function (a, b) { return b.date - a.date; });
-
-          for (var i4 = 0; i4 < articles.length; i4 += 4) {
-            var chunk = articles.slice(i4, i4 + 4);
-            var frag = document.createDocumentFragment();
-            chunk.forEach(function (article, idx) {
-              var time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-              var el = document.createElement("div");
+          const articles = byDay[k].sort((a, b) => b.date - a.date);
+          for (let i4 = 0; i4 < articles.length; i4 += 4) {
+            const chunk = articles.slice(i4, i4 + 4);
+            const frag = document.createDocumentFragment();
+            chunk.forEach(article => {
+              const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+              const el = document.createElement("div");
               el.className = "day-article";
               el.innerHTML =
-                '<a href="article.html?slug=' + encodeURIComponent(article.slug) + '&file=' + encodeURIComponent(article.filename) + '" class="day-article-link">' +
-                '  <div class="thumb"></div>' +
-                '  <div class="day-article-info">' +
-                '    <p class="day-meta">Par ' + article.author + ', à ' + time + '</p>' +
-                '    <h4>' + article.title + '</h4>' +
-                '    <p class="day-desc">' + article.description + '</p>' +
-                '  </div>' +
-                '</a>';
-              var t = el.querySelector(".thumb");
-              // ⚡️ feed = images 800px max
+                `<a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                  <div class="thumb"></div>
+                  <div class="day-article-info">
+                    <p class="day-meta">Par ${article.author}, à ${time}</p>
+                    <h4>${article.title}</h4>
+                    <p class="day-desc">${article.description}</p>
+                  </div>
+                </a>`;
+              const t = el.querySelector(".thumb");
               prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
               frag.appendChild(el);
-              if (idx < chunk.length - 1 || i4 + chunk.length < articles.length) {
-                var sep = document.createElement("div");
-                sep.className = "day-separator";
-                frag.appendChild(sep);
-              }
             });
             block.appendChild(frag);
-            await new Promise(function (res) { setTimeout(res, 200); });
+            await new Promise(res => setTimeout(res, 200));
           }
         }
       } else {
-        // Desktop groupé par semaine
-        var mondayThis = startOfWeekMonday(new Date());
-        var mondayNext = addDays(mondayThis, 7);
-        var mondayPrev = addDays(mondayThis, -7);
-        var weeks = { current: {}, previous: {}, others: {} };
-
-        list.forEach(function (article) {
-          var d = normalizeDate(article.date);
-          var dayKey = ymdKey(d);
-          var dTime = d.getTime();
-          var mondayThisTime = mondayThis.getTime();
-          var mondayNextTime = mondayNext.getTime();
-          var mondayPrevTime = mondayPrev.getTime();
-
-          if (dTime >= mondayThisTime && dTime < mondayNextTime)
-            (weeks.current[dayKey] || (weeks.current[dayKey] = [])).push(article);
-          else if (dTime >= mondayPrevTime && dTime < mondayThisTime)
-            (weeks.previous[dayKey] || (weeks.previous[dayKey] = [])).push(article);
+        const mondayThis = startOfWeekMonday(new Date());
+        const mondayNext = addDays(mondayThis, 7);
+        const mondayPrev = addDays(mondayThis, -7);
+        const weeks = { current: {}, previous: {}, others: {} };
+        list.forEach(article => {
+          const d = normalizeDate(article.date);
+          const dayKey = ymdKey(d);
+          const dTime = d.getTime();
+          if (dTime >= mondayThis && dTime < mondayNext) (weeks.current[dayKey] ||= []).push(article);
+          else if (dTime >= mondayPrev && dTime < mondayThis) (weeks.previous[dayKey] ||= []).push(article);
           else {
-            var wk = startOfWeekMonday(d);
-            var wkKey = ymdKey(wk);
-            (weeks.others[wkKey] || (weeks.others[wkKey] = {}));
-            (weeks.others[wkKey][dayKey] || (weeks.others[wkKey][dayKey] = [])).push(article);
+            const wk = startOfWeekMonday(d);
+            const wkKey = ymdKey(wk);
+            (weeks.others[wkKey] ||= {});
+            (weeks.others[wkKey][dayKey] ||= []).push(article);
           }
         });
 
         async function renderWeek(title, daysMap) {
           if (!Object.keys(daysMap).length) return;
-          var weekBlock = document.createElement("div");
+          const weekBlock = document.createElement("div");
           weekBlock.className = "week-block";
-          weekBlock.innerHTML = '<h3 class="week-title">' + title + '</h3>';
-
-          var carousel = document.createElement("div");
+          weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
+          const carousel = document.createElement("div");
           carousel.className = "week-carousel";
-
-          var sortedDays = Object.keys(daysMap).sort(function (a, b) { return new Date(b) - new Date(a); });
-          for (var di = 0; di < sortedDays.length; di++) {
-            var dayKey = sortedDays[di];
-            var d = new Date(dayKey);
-            var label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
-
-            var dayBlock = document.createElement("div");
+          const sortedDays = Object.keys(daysMap).sort((a, b) => new Date(b) - new Date(a));
+          for (const dayKey of sortedDays) {
+            const d = new Date(dayKey);
+            const label = d.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+            const dayBlock = document.createElement("div");
             dayBlock.className = "day-block";
-            dayBlock.innerHTML = '<h3 class="day-title">' + label + '</h3>';
-
-            var articles = daysMap[dayKey].sort(function (a, b) { return b.date - a.date; });
-            for (var i5 = 0; i5 < articles.length; i5 += 4) {
-              var chunk = articles.slice(i5, i5 + 4);
-              var frag = document.createDocumentFragment();
-              chunk.forEach(function (article, idx) {
-                var time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
-                var el = document.createElement("div");
+            dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
+            const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
+            for (let i5 = 0; i5 < articles.length; i5 += 4) {
+              const chunk = articles.slice(i5, i5 + 4);
+              const frag = document.createDocumentFragment();
+              chunk.forEach(article => {
+                const time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+                const el = document.createElement("div");
                 el.className = "day-article";
                 el.innerHTML =
-                  '<a href="article.html?slug=' + encodeURIComponent(article.slug) + '&file=' + encodeURIComponent(article.filename) + '" class="day-article-link">' +
-                  '  <div class="thumb"></div>' +
-                  '  <div class="day-article-info">' +
-                  '    <p class="day-meta">Par ' + article.author + ', à ' + time + '</p>' +
-                  '    <h4>' + article.title + '</h4>' +
-                  '    <p class="day-desc">' + article.description + '</p>' +
-                  '  </div>' +
-                  '</a>';
-                var t = el.querySelector(".thumb");
+                  `<a href="article.html?slug=${encodeURIComponent(article.slug)}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                    <div class="thumb"></div>
+                    <div class="day-article-info">
+                      <p class="day-meta">Par ${article.author}, à ${time}</p>
+                      <h4>${article.title}</h4>
+                      <p class="day-desc">${article.description}</p>
+                    </div>
+                  </a>`;
+                const t = el.querySelector(".thumb");
                 prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
                 frag.appendChild(el);
-                if (idx < chunk.length - 1 || i5 + chunk.length < articles.length) {
-                  var sep = document.createElement("div");
-                  sep.className = "day-separator";
-                  frag.appendChild(sep);
-                }
               });
               dayBlock.appendChild(frag);
-              await new Promise(function (res) { setTimeout(res, 200); });
+              await new Promise(res => setTimeout(res, 200));
             }
             carousel.appendChild(dayBlock);
           }
-
           weekBlock.appendChild(carousel);
           container.appendChild(weekBlock);
         }
@@ -403,57 +359,46 @@ async function loadArticles() {
         await renderWeek("Cette semaine", weeks.current);
         await renderWeek("La semaine dernière", weeks.previous);
 
-        var otherWeeks = Object.keys(weeks.others).sort(function (a, b) { return new Date(b) - new Date(a); });
-        for (var wkIdx = 0; wkIdx < otherWeeks.length; wkIdx++) {
-          var wkKey = otherWeeks[wkIdx];
-          var start = new Date(wkKey);
-          var end = addDays(start, 6);
-          var title = "Semaine du " + start.toLocaleDateString("fr-FR", { day: "numeric", month: "long" }) +
-                      " au " + end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" });
+        const otherWeeks = Object.keys(weeks.others).sort((a, b) => new Date(b) - new Date(a));
+        for (const wkKey of otherWeeks) {
+          const start = new Date(wkKey);
+          const end = addDays(start, 6);
+          const title = `Semaine du ${start.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} au ${end.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })}`;
           await renderWeek(title, weeks.others[wkKey]);
         }
       }
     }
 
     /* ======================
-       Catégories (construction + styles dynamiques)
+       Catégories
        ====================== */
-    function buildCategories(list, active) {
-      if (active == null) active = "Tous";
+    function buildCategories(list, active = "Tous") {
       if (!categoriesContainer) return;
-
-      var nav = categoriesContainer.closest(".main-nav");
-      var prevScroll = nav ? nav.scrollLeft : 0;
-
-      var cats = Array.from(new Set(list.map(function (a) { return a.category; })));
-      cats = cats.filter(function (c) { return c !== "Autre"; });
+      const nav = categoriesContainer.closest(".main-nav");
+      const prevScroll = nav ? nav.scrollLeft : 0;
+      const cats = Array.from(new Set(list.map(a => a.category))).filter(c => c !== "Autre");
       cats.push("Autre");
-
-      var colorMap = buildCategoryColorMap(cats);
-
-      var html = '<li><a href="#" data-category="Tous" class="' + (active === "Tous" ? "active" : "") + '">Tous</a></li>' +
-        cats.map(function (c) {
-          return '<li><a href="#" data-category="' + c + '" class="' + (active === c ? "active" : "") + '">' + c + '</a></li>';
-        }).join("");
+      const colorMap = buildCategoryColorMap(cats);
+      const html =
+        `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""}">Tous</a></li>` +
+        cats.map(c => `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""}">${c}</a></li>`).join("");
       categoriesContainer.innerHTML = html;
 
       function applyActive(cat) {
-        categoriesContainer.querySelectorAll("a").forEach(function (a) {
+        categoriesContainer.querySelectorAll("a").forEach(a => {
           a.style.background = "";
           a.style.color = "";
           a.style.backdropFilter = "";
           a.style.webkitBackdropFilter = "";
           clearInnerStroke(a);
         });
-
-        var link = categoriesContainer.querySelector('a[data-category="' + cat + '"]');
+        const link = categoriesContainer.querySelector(`a[data-category="${cat}"]`);
         if (!link) return;
-
         if (cat === "Tous") {
           link.style.background = "rgba(255,255,255,0.22)";
           link.style.color = "#111";
         } else {
-          var baseColor = colorMap[cat] || "#4B73FA";
+          const baseColor = colorMap[cat] || "#4B73FA";
           link.style.background = baseColor + "CC";
           link.style.color = "rgba(255,255,255,0.88)";
           link.style.backdropFilter = "blur(6px) saturate(180%)";
@@ -462,35 +407,30 @@ async function loadArticles() {
         applyInnerStroke(link, 0.5, cat === "Tous" ? null : colorMap[cat]);
       }
 
-      if (nav) requestAnimationFrame(function () { nav.scrollLeft = prevScroll; });
-
-      categoriesContainer.querySelectorAll("a").forEach(function (link) {
-        link.addEventListener("click", function (e) {
+      if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
+      categoriesContainer.querySelectorAll("a").forEach(link => {
+        link.addEventListener("click", e => {
           e.preventDefault();
-          var cat = link.getAttribute("data-category");
-          categoriesContainer.querySelectorAll("a").forEach(function (a) { a.classList.remove("active"); });
+          const cat = link.getAttribute("data-category");
+          categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
           link.classList.add("active");
           applyActive(cat);
-          var filtered = cat === "Tous" ? all : all.filter(function (a) { return a.category === cat; });
+          const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
           render(filtered);
         });
       });
-
       applyActive(active);
     }
 
     buildCategories(all, "Tous");
     await render(all);
 
-    var css = document.createElement("style");
-    css.textContent =
-      ".thumb { transition: filter 220ms ease; }" +
-      ".thumb-ready { filter: blur(0px) !important; }";
+    const css = document.createElement("style");
+    css.textContent = ".thumb { transition: filter 220ms ease; } .thumb-ready { filter: blur(0px) !important; }";
     document.head.appendChild(css);
-
   } catch (err) {
     console.error(err);
-    var container2 = document.getElementById("articles");
+    const container2 = document.getElementById("articles");
     if (container2) container2.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
@@ -501,18 +441,16 @@ document.addEventListener("DOMContentLoaded", loadArticles);
    Bouton combiné (recherche + menu)
    ============================== */
 document.addEventListener("DOMContentLoaded", function () {
-  var searchIcon = document.querySelector(".search-icon");
-  var menuIcon = document.querySelector(".menu-icon");
-
+  const searchIcon = document.querySelector(".search-icon");
+  const menuIcon = document.querySelector(".menu-icon");
   if (searchIcon) {
-    searchIcon.addEventListener("click", function (e) {
+    searchIcon.addEventListener("click", e => {
       e.stopPropagation();
       console.log("Recherche ouverte");
     });
   }
-
   if (menuIcon) {
-    menuIcon.addEventListener("click", function (e) {
+    menuIcon.addEventListener("click", e => {
       e.stopPropagation();
       console.log("Menu ouvert");
     });
