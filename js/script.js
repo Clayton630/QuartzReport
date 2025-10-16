@@ -119,7 +119,8 @@ function ensureThumbObserver() {
       const real = el.getAttribute("data-bg");
       if (real) {
         el.style.backgroundImage = `url('${real}')`;
-        el.classList.add("thumb-ready"); // ton CSS gère la transition du blur
+        el.style.filter = "blur(0px)";
+        el.style.transition = "filter 0.3s ease-out";
         el.removeAttribute("data-bg");
         queueIdlePreload(real);
       }
