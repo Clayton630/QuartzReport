@@ -118,11 +118,15 @@ function ensureThumbObserver() {
       const el = entry.target;
       const real = el.getAttribute("data-bg");
       if (real) {
-        el.style.backgroundImage = `url('${real}')`;
-        el.style.transition = "filter 0.4s ease-out";
-        el.style.filter = "blur(0px)";
-        setTimeout(() => { el.style.filter = "blur(0px)"; }, 20);
-        el.removeAttribute("data-bg");
+        const img = new Image();
+        img.src = real;
+        img.decoding = "async";
+        img.onload = () => {
+          el.style.backgroundImage = `url('${real}')`;
+          el.style.transition = "filter 0.4s ease-out";
+          el.style.filter = "blur(0px)";
+          el.removeAttribute("data-bg");
+        };
         queueIdlePreload(real);
       }
       ioThumb.unobserve(el);
