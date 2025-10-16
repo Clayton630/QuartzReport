@@ -66,18 +66,15 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.5, colorHint = null) {
   const pixelAligned = Math.round(w * dpr) / dpr;
 
   const strokeColor = "rgba(255,255,255," + whiteAlpha + ")";
-  // Si on a une couleur hexa (#RRGGBB), on ajoute "40" (= ~25% d’opacité) proprement.
   const hint =
     colorHint && /^#([0-9A-Fa-f]{6})$/.test(colorHint)
       ? colorHint + "40"
       : "rgba(0,0,0,0.15)";
 
-  // Strokes internes (net/sharp), haut/bas un peu plus présents, côtés un poil plus fins
-  const stroke1 = "inset " + (pixelAligned * 0.6) + "px " + pixelAligned + "px 0 0 " + strokeColor;   // bas-droite
-  const stroke2 = "inset -" + (pixelAligned * 0.6) + "px -" + pixelAligned + "px 0 0 " + strokeColor; // haut-gauche
-  const stroke3 = "inset 0 " + (pixelAligned * 0.7) + "px 0 0 " + strokeColor;                        // bas
-  const stroke4 = "inset 0 -" + (pixelAligned * 0.7) + "px 0 0 " + strokeColor;                       // haut
-
+  const stroke1 = "inset " + (pixelAligned * 0.6) + "px " + pixelAligned + "px 0 0 " + strokeColor;
+  const stroke2 = "inset -" + (pixelAligned * 0.6) + "px -" + pixelAligned + "px 0 0 " + strokeColor;
+  const stroke3 = "inset 0 " + (pixelAligned * 0.7) + "px 0 0 " + strokeColor;
+  const stroke4 = "inset 0 -" + (pixelAligned * 0.7) + "px 0 0 " + strokeColor;
   const shadowSoft = "0 6px 26px " + hint + ", 0 2px 8px rgba(0,0,0,0.15)";
 
   linkEl.style.boxShadow = stroke1 + ", " + stroke2 + ", " + stroke3 + ", " + stroke4 + ", " + shadowSoft;
@@ -96,14 +93,12 @@ function clearInnerStroke(linkEl) {
 var ioThumb = null;
 function ensureThumbObserver() {
   if (ioThumb) return ioThumb;
-  // On déclenche un peu avant d’entrer dans le viewport pour lisser le rendu
   ioThumb = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
-      const el = entry.target; // .thumb
+      const el = entry.target;
       const real = el.getAttribute("data-bg");
       if (real) {
-        // Remplace le flou (LQIP) par l’image réelle
         el.style.backgroundImage = "url('" + real + "')";
         el.classList.add("thumb-ready");
         el.removeAttribute("data-bg");
@@ -113,18 +108,12 @@ function ensureThumbObserver() {
   }, { rootMargin: "200px 0px", threshold: 0.01 });
   return ioThumb;
 }
-// Prépare une thumb avec un LQIP flou (sans changer le look final : le blur disparaît quand l’image réelle est chargée)
 function prepareThumb(divEl, realUrl) {
-  // Petit LQIP neutre (transparent) + blur CSS -> pas de flash
-  // On garde l’effet existant, juste la source se swap quand visible
-  divEl.style.backgroundImage = "url('data:image/gif;base64,R0lGODlhAQABAAAAACw=')"; // 1x1 transp.
+  divEl.style.backgroundImage = "url('data:image/gif;base64,R0lGODlhAQABAAAAACw=')";
   divEl.style.filter = "blur(8px)";
   divEl.style.transform = "translateZ(0)";
   divEl.setAttribute("data-bg", realUrl);
   ensureThumbObserver().observe(divEl);
-
-  // Quand l’image réelle est posée, on retire le blur en douceur (transition gérée via CSS existant, ici JS side-safe)
-  // On surveille l’arrivée de 'thumb-ready' dans le rendu réel ici (IO swap) : on laisse le CSS faire le fade si besoin.
 }
 
 /* =========================
@@ -140,15 +129,12 @@ async function loadArticles() {
   var workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
 
   try {
-    // Liste des fichiers en 1 req
-    var resp = await fetch(workerBase + "/repos/" + repo + "/contents/articles?ref=" + branch + "&_=" + Date.now());
+    var resp = await fetch(workerBase + "/repos/" + repo + "/contents/articles?ref=" + branch + "&_=" + Date.now(), { cache: "force-cache" });
     if (!resp.ok) throw new Error("Erreur chargement liste articles");
 
     var files = await resp.json();
     var mdFiles = files.filter(function (f) { return /\.md$/i.test(f.name); });
 
-    // On télécharge le contenu des articles en parallèle (limité) pour accélérer
-    // Petite limite de concurrence pour éviter de saturer le worker/CDN
     async function fetchAllWithLimit(urls, limit) {
       var results = [];
       var i = 0;
@@ -156,7 +142,7 @@ async function loadArticles() {
         if (i >= urls.length) return;
         var idx = i++;
         try {
-          var r = await fetch(urls[idx]);
+          var r = await fetch(urls[idx], { cache: "force-cache" });
           results[idx] = await r.json();
         } catch (e) {
           results[idx] = null;
@@ -173,7 +159,7 @@ async function loadArticles() {
       return workerBase + "/repos/" + repo + "/contents/articles/" + file.name + "?ref=" + branch;
     });
 
-    var apiDatas = await fetchAllWithLimit(urls, 6); // 6 connexions parallèles soft
+    var apiDatas = await fetchAllWithLimit(urls, 6);
 
     var all = [];
     for (var i = 0; i < mdFiles.length; i++) {
@@ -215,7 +201,6 @@ async function loadArticles() {
       });
     }
 
-    // Tri récent -> ancien
     all.sort(function (a, b) { return b.date - a.date; });
 
     /* ======================
@@ -224,7 +209,6 @@ async function loadArticles() {
     hottestContainer.innerHTML = "";
     var hottest = all.filter(function (a) { return a.important; }).slice(0, 3);
 
-    // Rendu hottest en un seul fragment + lazy raisonnable
     (function renderHottest() {
       var frag = document.createDocumentFragment();
       for (var j = 0; j < hottest.length; j++) {
@@ -243,7 +227,6 @@ async function loadArticles() {
           ? "à " + article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
           : article.date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
 
-        // 1ère image eager, suivantes lazy pour éviter le flash
         var loadingAttr = j === 0 ? "eager" : "lazy";
 
         link.innerHTML =
@@ -259,6 +242,21 @@ async function loadArticles() {
     })();
 
     /* ======================
+       Préchargement immédiat hottest images (optimisation #2)
+       ====================== */
+    document.addEventListener("DOMContentLoaded", function () {
+      const hottestImgs = hottestContainer.querySelectorAll("img");
+      hottestImgs.forEach(img => {
+        const src = img.getAttribute("src");
+        if (src) {
+          const preload = new Image();
+          preload.src = src;
+          preload.decoding = "async";
+        }
+      });
+    });
+
+    /* ======================
        RENDER PRINCIPAL (mobile/desktop)
        ====================== */
     async function render(list) {
@@ -266,7 +264,6 @@ async function loadArticles() {
       var isMobile = window.matchMedia("(max-width: 768px)").matches;
 
       if (isMobile) {
-        // Mobile : groupé par jour
         var byDay = {};
         list.forEach(function (a) {
           var key = ymdKey(a.date);
@@ -287,10 +284,8 @@ async function loadArticles() {
 
           var articles = byDay[k].sort(function (a, b) { return b.date - a.date; });
 
-          // Rendu par chunks de 4 avec petite pause (garde ton comportement visuel)
           for (var i4 = 0; i4 < articles.length; i4 += 4) {
             var chunk = articles.slice(i4, i4 + 4);
-
             var frag = document.createDocumentFragment();
             chunk.forEach(function (article, idx) {
               var time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -305,31 +300,24 @@ async function loadArticles() {
                 '    <p class="day-desc">' + article.description + '</p>' +
                 '  </div>' +
                 '</a>';
-
               var t = el.querySelector(".thumb");
-              // Prépare LQIP + lazy réelle
               prepareThumb(t, article.thumbnail);
-
               frag.appendChild(el);
-
               if (idx < chunk.length - 1 || i4 + chunk.length < articles.length) {
                 var sep = document.createElement("div");
                 sep.className = "day-separator";
                 frag.appendChild(sep);
               }
             });
-
             block.appendChild(frag);
-            // pause douce (200ms) conservée
             await new Promise(function (res) { setTimeout(res, 200); });
           }
         }
       } else {
-        // Desktop : groupé par semaine / jours
+        // Desktop groupé par semaine
         var mondayThis = startOfWeekMonday(new Date());
         var mondayNext = addDays(mondayThis, 7);
         var mondayPrev = addDays(mondayThis, -7);
-
         var weeks = { current: {}, previous: {}, others: {} };
 
         list.forEach(function (article) {
@@ -340,11 +328,11 @@ async function loadArticles() {
           var mondayNextTime = mondayNext.getTime();
           var mondayPrevTime = mondayPrev.getTime();
 
-          if (dTime >= mondayThisTime && dTime < mondayNextTime) {
+          if (dTime >= mondayThisTime && dTime < mondayNextTime)
             (weeks.current[dayKey] || (weeks.current[dayKey] = [])).push(article);
-          } else if (dTime >= mondayPrevTime && dTime < mondayThisTime) {
+          else if (dTime >= mondayPrevTime && dTime < mondayThisTime)
             (weeks.previous[dayKey] || (weeks.previous[dayKey] = [])).push(article);
-          } else {
+          else {
             var wk = startOfWeekMonday(d);
             var wkKey = ymdKey(wk);
             (weeks.others[wkKey] || (weeks.others[wkKey] = {}));
@@ -362,7 +350,6 @@ async function loadArticles() {
           carousel.className = "week-carousel";
 
           var sortedDays = Object.keys(daysMap).sort(function (a, b) { return new Date(b) - new Date(a); });
-
           for (var di = 0; di < sortedDays.length; di++) {
             var dayKey = sortedDays[di];
             var d = new Date(dayKey);
@@ -373,10 +360,8 @@ async function loadArticles() {
             dayBlock.innerHTML = '<h3 class="day-title">' + label + '</h3>';
 
             var articles = daysMap[dayKey].sort(function (a, b) { return b.date - a.date; });
-
             for (var i5 = 0; i5 < articles.length; i5 += 4) {
               var chunk = articles.slice(i5, i5 + 4);
-
               var frag = document.createDocumentFragment();
               chunk.forEach(function (article, idx) {
                 var time = article.date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
@@ -391,10 +376,8 @@ async function loadArticles() {
                   '    <p class="day-desc">' + article.description + '</p>' +
                   '  </div>' +
                   '</a>';
-
                 var t = el.querySelector(".thumb");
                 prepareThumb(t, article.thumbnail);
-
                 frag.appendChild(el);
                 if (idx < chunk.length - 1 || i5 + chunk.length < articles.length) {
                   var sep = document.createElement("div");
@@ -402,11 +385,9 @@ async function loadArticles() {
                   frag.appendChild(sep);
                 }
               });
-
               dayBlock.appendChild(frag);
               await new Promise(function (res) { setTimeout(res, 200); });
             }
-
             carousel.appendChild(dayBlock);
           }
 
@@ -468,7 +449,7 @@ async function loadArticles() {
           link.style.color = "#111";
         } else {
           var baseColor = colorMap[cat] || "#4B73FA";
-          link.style.background = baseColor + "CC"; // ~80%
+          link.style.background = baseColor + "CC";
           link.style.color = "rgba(255,255,255,0.88)";
           link.style.backdropFilter = "blur(6px) saturate(180%)";
           link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
@@ -493,12 +474,9 @@ async function loadArticles() {
       applyActive(active);
     }
 
-    // Construction + rendu initial
     buildCategories(all, "Tous");
     await render(all);
 
-    // Quand les thumbs réelles sont appliquées, enlève le blur (fin douce)
-    // On le fait côté CSS idéalement, mais au cas où :
     var css = document.createElement("style");
     css.textContent =
       ".thumb { transition: filter 220ms ease; }" +
