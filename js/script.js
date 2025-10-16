@@ -88,6 +88,20 @@ function clearInnerStroke(linkEl) {
 }
 
 /* =========================
+   Capping dynamique de résolution images (feed + hottest)
+   ========================= */
+function getOptimizedImageUrl(url, maxWidth) {
+  try {
+    if (!url.startsWith("http")) return url;
+    if (/[\?&](w|width)=/i.test(url)) return url;
+    const sep = url.includes("?") ? "&" : "?";
+    return url + sep + "w=" + maxWidth + "&q=85";
+  } catch {
+    return url;
+  }
+}
+
+/* =========================
    Lazy helpers (LQIP + IO)
    ========================= */
 var ioThumb = null;
@@ -108,11 +122,13 @@ function ensureThumbObserver() {
   }, { rootMargin: "200px 0px", threshold: 0.01 });
   return ioThumb;
 }
+
 function prepareThumb(divEl, realUrl) {
   divEl.style.backgroundImage = "url('data:image/gif;base64,R0lGODlhAQABAAAAACw=')";
   divEl.style.filter = "blur(8px)";
   divEl.style.transform = "translateZ(0)";
-  divEl.setAttribute("data-bg", realUrl);
+  const optimized = getOptimizedImageUrl(realUrl, 800);
+  divEl.setAttribute("data-bg", optimized);
   ensureThumbObserver().observe(divEl);
 }
 
@@ -204,7 +220,7 @@ async function loadArticles() {
     all.sort(function (a, b) { return b.date - a.date; });
 
     /* ======================
-       SECTION HOTTEST (3 max)
+       SECTION HOTTEST
        ====================== */
     hottestContainer.innerHTML = "";
     var hottest = all.filter(function (a) { return a.important; }).slice(0, 3);
@@ -213,6 +229,7 @@ async function loadArticles() {
       var frag = document.createDocumentFragment();
       for (var j = 0; j < hottest.length; j++) {
         var article = hottest[j];
+        var optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
         var link = document.createElement("a");
         link.href = "article.html?slug=" + encodeURIComponent(article.slug) + "&file=" + encodeURIComponent(article.filename);
         link.className = "card";
@@ -230,7 +247,7 @@ async function loadArticles() {
         var loadingAttr = j === 0 ? "eager" : "lazy";
 
         link.innerHTML =
-          '<img src="' + article.thumbnail + '" alt="" decoding="async" loading="' + loadingAttr + '">' +
+          '<img src="' + optimizedThumb + '" alt="" decoding="async" loading="' + loadingAttr + '">' +
           '<div class="card-content">' +
           '  <p class="card-meta">Par ' + article.author + ', ' + dateDisplay + '</p>' +
           '  <h3>' + article.title + '</h3>' +
@@ -241,21 +258,7 @@ async function loadArticles() {
       hottestContainer.appendChild(frag);
     })();
 
-    /* ======================
-       Préchargement immédiat hottest images (optimisation #2)
-       ====================== */
-    document.addEventListener("DOMContentLoaded", function () {
-      const hottestImgs = hottestContainer.querySelectorAll("img");
-      hottestImgs.forEach(img => {
-        const src = img.getAttribute("src");
-        if (src) {
-          const preload = new Image();
-          preload.src = src;
-          preload.decoding = "async";
-        }
-      });
-    });
-
+     
     /* ======================
        RENDER PRINCIPAL (mobile/desktop)
        ====================== */
