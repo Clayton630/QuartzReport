@@ -51,7 +51,7 @@ function getStrokeWidthPx() {
   return 0.7;
 }
 
-function applyInnerStroke(linkEl, whiteAlpha = 0.55, colorHint = null) {
+function applyInnerStroke(linkEl, whiteAlpha = 0.5, colorHint = null) {
   const baseW = 0.8;
   const w = baseW * (window.devicePixelRatio >= 2 ? 0.9 : 1);
   const pixelAligned = Math.round(w * window.devicePixelRatio) / window.devicePixelRatio;
