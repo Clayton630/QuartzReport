@@ -65,7 +65,7 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.5, colorHint = null) {
   const pixelAligned = Math.round(w * (window.devicePixelRatio || 1)) / (window.devicePixelRatio || 1);
 
   const strokeColor = `rgba(255,255,255,${whiteAlpha})`; // ✅ Blanc adouci
-  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)`;
+  const hint = colorHint ? colorHint + "40" : "rgba(0,0,0,0.15)";
 
   // ✅ Stroke équilibré haut/bas, côtés plus fins (identique au rendu actuel)
   const stroke1 = `inset ${pixelAligned * 0.6}px ${pixelAligned}px 0 0 ${strokeColor}`;     // bas-droite
