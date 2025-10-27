@@ -88,8 +88,8 @@ function clearInnerStroke(linkEl) {
 function getOptimizedImageUrl(url, maxWidth) {
   try {
     if (!url || !url.startsWith("http")) return url;
-    const encoded = encodeURIComponent(url.split("?")[0]);
-    return `https://images.weserv.nl/?url=${encoded}&w=${maxWidth}&q=85`;
+    const clean = encodeURIComponent(url.split("?")[0]);
+    return `https://quartzreport-oauth.claytonelhorga.workers.dev/img?src=${clean}&w=${maxWidth}&q=85`;
   } catch (e) {
     console.error("getOptimizedImageUrl failed:", e);
     return url;
