@@ -436,23 +436,47 @@ async function loadArticles() {
       categoriesContainer.innerHTML = html;
 
       function applyActive(cat) {
-        // 1) Reset complet sur tous les liens (on enlève TOUT inline style)
-        const links = categoriesContainer.querySelectorAll("a");
-        links.forEach((a) => {
-          a.classList.remove("active");
-          a.removeAttribute("style");       // supprime background/color/backdrop/transform/…
-          clearInnerStroke(a);              // supprime boxShadow/border éventuels
+        categoriesContainer.querySelectorAll("a").forEach((a) => {
+          a.style.background = "";
+          a.style.color = "";
+          a.style.backdropFilter = "";
+          a.style.webkitBackdropFilter = "";
+          clearInnerStroke(a);
         });
-      
-        // 2) Active propre : on ne met PAS de styles inline, on laisse le CSS faire
-        const link = categoriesContainer.querySelector(`a[data-category="${cat}"]`);
+        const link = categoriesContainer.querySelector(
+          `a[data-category="${cat}"]`
+        );
         if (!link) return;
-        link.classList.add("active");
+        if (cat === "Tous") {
+          link.style.background = "rgba(255,255,255,0.22)";
+          link.style.color = "#111";
+        } else {
+          const baseColor = colorMap[cat] || "#4B73FA";
       
-        // 3) Halo uniquement (optionnel, ne touche pas au hover CSS)
-        const baseColor = colorMap[cat] || null;
-        applyInnerStroke(link, 0.5, cat === "Tous" ? null : baseColor);
-      }
+          // Conversion hex → RGB
+          const rgb = baseColor.match(/[A-Fa-f0-9]{2}/g)
+            .map(x => parseInt(x, 16));
+      
+          const [r, g, b] = rgb;
+          const max = Math.max(r, g, b);
+      
+          // 💥 Paramètres : très saturé + très clair
+          const saturationBoost = 1.9;   // pousse la couleur
+          const brightnessBoost = 1.6;   // presque blanc
+      
+          // Calcul RGB ajusté
+          const rr = Math.min(255, (r / max) * 255 * saturationBoost * brightnessBoost);
+          const gg = Math.min(255, (g / max) * 255 * saturationBoost * brightnessBoost);
+          const bb = Math.min(255, (b / max) * 255 * saturationBoost * brightnessBoost);
+      
+          const textColor = `rgb(${rr.toFixed(0)}, ${gg.toFixed(0)}, ${bb.toFixed(0)})`;
+      
+          // Application styles
+          link.style.background = baseColor + "CC";
+          link.style.color = textColor;
+          link.style.backdropFilter = "blur(6px) saturate(180%)";
+          link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
+        }
         applyInnerStroke(link, 0.5, cat === "Tous" ? null : colorMap[cat]);
       }
 
