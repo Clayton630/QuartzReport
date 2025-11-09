@@ -434,11 +434,11 @@ async function loadArticles() {
           )
           .join("");
       categoriesContainer.innerHTML = html;
-
+      
       function applyActive(cat) {
         const links = categoriesContainer.querySelectorAll("a");
       
-        // Reset total pour tous les liens (supprime tout inline qui peut bloquer :hover)
+        // Réinitialisation propre pour tous les liens (hover réparé)
         links.forEach(a => {
           a.classList.remove("active");
           a.style.background = "";
@@ -447,17 +447,29 @@ async function loadArticles() {
           a.style.boxShadow = "";
           a.style.backdropFilter = "";
           a.style.webkitBackdropFilter = "";
-          a.style.transform = "";   // important pour réactiver le hover scale
+          a.style.transform = "";
           a.style.filter = "";
         });
       
-        // Applique l’état actif seulement au lien sélectionné
+        // Sélection du lien actif
         const link = categoriesContainer.querySelector(`a[data-category="${cat}"]`);
         if (!link) return;
       
         link.classList.add("active");
-        link.style.background = "rgba(255,255,255,1)";
-        link.style.border = "0.5px solid rgba(0,0,0,0.1)";
+      
+        if (cat === "Tous") {
+          link.style.background = "rgba(255,255,255,0.22)";
+          link.style.color = "#111";
+        } else {
+          const baseColor = colorMap[cat] || "#4B73FA";
+          link.style.background = baseColor + "CC"; // fond coloré
+          link.style.color = `color-mix(in srgb, ${baseColor} 35%, white)`; // texte clair et saturé
+          link.style.backdropFilter = "blur(6px) saturate(180%)";
+          link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
+          link.style.filter = "brightness(1.35) saturate(1.6)"; // effet fluo
+        }
+      
+        link.style.border = "0.5px solid rgba(0,0,0,0.08)";
         link.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
         link.style.transform = "scale(1.12)";
       }
