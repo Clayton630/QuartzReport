@@ -288,7 +288,7 @@ body, button, input, textarea, select {
   line-height: 1;
 }
 
-.main-nav a:hover {
+.main-nav a:not(.active):hover {
   background: rgba(255,255,255,1);
   transform: scale(1.12);
 }
