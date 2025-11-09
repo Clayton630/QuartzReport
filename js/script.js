@@ -460,9 +460,9 @@ async function loadArticles() {
           const [r, g, b] = rgb;
           const max = Math.max(r, g, b);
       
-          // 🔧 Paramètres visuels
-          const saturationBoost = 1.4;  // un peu moins fluo
-          const brightnessBoost = 1.8;  // plus clair, proche du blanc
+          // 💥 Paramètres : très saturé + très clair
+          const saturationBoost = 2.2;   // pousse la couleur
+          const brightnessBoost = 2.4;   // presque blanc
       
           // Calcul RGB ajusté
           const rr = Math.min(255, (r / max) * 255 * saturationBoost * brightnessBoost);
