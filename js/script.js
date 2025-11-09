@@ -442,6 +442,10 @@ async function loadArticles() {
           a.style.backdropFilter = "";
           a.style.webkitBackdropFilter = "";
           clearInnerStroke(a);
+
+         // 🔧 Forcer un léger reflow pour corriger le hover
+         void a.offsetHeight;
+           
         });
         const link = categoriesContainer.querySelector(
           `a[data-category="${cat}"]`
