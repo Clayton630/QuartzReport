@@ -80,6 +80,9 @@ function applyInnerStroke(linkEl, whiteAlpha = 0.5, colorHint = null) {
 function clearInnerStroke(linkEl) {
   linkEl.style.boxShadow = "";
   linkEl.style.border = "";
+  linkEl.style.backfaceVisibility = "";
+  linkEl.style.webkitTransform = ""; // enlève translateZ(0) inline
+  linkEl.style.transform = "";       // au cas où
 }
 
 /* =========================
