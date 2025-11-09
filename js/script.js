@@ -445,9 +445,6 @@ async function loadArticles() {
           a.style.backdropFilter = "";
           a.style.webkitBackdropFilter = "";
           clearInnerStroke(a);
-          a.classList.remove("reset-style-temp");
-          void a.offsetWidth;
-          a.classList.add("reset-style-temp");
            
         });
         const link = categoriesContainer.querySelector(
