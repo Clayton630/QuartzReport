@@ -442,9 +442,9 @@ async function loadArticles() {
           a.style.backdropFilter = "";
           a.style.webkitBackdropFilter = "";
           clearInnerStroke(a);
-
-         // 🔧 Forcer un léger reflow pour corriger le hover
-         void a.offsetHeight;
+          a.classList.remove("reset-style-temp");
+          void a.offsetWidth;
+          a.classList.add("reset-style-temp");
            
         });
         const link = categoriesContainer.querySelector(
