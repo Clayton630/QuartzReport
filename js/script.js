@@ -453,21 +453,25 @@ async function loadArticles() {
         } else {
           const baseColor = colorMap[cat] || "#4B73FA";
       
-          // On extrait la couleur en RGB
+          // Conversion hex → RGB
           const rgb = baseColor.match(/[A-Fa-f0-9]{2}/g)
             .map(x => parseInt(x, 16));
       
-          // On booste la saturation et la luminosité
           const [r, g, b] = rgb;
           const max = Math.max(r, g, b);
-          const factor = 1.6; // intensifie la couleur
-          const brightness = 1.2; // augmente la clarté
-          const rr = Math.min(255, (r / max) * 255 * factor * brightness);
-          const gg = Math.min(255, (g / max) * 255 * factor * brightness);
-          const bb = Math.min(255, (b / max) * 255 * factor * brightness);
+      
+          // 🔧 Paramètres visuels
+          const saturationBoost = 1.4;  // un peu moins fluo
+          const brightnessBoost = 1.8;  // plus clair, proche du blanc
+      
+          // Calcul RGB ajusté
+          const rr = Math.min(255, (r / max) * 255 * saturationBoost * brightnessBoost);
+          const gg = Math.min(255, (g / max) * 255 * saturationBoost * brightnessBoost);
+          const bb = Math.min(255, (b / max) * 255 * saturationBoost * brightnessBoost);
       
           const textColor = `rgb(${rr.toFixed(0)}, ${gg.toFixed(0)}, ${bb.toFixed(0)})`;
       
+          // Application styles
           link.style.background = baseColor + "CC";
           link.style.color = textColor;
           link.style.backdropFilter = "blur(6px) saturate(180%)";
