@@ -290,7 +290,7 @@ body, button, input, textarea, select {
 
 .main-nav a:hover {
   background: rgba(255,255,255,1);
-  transform: scale(1.03);
+  transform: scale(2.0);
 }
 
 .main-nav a.active {
