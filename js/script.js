@@ -488,8 +488,12 @@ async function loadArticles() {
       categoriesContainer.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", (e) => {
           e.preventDefault();
-          const cat = link.getAttribute("data-category");
-          categoriesContainer
+                    // 💫 Effet visuel de "tap bounce"
+          link.classList.remove("tap-anim");
+          void link.offsetWidth; // force reflow pour rejouer l’animation
+          link.classList.add("tap-anim");
+           const cat = link.getAttribute("data-category");
+           categoriesContainer
             .querySelectorAll("a")
             .forEach((a) => a.classList.remove("active"));
           link.classList.add("active");
