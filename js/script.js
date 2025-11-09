@@ -436,48 +436,30 @@ async function loadArticles() {
       categoriesContainer.innerHTML = html;
 
       function applyActive(cat) {
-        categoriesContainer.querySelectorAll("a").forEach((a) => {
+        const links = categoriesContainer.querySelectorAll("a");
+      
+        // Reset total pour tous les liens (supprime tout inline qui peut bloquer :hover)
+        links.forEach(a => {
+          a.classList.remove("active");
           a.style.background = "";
           a.style.color = "";
+          a.style.border = "";
+          a.style.boxShadow = "";
           a.style.backdropFilter = "";
           a.style.webkitBackdropFilter = "";
-          clearInnerStroke(a);
+          a.style.transform = "";   // important pour réactiver le hover scale
+          a.style.filter = "";
         });
-        const link = categoriesContainer.querySelector(
-          `a[data-category="${cat}"]`
-        );
+      
+        // Applique l’état actif seulement au lien sélectionné
+        const link = categoriesContainer.querySelector(`a[data-category="${cat}"]`);
         if (!link) return;
-        if (cat === "Tous") {
-          link.style.background = "rgba(255,255,255,0.22)";
-          link.style.color = "#111";
-        } else {
-          const baseColor = colorMap[cat] || "#4B73FA";
       
-          // Conversion hex → RGB
-          const rgb = baseColor.match(/[A-Fa-f0-9]{2}/g)
-            .map(x => parseInt(x, 16));
-      
-          const [r, g, b] = rgb;
-          const max = Math.max(r, g, b);
-      
-          // 💥 Paramètres : très saturé + très clair
-          const saturationBoost = 1.9;   // pousse la couleur
-          const brightnessBoost = 1.6;   // presque blanc
-      
-          // Calcul RGB ajusté
-          const rr = Math.min(255, (r / max) * 255 * saturationBoost * brightnessBoost);
-          const gg = Math.min(255, (g / max) * 255 * saturationBoost * brightnessBoost);
-          const bb = Math.min(255, (b / max) * 255 * saturationBoost * brightnessBoost);
-      
-          const textColor = `rgb(${rr.toFixed(0)}, ${gg.toFixed(0)}, ${bb.toFixed(0)})`;
-      
-          // Application styles
-          link.style.background = baseColor + "CC";
-          link.style.color = textColor;
-          link.style.backdropFilter = "blur(6px) saturate(180%)";
-          link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
-        }
-        applyInnerStroke(link, 0.5, cat === "Tous" ? null : colorMap[cat]);
+        link.classList.add("active");
+        link.style.background = "rgba(255,255,255,1)";
+        link.style.border = "0.5px solid rgba(0,0,0,0.1)";
+        link.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)";
+        link.style.transform = "scale(1.12)";
       }
 
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
