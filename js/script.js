@@ -452,8 +452,24 @@ async function loadArticles() {
           link.style.color = "#111";
         } else {
           const baseColor = colorMap[cat] || "#4B73FA";
+      
+          // On extrait la couleur en RGB
+          const rgb = baseColor.match(/[A-Fa-f0-9]{2}/g)
+            .map(x => parseInt(x, 16));
+      
+          // On booste la saturation et la luminosité
+          const [r, g, b] = rgb;
+          const max = Math.max(r, g, b);
+          const factor = 1.6; // intensifie la couleur
+          const brightness = 1.2; // augmente la clarté
+          const rr = Math.min(255, (r / max) * 255 * factor * brightness);
+          const gg = Math.min(255, (g / max) * 255 * factor * brightness);
+          const bb = Math.min(255, (b / max) * 255 * factor * brightness);
+      
+          const textColor = `rgb(${rr.toFixed(0)}, ${gg.toFixed(0)}, ${bb.toFixed(0)})`;
+      
           link.style.background = baseColor + "CC";
-          link.style.color = "rgba(255,255,255,0.88)";
+          link.style.color = textColor;
           link.style.backdropFilter = "blur(6px) saturate(180%)";
           link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
         }
