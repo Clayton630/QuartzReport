@@ -681,15 +681,16 @@ body, button, input, textarea, select {
     font-size: 1.0rem;
     border-radius: 36px;
   }
-   /* 💫 Effet "bounce" subtil sur clic catégorie */
+/* 💫 Effet "bounce" fluide façon iOS */
 @keyframes bounceTap {
   0%   { transform: scale(1); }
-  40%  { transform: scale(0.92); }  /* léger enfoncement */
-  80%  { transform: scale(1.05); }  /* rebond doux */
+  25%  { transform: scale(0.9); }   /* enfoncement doux */
+  55%  { transform: scale(1.08); }  /* rebond élastique */
+  80%  { transform: scale(0.97); }  /* amorti */
   100% { transform: scale(1); }
 }
 
 .main-nav a.tap-anim {
-  animation: bounceTap 260ms cubic-bezier(0.25, 0.8, 0.5, 1);
+  animation: bounceTap 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 }
