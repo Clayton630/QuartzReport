@@ -485,24 +485,30 @@ async function loadArticles() {
       }
 
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
-      categoriesContainer.querySelectorAll("a").forEach((link) => {
-        link.addEventListener("click", (e) => {
-          e.preventDefault();
-                    // 💫 Effet visuel de "tap bounce"
-          link.classList.remove("tap-anim");
-          void link.offsetWidth; // force reflow pour rejouer l’animation
-          link.classList.add("tap-anim");
-           const cat = link.getAttribute("data-category");
-           categoriesContainer
-            .querySelectorAll("a")
-            .forEach((a) => a.classList.remove("active"));
-          link.classList.add("active");
-          applyActive(cat);
-          const filtered =
-            cat === "Tous" ? all : all.filter((a) => a.category === cat);
-          render(filtered);
-        });
-      });
+categoriesContainer.querySelectorAll("a").forEach((link) => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    // 💫 Étape 1 : joue l’animation bounce tout de suite
+    link.classList.remove("tap-anim");
+    void link.offsetWidth;
+    link.classList.add("tap-anim");
+
+    // ⏱ Étape 2 : change la couleur après un léger délai
+    setTimeout(() => {
+      const cat = link.getAttribute("data-category");
+      categoriesContainer
+        .querySelectorAll("a")
+        .forEach((a) => a.classList.remove("active"));
+      link.classList.add("active");
+      applyActive(cat);
+
+      const filtered =
+        cat === "Tous" ? all : all.filter((a) => a.category === cat);
+      render(filtered);
+    }, 100); // délai de 100 ms avant le changement de couleur
+  });
+});
       applyActive(active);
     }
 
