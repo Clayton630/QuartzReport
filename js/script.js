@@ -486,36 +486,37 @@ async function loadArticles() {
 
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 categoriesContainer.querySelectorAll("a").forEach((link) => {
+
+  // === MOBILE ONLY TOUCH HANDLERS ===
+  link.addEventListener("touchstart", () => {
+    link.classList.add("pressed");
+  });
+
+  link.addEventListener("touchend", () => {
+    link.classList.remove("pressed");
+  });
+
+  link.addEventListener("touchcancel", () => {
+    link.classList.remove("pressed");
+  });
+
+  // === DESKTOP CLICK ===
   link.addEventListener("click", (e) => {
     e.preventDefault();
 
-    const isMobile = window.matchMedia("(max-width: 480px)").matches;
+    const cat = link.getAttribute("data-category");
 
-    // 🔵 1) Sur MOBILE → bounce + attente animation
-    if (isMobile) {
-      link.classList.remove("tap-anim");
-      void link.offsetWidth;
-      link.classList.add("tap-anim");
+    // activation visuelle et styles
+    categoriesContainer
+      .querySelectorAll("a")
+      .forEach((a) => a.classList.remove("active"));
+    link.classList.add("active");
+    applyActive(cat);
 
-      let done = false;
-
-      const finish = () => {
-        if (done) return;
-        done = true;
-        link.removeEventListener("animationend", finish);
-        applyCategoryChange(link);
-      };
-
-      // on attend animationend...
-      link.addEventListener("animationend", finish);
-
-      // ... mais on impose une limite de 350 ms (sécurité iOS)
-      setTimeout(finish, 0);
-      return;
-    }
-
-    // 🔵 2) Sur DESKTOP → aucune attente, direct
-    applyCategoryChange(link);
+    // filtrage
+    const filtered =
+      cat === "Tous" ? all : all.filter((a) => a.category === cat);
+    render(filtered);
   });
 });
 
