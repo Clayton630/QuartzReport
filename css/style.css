@@ -714,3 +714,14 @@ body, button, input, textarea, select {
   animation-fill-mode: none;
 }
 }
+/* Pression : shrink doux */
+.main-nav a.pressed {
+  transform: scale(0.88);
+  transition: transform 120ms cubic-bezier(0.25, 0.8, 0.4, 1);
+}
+
+/* Relâchement : retour fluide */
+.main-nav a.pressed-release {
+  transform: scale(1);
+  transition: transform 260ms cubic-bezier(0.25, 0.8, 0.4, 1);
+}
