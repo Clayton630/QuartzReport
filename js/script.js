@@ -493,7 +493,7 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
    });
    
    link.addEventListener("touchend", () => {
-     setTimeout(() => link.classList.remove("pressed"), 90);
+     setTimeout(() => link.classList.remove("pressed"), 180);
    
      // empêche le overshoot / hover de s’activer pendant le retour
      link.classList.add("lock-transform");
