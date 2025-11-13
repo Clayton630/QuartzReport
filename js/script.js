@@ -487,13 +487,14 @@ async function loadArticles() {
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 categoriesContainer.querySelectorAll("a").forEach((link) => {
 
-// === MOBILE ONLY TOUCH HANDLERS ===
-link.addEventListener("touchstart", () => {
-  link.classList.add("pressed");
-});
+  // === MOBILE ONLY TOUCH HANDLERS ===
+  link.addEventListener("touchstart", () => {
+    link.classList.add("pressed");
+  });
 
-link.addEventListener("touchend", () => {
-  link.classList.remove("pressed");
+  link.addEventListener("touchend", () => {
+    link.classList.remove("pressed");
+  });
 
   // empêche le overshoot / hover de s’activer pendant le retour
   link.classList.add("lock-transform");
@@ -502,27 +503,28 @@ link.addEventListener("touchend", () => {
   }, 120);
 });
 
-link.addEventListener("touchcancel", () => {
-  link.classList.remove("pressed");
-  link.classList.remove("lock-transform");
-});
+  link.addEventListener("touchcancel", () => {
+    link.classList.remove("pressed");
+  });
 
-// === DESKTOP CLICK ===
-link.addEventListener("click", (e) => {
-  e.preventDefault();
+  // === DESKTOP CLICK ===
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
 
-  // appel de la catégorie (même code qu'avant)
-  const cat = link.getAttribute("data-category");
-  categoriesContainer
-    .querySelectorAll("a")
-    .forEach((a) => a.classList.remove("active"));
-  link.classList.add("active");
-  applyActive(cat);
+    const cat = link.getAttribute("data-category");
 
-  const filtered =
-    cat === "Tous" ? all : all.filter((a) => a.category === cat);
+    // activation visuelle et styles
+    categoriesContainer
+      .querySelectorAll("a")
+      .forEach((a) => a.classList.remove("active"));
+    link.classList.add("active");
+    applyActive(cat);
 
-  render(filtered);
+    // filtrage
+    const filtered =
+      cat === "Tous" ? all : all.filter((a) => a.category === cat);
+    render(filtered);
+  });
 });
 
 function applyCategoryChange(link) {
