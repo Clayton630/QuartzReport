@@ -231,7 +231,7 @@ body, button, input, textarea, select {
 
 @media (max-width: 768px) {
   .main-nav a.pressed {
-    transform: scale(0.92);    /* enfoncement immédiat */
+    transform: scale(0.92) !important; /* force l’enfoncement */
     transition: transform 80ms ease-out;
   }
 }
