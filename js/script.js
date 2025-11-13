@@ -496,6 +496,13 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
     link.classList.remove("pressed");
   });
 
+  // empêche le overshoot / hover de s’activer pendant le retour
+  link.classList.add("lock-transform");
+  setTimeout(() => {
+    link.classList.remove("lock-transform");
+  }, 120);
+});
+
   link.addEventListener("touchcancel", () => {
     link.classList.remove("pressed");
   });
