@@ -236,6 +236,13 @@ body, button, input, textarea, select {
   }
 }
 
+@media (max-width: 768px) {
+  .main-nav a.lock-transform {
+    transform: scale(1) !important;
+    transition: transform 120ms ease-out !important;
+  }
+}
+
 /* =========================
    Navigation (catégories dynamiques)
    ========================= */
