@@ -96,6 +96,13 @@ body::before {
   );
 }
 
+
+/* 🔵 Supprime le highlight bleu iOS/Android sur les liens */
+.main-nav a {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
 /* =========================
    Police globale QuartzSans (rendu SF Pro universel)
    ========================= */
