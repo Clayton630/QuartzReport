@@ -486,19 +486,28 @@ async function loadArticles() {
 
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 categoriesContainer.querySelectorAll("a").forEach((link) => {
+// === MOBILE ONLY TOUCH HANDLERS ===
+link.addEventListener("touchstart", () => {
+  link.classList.remove("pressed-release");
+  void link.offsetWidth;
+  link.classList.add("pressed");
+});
 
-  // === MOBILE ONLY TOUCH HANDLERS ===
-if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+link.addEventListener("touchend", () => {
+  // Laisse l'animation pressed se terminer AVANT de relâcher
+  const pressDuration = 240; // doit correspondre à la durée CSS de .pressed
 
-  link.addEventListener("touchstart", () => {
-    link.classList.remove("pressed-release");
-    link.classList.add("pressed");
-  });
-
-  link.addEventListener("touchend", () => {
+  setTimeout(() => {
     link.classList.remove("pressed");
+    void link.offsetWidth;
     link.classList.add("pressed-release");
+  }, pressDuration);
+});
 
+link.addEventListener("touchcancel", () => {
+  link.classList.remove("pressed");
+  link.classList.add("pressed-release");
+});
     // EXÉCUTION DU CHANGEMENT DE CATÉGORIE
     const cat = link.getAttribute("data-category");
     categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
