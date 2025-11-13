@@ -488,25 +488,32 @@ async function loadArticles() {
 categoriesContainer.querySelectorAll("a").forEach((link) => {
 
   // === MOBILE ONLY TOUCH HANDLERS ===
-   link.addEventListener("touchstart", () => {
-     link.classList.add("pressed");
-   });
-   
-   link.addEventListener("touchend", () => {
-     setTimeout(() => link.classList.remove("pressed"), 180);
-   
-     // empêche le overshoot / hover de s’activer pendant le retour
-     link.classList.add("lock-transform");
-     setTimeout(() => {
-       link.classList.remove("lock-transform");
-     }, 120);
-   });
-   
-   link.addEventListener("touchcancel", () => {
-     link.classList.remove("pressed");
-     link.classList.remove("lock-transform");
-   });
+if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
+  link.addEventListener("touchstart", () => {
+    link.classList.remove("pressed-release");
+    link.classList.add("pressed");
+  });
+
+  link.addEventListener("touchend", () => {
+    link.classList.remove("pressed");
+    link.classList.add("pressed-release");
+
+    // EXÉCUTION DU CHANGEMENT DE CATÉGORIE
+    const cat = link.getAttribute("data-category");
+    categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+    link.classList.add("active");
+    applyActive(cat);
+
+    const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+    render(filtered);
+  });
+
+  link.addEventListener("touchcancel", () => {
+    link.classList.remove("pressed");
+    link.classList.add("pressed-release");
+  });
+}
   // === DESKTOP CLICK ===
   link.addEventListener("click", (e) => {
     e.preventDefault();
