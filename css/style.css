@@ -229,6 +229,13 @@ body, button, input, textarea, select {
   .dual-icon-btn i { font-size: 1.55rem; }
 }
 
+@media (max-width: 768px) {
+  .main-nav a.pressed {
+    transform: scale(0.92);    /* enfoncement immédiat */
+    transition: transform 80ms ease-out;
+  }
+}
+
 /* =========================
    Navigation (catégories dynamiques)
    ========================= */
