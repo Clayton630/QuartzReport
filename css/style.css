@@ -692,11 +692,3 @@ body, button, input, textarea, select {
   animation: bounceTap 520ms cubic-bezier(0.25, 0.8, 0.4, 1);
 }
 }
-
-.category-active {
-  transition: all 260ms ease;
-  background: rgba(255,255,255,1) !important;
-  color: #111 !important;
-  backdrop-filter: blur(6px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(6px) saturate(180%) !important;
-}
