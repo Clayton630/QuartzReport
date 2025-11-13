@@ -487,26 +487,41 @@ async function loadArticles() {
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 categoriesContainer.querySelectorAll("a").forEach((link) => {
 
-  // === MOBILE ONLY TOUCH HANDLERS ===
+// === MOBILE ONLY TOUCH HANDLERS ===
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
   link.addEventListener("touchstart", () => {
+    // reset propre
     link.classList.remove("pressed-release");
+    void link.offsetWidth;
+
+    // lance l'enfoncement
     link.classList.add("pressed");
   });
 
   link.addEventListener("touchend", () => {
-    link.classList.remove("pressed");
-    link.classList.add("pressed-release");
-
-    // EXÉCUTION DU CHANGEMENT DE CATÉGORIE
     const cat = link.getAttribute("data-category");
-    categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
-    link.classList.add("active");
-    applyActive(cat);
 
-    const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
-    render(filtered);
+    // durée EXACTE de l'animation d'enfoncement (doit matcher le CSS)
+    const pressDuration = 240;
+
+    // on laisse l’animation pressed aller jusqu’au bout,
+    // même si l’utilisateur relâche avant
+    setTimeout(() => {
+      // transition vers "release"
+      link.classList.remove("pressed");
+      void link.offsetWidth;
+      link.classList.add("pressed-release");
+
+      // changement de catégorie après l'animation
+      categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+      link.classList.add("active");
+      applyActive(cat);
+
+      const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+      render(filtered);
+
+    }, pressDuration);
   });
 
   link.addEventListener("touchcancel", () => {
