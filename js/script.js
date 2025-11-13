@@ -510,7 +510,7 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
       link.addEventListener("animationend", finish);
 
       // ... mais on impose une limite de 350 ms (sécurité iOS)
-      setTimeout(finish, 50);
+      setTimeout(finish, 0);
       return;
     }
 
