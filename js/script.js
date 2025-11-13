@@ -490,6 +490,22 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
 // === MOBILE ONLY TOUCH HANDLERS ===
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
+  // Fonction release propre déclenchée par la fin d'anim
+  function triggerRelease() {
+    link.classList.remove("pressed");
+    void link.offsetWidth;
+    link.classList.add("pressed-release");
+
+    // changement catégorie
+    const cat = link.getAttribute("data-category");
+    categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+    link.classList.add("active");
+    applyActive(cat);
+
+    const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+    render(filtered);
+  }
+
   link.addEventListener("touchstart", () => {
     // reset propre
     link.classList.remove("pressed-release");
@@ -500,33 +516,26 @@ if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
   });
 
   link.addEventListener("touchend", () => {
-    const cat = link.getAttribute("data-category");
+    // si l’anim pressed n’est pas terminée → attendre animationend
+    link.addEventListener("transitionend", function handler(e) {
+      if (e.propertyName === "transform" && link.classList.contains("pressed")) {
+        link.removeEventListener("transitionend", handler);
+        triggerRelease();
+      }
+    });
 
-    // durée EXACTE de l'animation d'enfoncement (doit matcher le CSS)
-    const pressDuration = 240;
-
-    // on laisse l’animation pressed aller jusqu’au bout,
-    // même si l’utilisateur relâche avant
+    // si déjà enfoncé à fond → fallback instantané
+    // (cas où l'utilisateur a maintenu un long moment)
     setTimeout(() => {
-      // transition vers "release"
-      link.classList.remove("pressed");
-      void link.offsetWidth;
-      link.classList.add("pressed-release");
-
-      // changement de catégorie après l'animation
-      categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
-      link.classList.add("active");
-      applyActive(cat);
-
-      const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
-      render(filtered);
-
-    }, pressDuration);
+      if (link.classList.contains("pressed")) {
+        triggerRelease();
+      }
+    }, 20);
   });
 
   link.addEventListener("touchcancel", () => {
-    link.classList.remove("pressed");
-    link.classList.add("pressed-release");
+    // fallback d'annulation
+    triggerRelease();
   });
 }
   // === DESKTOP CLICK ===
