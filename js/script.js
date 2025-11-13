@@ -488,24 +488,24 @@ async function loadArticles() {
 categoriesContainer.querySelectorAll("a").forEach((link) => {
 
   // === MOBILE ONLY TOUCH HANDLERS ===
-  link.addEventListener("touchstart", () => {
-    link.classList.add("pressed");
-  });
-
-  link.addEventListener("touchend", () => {
-    link.classList.remove("pressed");
-  });
-
-  // empêche le overshoot / hover de s’activer pendant le retour
-  link.classList.add("lock-transform");
-  setTimeout(() => {
-    link.classList.remove("lock-transform");
-  }, 120);
-});
-
-  link.addEventListener("touchcancel", () => {
-    link.classList.remove("pressed");
-  });
+   link.addEventListener("touchstart", () => {
+     link.classList.add("pressed");
+   });
+   
+   link.addEventListener("touchend", () => {
+     link.classList.remove("pressed");
+   
+     // empêche le overshoot / hover de s’activer pendant le retour
+     link.classList.add("lock-transform");
+     setTimeout(() => {
+       link.classList.remove("lock-transform");
+     }, 120);
+   });
+   
+   link.addEventListener("touchcancel", () => {
+     link.classList.remove("pressed");
+     link.classList.remove("lock-transform");
+   });
 
   // === DESKTOP CLICK ===
   link.addEventListener("click", (e) => {
