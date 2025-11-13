@@ -462,24 +462,27 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
 
-    // 💫 Étape 1 : joue l’animation bounce tout de suite
+    // Bounce immédiat
     link.classList.remove("tap-anim");
     void link.offsetWidth;
     link.classList.add("tap-anim");
 
-    // ⏱ Étape 2 : change la couleur après un léger délai
-    setTimeout(() => {
-      const cat = link.getAttribute("data-category");
-      categoriesContainer
-        .querySelectorAll("a")
-        .forEach((a) => a.classList.remove("active"));
-      link.classList.add("active");
-      applyActive(cat);
+    // Change l’état de sélection
+    const cat = link.getAttribute("data-category");
+    categoriesContainer
+      .querySelectorAll("a")
+      .forEach((a) => a.classList.remove("active"));
+    link.classList.add("active");
 
+    // Change les couleurs sans bloquer l’anim
+    applyActive(cat);
+
+    // Filtrage du feed (non bloquant)
+    requestAnimationFrame(() => {
       const filtered =
         cat === "Tous" ? all : all.filter((a) => a.category === cat);
       render(filtered);
-    }, 100); // délai de 100 ms avant le changement de couleur
+    });
   });
 });
       applyActive(active);
