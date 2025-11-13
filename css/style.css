@@ -714,14 +714,16 @@ body, button, input, textarea, select {
   animation-fill-mode: none;
 }
 }
-/* Pression : shrink doux */
+/* Pression : enfoncement plus profond + animation lente et douce */
 .main-nav a.pressed {
-  transform: scale(0.88);
-  transition: transform 120ms cubic-bezier(0.25, 0.8, 0.4, 1);
+  transform: scale(0.78); /* 🔥 Beaucoup plus enfoncé */
+  transition: transform 240ms cubic-bezier(0.32, 0.07, 0.0, 1.0);
+  /* courbe ultra douce, façon amortie / molle */
 }
 
-/* Relâchement : retour fluide */
+/* Relâchement : retour très fluide, lent, avec un léger amorti */
 .main-nav a.pressed-release {
   transform: scale(1);
-  transition: transform 260ms cubic-bezier(0.25, 0.8, 0.4, 1);
+  transition: transform 420ms cubic-bezier(0.16, 1.1, 0.3, 1.0);
+  /* courbe élastique amortie, très organique */
 }
