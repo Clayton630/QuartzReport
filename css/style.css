@@ -710,7 +710,7 @@ body, button, input, textarea, select {
 }
 
 .main-nav a.tap-anim {
-  animation: bounceTap 240ms cubic-bezier(0.25, 0.8, 0.4, 1);
+  animation: bounceTap 850ms cubic-bezier(0.25, 0.8, 0.4, 1);
   animation-fill-mode: none;
 }
 }
