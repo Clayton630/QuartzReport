@@ -691,11 +691,12 @@ body, button, input, textarea, select {
 /* 💫 Effet "press & release" fluide et élégant */
 @keyframes bounceTap {
   0%   { transform: scale(1); }
-  35%  { transform: scale(0.92); }  /* enfoncement doux */
-  100% { transform: scale(1); }     /* retour progressif */
+  40%  { transform: scale(0.90); }
+  100% { transform: scale(1); }
 }
 
 .main-nav a.tap-anim {
-  animation: bounceTap 520ms cubic-bezier(0.25, 0.8, 0.4, 1);
+  animation: bounceTap 240ms cubic-bezier(0.25, 0.8, 0.4, 1);
+  animation-fill-mode: none;
 }
 }
