@@ -489,32 +489,50 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
 
-    // 1) Jouer le bounce immédiatement
-    link.classList.remove("tap-anim");
-    void link.offsetWidth;
-    link.classList.add("tap-anim");
+    const isMobile = window.matchMedia("(max-width: 480px)").matches;
 
-    // 2) Attendre la fin réelle de l’animation
-    const handle = () => {
-      link.removeEventListener("animationend", handle);
+    // 🔵 1) Sur MOBILE → bounce + attente animation
+    if (isMobile) {
+      link.classList.remove("tap-anim");
+      void link.offsetWidth;
+      link.classList.add("tap-anim");
 
-      const cat = link.getAttribute("data-category");
+      let done = false;
 
-      categoriesContainer
-        .querySelectorAll("a")
-        .forEach((a) => a.classList.remove("active"));
+      const finish = () => {
+        if (done) return;
+        done = true;
+        link.removeEventListener("animationend", finish);
+        applyCategoryChange(link);
+      };
 
-      link.classList.add("active");
-      applyActive(cat);
+      // on attend animationend...
+      link.addEventListener("animationend", finish);
 
-      const filtered =
-        cat === "Tous" ? all : all.filter((a) => a.category === cat);
-      render(filtered);
-    };
+      // ... mais on impose une limite de 350 ms (sécurité iOS)
+      setTimeout(finish, 350);
+      return;
+    }
 
-    link.addEventListener("animationend", handle);
+    // 🔵 2) Sur DESKTOP → aucune attente, direct
+    applyCategoryChange(link);
   });
 });
+
+function applyCategoryChange(link) {
+  const cat = link.getAttribute("data-category");
+
+  categoriesContainer
+    .querySelectorAll("a")
+    .forEach((a) => a.classList.remove("active"));
+
+  link.classList.add("active");
+  applyActive(cat);
+
+  const filtered =
+    cat === "Tous" ? all : all.filter((a) => a.category === cat);
+  render(filtered);
+}
       applyActive(active);
     }
 
