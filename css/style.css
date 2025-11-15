@@ -771,29 +771,3 @@ body, button, input, textarea, select {
 .hottest-grid::-webkit-scrollbar {
   display: none;
 }
-
-/* === DESKTOP : spacer réel (OK) === */
-@media (min-width: 769px) {
-  .hottest-spacer {
-    flex: 0 0 var(--page-x);
-  }
-
-  .hottest-grid::after {
-    content: "";
-    flex: 0 0 var(--page-x);
-  }
-}
-
-/* === MOBILE : padding-left à la place (le spacer ne fonctionne pas ici) === */
-@media (max-width: 768px) {
-  .hottest-grid {
-    padding-left: var(--page-x-mobile);
-    padding-right: var(--page-x-mobile);
-  }
-
-  /* mais garde l'espacement final */
-  .hottest-grid::after {
-    content: "";
-    flex: 0 0 var(--page-x-mobile);
-  }
-}
