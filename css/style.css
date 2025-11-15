@@ -747,25 +747,13 @@ body, button, input, textarea, select {
 }
 
 
-/* === Correction HOTTEST — espacement desktop + mobile fiable === */
-
-/* Wrapper ne doit rien ajouter */
-.hottest-wrapper {
-  padding-left: 0 !important;
-  padding-right: 0 !important;
+/* === HOTTEST : décalage propre de la première carte === */
+.hottest-grid .card:first-child {
+  margin-left: var(--page-x-mobile);
 }
 
-/* Base commune desktop + mobile */
-.hottest-grid {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  overscroll-behavior-x: contain;
-  padding-top: 30px;
-  padding-bottom: 30px;
-}
-
-.hottest-grid::-webkit-scrollbar {
-  display: none;
+@media (min-width: 769px) {
+  .hottest-grid .card:first-child {
+    margin-left: var(--page-x);
+  }
 }
