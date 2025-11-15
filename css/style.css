@@ -740,31 +740,35 @@ body, button, input, textarea, select {
 
 /* === Correction du carrousel HOTTEST — suppression des bordures fantômes + espacement réel === */
 
-/* 1. Retirer tout padding horizontal du wrapper */
+/* 1. Le wrapper ne doit pas ajouter de marge horizontale */
 .hottest-wrapper {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
 
-/* 2. Le conteneur scrollable reçoit seulement un rôle flex horizontal */
+/* 2. Le conteneur scrollable reste un simple flex horizontal */
 .hottest-grid {
   display: flex;
   gap: 14px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   overscroll-behavior-x: contain;
-  padding-top: 30px; 
+  padding-top: 30px;
   padding-bottom: 30px;
   margin-top: -30px;
   margin-bottom: -30px;
 }
 
-/* 3. Ajouter un ESPACE RÉEL avant la première carte (équivalent du padding-left des catégories) */
+.hottest-grid::-webkit-scrollbar {
+  display: none;
+}
+
+/* 3. ESPACE AVANT la première carte — créé par JS */
 .hottest-spacer {
   flex: 0 0 var(--page-x);
 }
 
-/* 4. Ajouter un espace à droite — identique aux catégories */
+/* 4. ESPACE APRÈS la dernière carte */
 .hottest-grid::after {
   content: "";
   flex: 0 0 var(--page-x);
