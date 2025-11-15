@@ -737,3 +737,26 @@ body, button, input, textarea, select {
   transition: transform 420ms cubic-bezier(0.16, 1.1, 0.3, 1.0);
   /* courbe élastique amortie, très organique */
 }
+
+/* ===== Correction: élimination des bordures fantômes dans hottest ===== */
+.hottest-grid {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+
+  min-width: max-content; /* évite la zone fantôme */
+}
+
+/* Ajoute les marges horizontales réelles au wrapper interne */
+.hottest-wrapper {
+  padding-left: var(--page-x);
+  padding-right: var(--page-x);
+}
+
+/* Ajout d’un spacer invisible pour scroller jusqu’à la dernière carte */
+.hottest-grid::after {
+  content: "";
+  flex: 0 0 var(--page-x);
+}
