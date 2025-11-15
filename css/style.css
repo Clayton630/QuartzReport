@@ -731,3 +731,8 @@ body, button, input, textarea, select {
   transition: transform 420ms cubic-bezier(0.16, 1.1, 0.3, 1.0);
   /* courbe élastique amortie, très organique */
 }
+
+.main-nav a.no-hover:hover {
+  transform: none !important;
+  background: inherit !important;
+}
