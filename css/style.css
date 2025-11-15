@@ -791,11 +791,6 @@ body, button, input, textarea, select {
     padding-right: var(--page-x-mobile);
   }
 
-  /* neutralise le spacer sur mobile */
-  .hottest-spacer {
-    display: none;
-  }
-
   /* mais garde l'espacement final */
   .hottest-grid::after {
     content: "";
