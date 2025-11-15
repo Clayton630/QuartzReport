@@ -487,83 +487,80 @@ async function loadArticles() {
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 categoriesContainer.querySelectorAll("a").forEach((link) => {
 
-  // ------------------------------
-  //  SWIPE GUARD (empêche press + hover)
-  // ------------------------------
-  let startX = 0;
-  let startY = 0;
-  let isScrolling = false;
+  // === MOBILE ONLY TOUCH HANDLERS ===
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
-  link.addEventListener("touchstart", (e) => {
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    isScrolling = false;
+    let startX = 0;
+    let startY = 0;
+    let isScrolling = false;
 
-    // reset états parasites possibles
-    link.classList.remove("pressed");
-    link.classList.remove("pressed-release");
-  });
+    link.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      isScrolling = false;
 
-  link.addEventListener("touchmove", (e) => {
-    const dx = Math.abs(e.touches[0].clientX - startX);
-    const dy = Math.abs(e.touches[0].clientY - startY);
-
-    if (dx > 10 && dx > dy) {
-      // 👉 C’est un swipe horizontal
-      isScrolling = true;
-
-      // IMPORTANT : si on swipe → on force l'annulation visuelle
-      link.classList.remove("pressed");
+      // reset propre
       link.classList.remove("pressed-release");
+      link.classList.remove("no-hover");
+      void link.offsetWidth;
 
-      // Empêche l’effet hover pendant le mouvement
-      link.classList.add("no-hover");
-    }
-  });
+      // lance l'enfoncement
+      link.classList.add("pressed");
+    });
 
-  link.addEventListener("touchend", (e) => {
-    // On retire le no-hover après la fin du swipe ou du tap
-    link.classList.remove("no-hover");
+    link.addEventListener("touchmove", (e) => {
+      const dx = Math.abs(e.touches[0].clientX - startX);
+      const dy = Math.abs(e.touches[0].clientY - startY);
 
-    // 👉 Si c'était un swipe : on ignore complètement
-    if (isScrolling) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return;
-    }
+      // 👉 swipe horizontal détecté
+      if (dx > 10 && dx > dy) {
+        isScrolling = true;
 
-    // ------------------------------
-    // MOBILE ONLY PRESS LOGIC
-    // ------------------------------
-    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // on annule toute animation "press"
+        link.classList.remove("pressed");
+        link.classList.remove("pressed-release");
+
+        // coupe le hover pendant le swipe
+        link.classList.add("no-hover");
+      }
+    });
+
+    link.addEventListener("touchend", () => {
+      // si c'était un swipe, on ne fait RIEN (juste reset)
+      if (isScrolling) {
+        link.classList.remove("pressed");
+        link.classList.remove("pressed-release");
+        link.classList.remove("no-hover");
+        isScrolling = false;
+        return;
+      }
 
       const cat = link.getAttribute("data-category");
-      const pressDuration = 240;
+      const pressDuration = 240; // doit matcher ton CSS
 
-      // Laisse l'animation pressed jouer jusqu'au bout
       setTimeout(() => {
+        // transition vers "release"
         link.classList.remove("pressed");
         void link.offsetWidth;
         link.classList.add("pressed-release");
 
+        // changement de catégorie après l'animation
         categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
         link.classList.add("active");
         applyActive(cat);
 
         const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
         render(filtered);
-
       }, pressDuration);
+    });
 
-      return;
-    }
-  });
-
-  link.addEventListener("touchcancel", () => {
-    link.classList.remove("pressed");
-    link.classList.remove("pressed-release");
-    link.classList.remove("no-hover");
-  });
+    link.addEventListener("touchcancel", () => {
+      link.classList.remove("pressed");
+      link.classList.remove("pressed-release");
+      link.classList.remove("no-hover");
+      isScrolling = false;
+    });
+  }
 
   // === DESKTOP CLICK ===
   link.addEventListener("click", (e) => {
