@@ -738,21 +738,28 @@ body, button, input, textarea, select {
   /* courbe élastique amortie, très organique */
 }
 
-/* === Correction du carrousel HOTTEST pour supprimer les bordures fantômes === */
+/* === Correction du carrousel HOTTEST — espacement réel avant la première carte === */
 
-/* 1. Remove padding from the wrapper (comme pour les catégories) */
+/* Remove padding from wrapper (déjà OK) */
 .hottest-wrapper {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
 
-/* 2. Ajouter l'espacement directement dans l'élément scrollable (comme le <ul> des catégories) */
+/* Le padding horizontal doit rester */
 .hottest-grid {
   padding-left: var(--page-x);
   padding-right: var(--page-x);
+  display: flex;
 }
 
-/* 3. Spacer à droite — identique aux catégories */
+/* Spacer AVANT la première carte (équivalent du padding-left du <ul>) */
+.hottest-grid::before {
+  content: "";
+  flex: 0 0 var(--page-x);
+}
+
+/* Spacer APRÈS la dernière carte, comme pour les catégories */
 .hottest-grid::after {
   content: "";
   flex: 0 0 var(--page-x);
