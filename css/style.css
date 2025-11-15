@@ -738,3 +738,22 @@ body, button, input, textarea, select {
   /* courbe élastique amortie, très organique */
 }
 
+/* === Correction du carrousel HOTTEST pour supprimer les bordures fantômes === */
+
+/* 1. Remove padding from the wrapper */
+.hottest-wrapper {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* 2. Move horizontal spacing to the grid itself */
+.hottest-grid {
+  padding-left: var(--page-x-mobile) !important;
+  padding-right: var(--page-x-mobile) !important;
+}
+
+/* 3. Add spacer at the end so last card doesn't stick to the edge */
+.hottest-grid::after {
+  content: "";
+  flex: 0 0 var(--page-x-mobile);
+}
