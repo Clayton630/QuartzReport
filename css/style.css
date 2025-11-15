@@ -757,3 +757,9 @@ body, button, input, textarea, select {
   content: "";
   flex: 0 0 var(--page-x-mobile);
 }
+
+/* 4. Add spacer BEFORE the first card — same logic as categories */
+.hottest-grid::before {
+  content: "";
+  flex: 0 0 var(--page-x-mobile);
+}
