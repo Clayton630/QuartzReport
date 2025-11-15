@@ -508,49 +508,55 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
       isScrolling = true; // 👉 swipe horizontal détecté
     }
   });
-   
-// === MOBILE ONLY TOUCH HANDLERS ===
-if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
-  link.addEventListener("touchstart", () => {
-    // reset propre
-    link.classList.remove("pressed-release");
-    void link.offsetWidth;
+  // ------------------------------
+  //  MOBILE ONLY TOUCH HANDLERS
+  // ------------------------------
+  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
-    // lance l'enfoncement
-    link.classList.add("pressed");
-  });
-
-  link.addEventListener("touchend", () => {
-    const cat = link.getAttribute("data-category");
-
-    // durée EXACTE de l'animation d'enfoncement (doit matcher le CSS)
-    const pressDuration = 240;
-
-    // on laisse l’animation pressed aller jusqu’au bout,
-    // même si l’utilisateur relâche avant
-    setTimeout(() => {
-      // transition vers "release"
-      link.classList.remove("pressed");
+    link.addEventListener("touchstart", () => {
+      // reset propre
+      link.classList.remove("pressed-release");
       void link.offsetWidth;
+
+      // enfoncement
+      link.classList.add("pressed");
+    });
+
+    link.addEventListener("touchend", (e) => {
+      // 👉 si l’utilisateur est en train de slider, on ignore le tap
+      if (isScrolling) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
+      }
+
+      const cat = link.getAttribute("data-category");
+
+      const pressDuration = 240; // durée EXACTE de l’animation "pressed"
+
+      // laisse l’animation pressed aller jusqu’au bout
+      setTimeout(() => {
+        link.classList.remove("pressed");
+        void link.offsetWidth;
+        link.classList.add("pressed-release");
+
+        // changement de catégorie fin d’anim
+        categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+        link.classList.add("active");
+        applyActive(cat);
+
+        const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+        render(filtered);
+
+      }, pressDuration);
+    });
+
+    link.addEventListener("touchcancel", () => {
+      link.classList.remove("pressed");
       link.classList.add("pressed-release");
-
-      // changement de catégorie après l'animation
-      categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
-      link.classList.add("active");
-      applyActive(cat);
-
-      const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
-      render(filtered);
-
-    }, pressDuration);
-  });
-
-  link.addEventListener("touchcancel", () => {
-    link.classList.remove("pressed");
-    link.classList.add("pressed-release");
-  });
-}
+    });
+  }
   // === DESKTOP CLICK ===
   link.addEventListener("click", (e) => {
     e.preventDefault();
