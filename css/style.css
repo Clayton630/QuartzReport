@@ -740,26 +740,20 @@ body, button, input, textarea, select {
 
 /* === Correction du carrousel HOTTEST pour supprimer les bordures fantômes === */
 
-/* 1. Remove padding from the wrapper */
+/* 1. Remove padding from the wrapper (comme pour les catégories) */
 .hottest-wrapper {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
 
-/* 2. Move horizontal spacing to the grid itself */
+/* 2. Ajouter l'espacement directement dans l'élément scrollable (comme le <ul> des catégories) */
 .hottest-grid {
-  padding-left: var(--page-x-mobile) !important;
-  padding-right: var(--page-x-mobile) !important;
+  padding-left: var(--page-x);
+  padding-right: var(--page-x);
 }
 
-/* 3. Add spacer at the end so last card doesn't stick to the edge */
+/* 3. Spacer à droite — identique aux catégories */
 .hottest-grid::after {
   content: "";
-  flex: 0 0 var(--page-x-mobile);
-}
-
-/* 4. Add spacer BEFORE the first card — same logic as categories */
-.hottest-grid::before {
-  content: "";
-  flex: 0 0 var(--page-x-mobile);
+  flex: 0 0 var(--page-x);
 }
