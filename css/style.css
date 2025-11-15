@@ -541,8 +541,18 @@ body, button, input, textarea, select {
   .day-title { font-size: 1rem; margin-bottom: 8px; }
   .day-article-info h4 { font-size: 0.95rem; }
 
-  /* alignement horizontal cohérent au mobile */
-  .hottest-wrapper { padding: 0 var(--page-x-mobile); }
+  /* ❗ Correction : NE PAS mettre de padding sur hottest-wrapper */
+  .hottest-wrapper {
+    padding: 0; /* essential */
+  }
+
+  /* ❗ Le padding doit aller sur hottest-grid */
+  .hottest-grid {
+    padding-left: var(--page-x-mobile);
+    padding-right: var(--page-x-mobile);
+  }
+
+  /* articles */
   .articles { padding: 20px var(--page-x-mobile); }
 }
 
