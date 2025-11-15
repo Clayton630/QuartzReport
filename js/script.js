@@ -228,11 +228,6 @@ async function loadArticles() {
       ====================== */
     hottestContainer.innerHTML = "";
    
-    // 🔥 AJOUT ICI DU SPACER AVANT LES CARTES
-    const spacer = document.createElement("div");
-    spacer.className = "hottest-spacer";
-    hottestContainer.appendChild(spacer);
-   
     const hottest = all.filter((a) => a.important).slice(0, 3);
     const fragHot = document.createDocumentFragment();
     hottest.forEach((article, j) => {
