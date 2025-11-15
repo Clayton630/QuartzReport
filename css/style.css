@@ -731,16 +731,3 @@ body, button, input, textarea, select {
   transition: transform 420ms cubic-bezier(0.16, 1.1, 0.3, 1.0);
   /* courbe élastique amortie, très organique */
 }
-
-/* === Correction Safari iOS Safe-Area === */
-body::after {
-  content: "";
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: env(safe-area-inset-bottom);
-  background: #f6f6f7; /* même couleur que ton fond */
-  pointer-events: none; /* ne bloque jamais le scroll/clic */
-  z-index: 999999; /* garanti qu'il passe au-dessus */
-}
