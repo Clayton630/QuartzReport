@@ -738,15 +738,16 @@ body, button, input, textarea, select {
   /* courbe élastique amortie, très organique */
 }
 
-/* === Correction du carrousel HOTTEST — suppression des bordures fantômes + espacement réel === */
 
-/* 1. Le wrapper ne doit pas ajouter de marge horizontale */
+/* === Correction HOTTEST — espacement desktop + mobile fiable === */
+
+/* Wrapper ne doit rien ajouter */
 .hottest-wrapper {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
 
-/* 2. Le conteneur scrollable reste un simple flex horizontal */
+/* Base commune desktop + mobile */
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -763,13 +764,33 @@ body, button, input, textarea, select {
   display: none;
 }
 
-/* 3. ESPACE AVANT la première carte — créé par JS */
-.hottest-spacer {
-  flex: 0 0 var(--page-x);
+/* === DESKTOP : spacer réel (OK) === */
+@media (min-width: 769px) {
+  .hottest-spacer {
+    flex: 0 0 var(--page-x);
+  }
+
+  .hottest-grid::after {
+    content: "";
+    flex: 0 0 var(--page-x);
+  }
 }
 
-/* 4. ESPACE APRÈS la dernière carte */
-.hottest-grid::after {
-  content: "";
-  flex: 0 0 var(--page-x);
+/* === MOBILE : padding-left à la place (le spacer ne fonctionne pas ici) === */
+@media (max-width: 768px) {
+  .hottest-grid {
+    padding-left: var(--page-x-mobile);
+    padding-right: var(--page-x-mobile);
+  }
+
+  /* neutralise le spacer sur mobile */
+  .hottest-spacer {
+    display: none;
+  }
+
+  /* mais garde l'espacement final */
+  .hottest-grid::after {
+    content: "";
+    flex: 0 0 var(--page-x-mobile);
+  }
 }
