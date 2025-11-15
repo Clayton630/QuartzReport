@@ -233,13 +233,13 @@ body, button, input, textarea, select {
   .dual-icon-btn i { font-size: 1.55rem; }
 }
 
+/* Pressed / lock-transform mobile */
 @media (max-width: 768px) {
   .main-nav a.pressed {
-    transform: scale(0.84) !important;  /* plus profond */
+    transform: scale(0.84) !important;
     transition: transform 70ms cubic-bezier(0.2, 0.6, 0.3, 1);
   }
 }
-
 @media (max-width: 768px) {
   .main-nav a.lock-transform {
     transform: scale(1) !important;
@@ -250,41 +250,36 @@ body, button, input, textarea, select {
 /* =========================
    Navigation (catégories dynamiques)
    ========================= */
-/* Conteneur scrollable sans snap, parfaitement aligné avec le reste */
 .main-nav {
   width: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   white-space: nowrap;
-  scroll-snap-type: none; /* ✅ pas de snap */
+  scroll-snap-type: none;
   margin: 8px 0 0 0;
-  padding: 0; /* on gère les marges via l’UL */
+  padding: 0;
 }
 
 .main-nav::-webkit-scrollbar { display: none; }
 
-/* Rangée de catégories : alignement identique aux autres sections */
 .main-nav ul {
   display: flex;
   gap: 12px;
   list-style: none;
   margin: 0;
-  padding: 0 var(--page-x);   /* ✅ mêmes marges que hottest/articles */
-  min-width: max-content;     /* ✅ garantit l’étalement et le scroll jusqu’au bout */
+  padding: 0 var(--page-x);
+  min-width: max-content;
   align-items: center;
 }
 
-/* Spacer logique à droite pour que la dernière catégorie ne soit pas mangée */
 .main-nav ul::after {
   content: "";
   flex: 0 0 var(--page-x);
 }
 
-/* Items */
 .main-nav li { flex: 0 0 auto; }
 
-/* Lien/pill de catégorie (style unifié) */
 .main-nav a {
   display: inline-flex;
   align-items: center;
@@ -301,7 +296,6 @@ body, button, input, textarea, select {
   font-family: "QuartzSans", -apple-system, BlinkMacSystemFont, "Segoe UI",
                Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
   font-weight: 440;
-  font-variation-settings: "wght" 440;
   font-size: 1rem;
   color: #111;
   text-decoration: none;
@@ -332,7 +326,7 @@ body, button, input, textarea, select {
   transform: scale(1.12);
 }
 
-/* Mobile — hauteur réellement réduite (sans changer la taille police trop) */
+/* Mobile nav sizing */
 @media (max-width: 480px) {
   .main-nav ul {
     padding-left: var(--page-x-mobile);
@@ -350,14 +344,14 @@ body, button, input, textarea, select {
    Section Hottest
    ========================= */
 .hottest {
-  padding: 20px 0;
+  padding: 20px var(--page-x);
   overflow: visible;
 }
 
 .hottest-wrapper {
   position: relative;
   z-index: 1;
-  padding: 0;  /* ✅ plus de padding fantôme */
+  padding: 0;
   overflow: visible;
 }
 
@@ -370,13 +364,12 @@ body, button, input, textarea, select {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-  padding-top: 30px;      /* espace visuel au-dessus */
-  padding-bottom: 30px;   /* espace visuel au-dessous */
+  padding-top: 30px;
+  padding-bottom: 30px;
 }
 
 .hottest-grid::-webkit-scrollbar { display: none; }
 
-/* ✅ Cartes HOTTEST ancrées vers le bas */
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -395,12 +388,13 @@ body, button, input, textarea, select {
   transition: all 0.3s ease;
   overflow: hidden;
 }
+
 .hottest-grid .card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0,0,0,0.15), 0 0 12px rgba(58,123,213,0.3);
 }
 
-/* ✅ Image 16:9 forcée et stable visuellement */
+/* IMAGE */
 .hottest-grid .card > img {
   display: block;
   width: 100%;
@@ -414,7 +408,7 @@ body, button, input, textarea, select {
   padding: 0;
 }
 
-/* ✅ Contenu */
+/* CONTENT */
 .card-content {
   flex: 1;
   padding: 14px 16px 16px;
@@ -433,7 +427,6 @@ body, button, input, textarea, select {
   font-weight: 400;
   line-height: 1.3;
 }
-
 /* =========================
    Articles du feed
    ========================= */
@@ -529,10 +522,16 @@ body, button, input, textarea, select {
 @media (max-width: 480px) {
   .logo-img { height: 27px; }
 
-  /* catégories : taille/padding plus compact */
-  .main-nav a { font-size: 0.97rem; padding: 8px 16px; border-radius: 34px; }
+  .main-nav a { 
+    font-size: 0.97rem; 
+    padding: 8px 16px; 
+    border-radius: 34px; 
+  }
 
-  .hottest-grid .card { flex: 0 0 65%; max-width: 260px; }
+  .hottest-grid .card { 
+    flex: 0 0 65%; 
+    max-width: 260px; 
+  }
   .card-content h3 { font-size: 1.05rem; }
 
   .article-header h3 { font-size: 1.3rem; }
@@ -541,18 +540,15 @@ body, button, input, textarea, select {
   .day-title { font-size: 1rem; margin-bottom: 8px; }
   .day-article-info h4 { font-size: 0.95rem; }
 
-  /* ❗ Correction : NE PAS mettre de padding sur hottest-wrapper */
-  .hottest-wrapper {
-    padding: 0; /* essential */
-  }
+  /* wrapper = 0, toujours */
+  .hottest-wrapper { padding: 0; }
 
-  /* ❗ Le padding doit aller sur hottest-grid */
+  /* padding latéral appliqué AU GRID sur mobile */
   .hottest-grid {
     padding-left: var(--page-x-mobile);
     padding-right: var(--page-x-mobile);
   }
 
-  /* articles */
   .articles { padding: 20px var(--page-x-mobile); }
 }
 
@@ -599,10 +595,8 @@ body, button, input, textarea, select {
   right: 50%;
   margin-left: -50vw;
   margin-right: -50vw;
-  top: 0;
   overflow: hidden;
   max-height: 55vh;
-  border-radius: 0;
 }
 
 .article-cover img {
@@ -672,8 +666,6 @@ body, button, input, textarea, select {
     width: 100%;
     aspect-ratio: 16 / 9;
     object-fit: cover;
-    display: block;
-    height: auto;
   }
 
   .card-content {
@@ -685,17 +677,15 @@ body, button, input, textarea, select {
   }
 }
 
-/* ===== Nav: extended breathing space for shadows (desktop + mobile) ===== */
+/* ===== Nav shadows breathing space ===== */
 .main-nav {
   overflow-x: auto;
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 
-  /* espace généreux pour ombres supérieures/inférieures */
   padding-top: 32px;
   padding-bottom: 42px;
 
-  /* neutralisation visuelle pour ne pas impacter la mise en page */
   margin-top: -32px;
   margin-bottom: -42px;
 
@@ -703,7 +693,6 @@ body, button, input, textarea, select {
   z-index: 2;
 }
 
-/* 📱 Variante mobile : ombres encore plus respirantes */
 @media (max-width: 768px) {
   .main-nav {
     padding-top: 36px;
@@ -713,49 +702,42 @@ body, button, input, textarea, select {
   }
 }
 
-/* 📱 Catégories légèrement plus petites mais toujours confortables */
 @media (max-width: 480px) {
   .main-nav a {
     padding: 9px 18px;
-    font-size: 1.0rem;
+    font-size: 1rem;
     border-radius: 36px;
   }
-/* 💫 Effet "press & release" fluide et élégant */
-@keyframes bounceTap {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(0.90); }
-  100% { transform: scale(1); }
+
+  @keyframes bounceTap {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.90); }
+    100% { transform: scale(1); }
+  }
+
+  .main-nav a.tap-anim {
+    animation: bounceTap 850ms cubic-bezier(0.25, 0.8, 0.4, 1);
+  }
 }
 
-.main-nav a.tap-anim {
-  animation: bounceTap 850ms cubic-bezier(0.25, 0.8, 0.4, 1);
-  animation-fill-mode: none;
-}
-}
-/* Pression : enfoncement plus profond + animation lente et douce */
+/* Pression */
 .main-nav a.pressed {
-  transform: scale(0.78); /* 🔥 Beaucoup plus enfoncé */
+  transform: scale(0.78);
   transition: transform 240ms cubic-bezier(0.32, 0.07, 0.0, 1.0);
-  /* courbe ultra douce, façon amortie / molle */
 }
 
-/* Relâchement : retour très fluide, lent, avec un léger amorti */
+/* Relâchement */
 .main-nav a.pressed-release {
   transform: scale(1);
   transition: transform 420ms cubic-bezier(0.16, 1.1, 0.3, 1.0);
-  /* courbe élastique amortie, très organique */
 }
 
-
-/* === Correction HOTTEST — espacement desktop + mobile fiable === */
-
-/* Wrapper ne doit rien ajouter */
+/* === Correction HOTTEST — espacement fiable === */
 .hottest-wrapper {
   padding-left: 0 !important;
   padding-right: 0 !important;
 }
 
-/* Base commune desktop + mobile */
 .hottest-grid {
   display: flex;
   gap: 14px;
@@ -764,39 +746,34 @@ body, button, input, textarea, select {
   overscroll-behavior-x: contain;
   padding-top: 30px;
   padding-bottom: 30px;
-  margin-top: -30px;
-  margin-bottom: -30px;
 }
 
 .hottest-grid::-webkit-scrollbar {
   display: none;
 }
 
-/* === DESKTOP : spacer réel (OK) === */
+/* Desktop spacers */
 @media (min-width: 769px) {
   .hottest-spacer {
     flex: 0 0 var(--page-x);
   }
-
   .hottest-grid::after {
     content: "";
     flex: 0 0 var(--page-x);
   }
 }
 
-/* === MOBILE : padding-left à la place (le spacer ne fonctionne pas ici) === */
+/* Mobile spacers (padding instead) */
 @media (max-width: 768px) {
   .hottest-grid {
     padding-left: var(--page-x-mobile);
     padding-right: var(--page-x-mobile);
   }
 
-  /* neutralise le spacer sur mobile */
   .hottest-spacer {
     display: none;
   }
 
-  /* mais garde l'espacement final */
   .hottest-grid::after {
     content: "";
     flex: 0 0 var(--page-x-mobile);
