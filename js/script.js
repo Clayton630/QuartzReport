@@ -488,7 +488,7 @@ async function loadArticles() {
 categoriesContainer.querySelectorAll("a").forEach((link) => {
 
   // ------------------------------
-  //  SWIPE GUARD (empêche les clics involontaires)
+  //  SWIPE GUARD (empêche press + hover)
   // ------------------------------
   let startX = 0;
   let startY = 0;
@@ -498,6 +498,10 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
     isScrolling = false;
+
+    // reset états parasites possibles
+    link.classList.remove("pressed");
+    link.classList.remove("pressed-release");
   });
 
   link.addEventListener("touchmove", (e) => {
@@ -505,43 +509,43 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
     const dy = Math.abs(e.touches[0].clientY - startY);
 
     if (dx > 10 && dx > dy) {
-      isScrolling = true; // 👉 swipe horizontal détecté
+      // 👉 C’est un swipe horizontal
+      isScrolling = true;
+
+      // IMPORTANT : si on swipe → on force l'annulation visuelle
+      link.classList.remove("pressed");
+      link.classList.remove("pressed-release");
+
+      // Empêche l’effet hover pendant le mouvement
+      link.classList.add("no-hover");
     }
   });
 
-  // ------------------------------
-  //  MOBILE ONLY TOUCH HANDLERS
-  // ------------------------------
-  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+  link.addEventListener("touchend", (e) => {
+    // On retire le no-hover après la fin du swipe ou du tap
+    link.classList.remove("no-hover");
 
-    link.addEventListener("touchstart", () => {
-      // reset propre
-      link.classList.remove("pressed-release");
-      void link.offsetWidth;
+    // 👉 Si c'était un swipe : on ignore complètement
+    if (isScrolling) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
 
-      // enfoncement
-      link.classList.add("pressed");
-    });
-
-    link.addEventListener("touchend", (e) => {
-      // 👉 si l’utilisateur est en train de slider, on ignore le tap
-      if (isScrolling) {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        return;
-      }
+    // ------------------------------
+    // MOBILE ONLY PRESS LOGIC
+    // ------------------------------
+    if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
       const cat = link.getAttribute("data-category");
+      const pressDuration = 240;
 
-      const pressDuration = 240; // durée EXACTE de l’animation "pressed"
-
-      // laisse l’animation pressed aller jusqu’au bout
+      // Laisse l'animation pressed jouer jusqu'au bout
       setTimeout(() => {
         link.classList.remove("pressed");
         void link.offsetWidth;
         link.classList.add("pressed-release");
 
-        // changement de catégorie fin d’anim
         categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
         link.classList.add("active");
         applyActive(cat);
@@ -550,13 +554,17 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
         render(filtered);
 
       }, pressDuration);
-    });
 
-    link.addEventListener("touchcancel", () => {
-      link.classList.remove("pressed");
-      link.classList.add("pressed-release");
-    });
-  }
+      return;
+    }
+  });
+
+  link.addEventListener("touchcancel", () => {
+    link.classList.remove("pressed");
+    link.classList.remove("pressed-release");
+    link.classList.remove("no-hover");
+  });
+
   // === DESKTOP CLICK ===
   link.addEventListener("click", (e) => {
     e.preventDefault();
