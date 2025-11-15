@@ -735,4 +735,5 @@ body, button, input, textarea, select {
 .main-nav a.no-hover:hover {
   transform: none !important;
   background: inherit !important;
+  box-shadow: inherit !important;
 }
