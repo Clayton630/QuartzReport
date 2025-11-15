@@ -372,8 +372,6 @@ body, button, input, textarea, select {
   overscroll-behavior-x: contain;
   padding-top: 30px;      /* espace visuel au-dessus */
   padding-bottom: 30px;   /* espace visuel au-dessous */
-  margin-top: -30px;      /* neutralise le padding visuellement */
-  margin-bottom: -30px;   /* ne décale plus les autres sections */
 }
 
 .hottest-grid::-webkit-scrollbar { display: none; }
