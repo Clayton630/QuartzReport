@@ -22,11 +22,11 @@
       <img src="img/logo.svg" alt="Quartz Report" class="logo-img">
     </div>
     <div class="icons unified-btn">
-  <button class="dual-icon-btn">
-    <i class="f7-icons search-icon">search</i>
-    <i class="f7-icons menu-icon">menu</i>
-  </button>
-</div>
+      <button class="dual-icon-btn">
+        <i class="f7-icons search-icon">search</i>
+        <i class="f7-icons menu-icon">menu</i>
+      </button>
+    </div>
   </header>
 
   <!-- Navigation (catégories dynamiques) -->
@@ -35,22 +35,25 @@
   </nav>
 
   <!-- Section Hottest -->
-<section class="hottest">
-  <div class="hottest-wrapper">
-    <div class="hottest-grid" id="hottest"></div>
-  </div>
-</section>
+  <section class="hottest">
+    <div class="hottest-wrapper">
+      <div class="hottest-grid" id="hottest">
+        <!-- Spacer réel AVANT la première carte -->
+        <div class="hottest-spacer"></div>
+      </div>
+    </div>
+  </section>
 
-<!-- ✅ Ajout du titre "Tous les articles" -->
-<h2 class="all-articles-title">Tous les articles</h2>
+  <!-- Titre "Tous les articles" -->
+  <h2 class="all-articles-title">Tous les articles</h2>
 
   <!-- Section Articles récents -->
   <section class="articles" id="articles"></section>
 
-  <!-- Librairie de rendu Markdown -->
+  <!-- Librairie Markdown -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-  <!-- Ton script principal (corrigé) -->
+  <!-- Script principal -->
   <script src="js/script.js"></script>
 </body>
 </html>
