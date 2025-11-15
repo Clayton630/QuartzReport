@@ -487,6 +487,28 @@ async function loadArticles() {
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
 categoriesContainer.querySelectorAll("a").forEach((link) => {
 
+  // ------------------------------
+  //  SWIPE GUARD (empêche les clics involontaires)
+  // ------------------------------
+  let startX = 0;
+  let startY = 0;
+  let isScrolling = false;
+
+  link.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isScrolling = false;
+  });
+
+  link.addEventListener("touchmove", (e) => {
+    const dx = Math.abs(e.touches[0].clientX - startX);
+    const dy = Math.abs(e.touches[0].clientY - startY);
+
+    if (dx > 10 && dx > dy) {
+      isScrolling = true; // 👉 swipe horizontal détecté
+    }
+  });
+   
 // === MOBILE ONLY TOUCH HANDLERS ===
 if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
 
