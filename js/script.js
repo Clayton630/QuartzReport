@@ -228,29 +228,25 @@ async function loadArticles() {
    ====================== */
 hottestContainer.innerHTML = "";
 
-/* === 1) 💡 Carte factice (spacer) qui se comporte EXACTEMENT comme une carte === */
-
-// valeurs CSS récupérées depuis :root
+/* === 1) Carte factice (spacer) comportement identique à une carte === */
 const rootStyles = getComputedStyle(document.documentElement);
 const pageXMobile = rootStyles.getPropertyValue("--page-x-mobile").trim() || "20px";
 const pageX = rootStyles.getPropertyValue("--page-x").trim() || "20px";
 
-// détection desktop
 const isDesktop = window.matchMedia("(min-width: 769px)").matches;
 
-// 👉 largeur ajustée (marge - gap)
+// espacement exact (marge latérale – gap)
 const adjustedWidth = isDesktop
   ? `calc(${pageX} - 14px)`
   : `calc(${pageXMobile} - 14px)`;
 
-// création de la "fausse carte"
+// création de la pseudo-carte
 const fakeCard = document.createElement("a");
 fakeCard.className = "card hottest-spacer";
 fakeCard.href = "javascript:void(0)";
 fakeCard.setAttribute("aria-hidden", "true");
 fakeCard.tabIndex = -1;
 
-// styles pour se comporter comme une vraie carte, mais invisible
 fakeCard.style.flex = `0 0 ${adjustedWidth}`;
 fakeCard.style.maxWidth = adjustedWidth;
 fakeCard.style.opacity = "0";
@@ -260,10 +256,9 @@ fakeCard.style.boxShadow = "none";
 fakeCard.style.background = "transparent";
 fakeCard.style.padding = "0";
 
-/* On l’insère avant les vraies cartes */
 hottestContainer.appendChild(fakeCard);
 
-/* === 2) 🔥 Vraies cartes HOTTEST === */
+/* === 2) Vraies cartes HOTTEST === */
 const hottest = all.filter((a) => a.important).slice(0, 3);
 const fragHot = document.createDocumentFragment();
 
@@ -301,7 +296,7 @@ hottest.forEach((article, j) => {
       <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
       <h3>${article.title}</h3>
     </div>`;
-  
+
   fragHot.appendChild(link);
 });
 
