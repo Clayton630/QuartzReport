@@ -632,7 +632,7 @@ function applyCategoryChange(link) {
     cat === "Tous" ? all : all.filter((a) => a.category === cat);
   render(filtered);
 }
-      applyActive(active);
+      applyActive("Tous");
     }
 
     buildCategories(all, "Tous");
