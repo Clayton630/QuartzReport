@@ -223,47 +223,77 @@ async function loadArticles() {
 
     all.sort((a, b) => b.date - a.date);
 
-    /* ======================
-      HOTTEST
-      ====================== */
-    hottestContainer.innerHTML = "";
-   
-    const hottest = all.filter((a) => a.important).slice(0, 3);
-    const fragHot = document.createDocumentFragment();
-    hottest.forEach((article, j) => {
-      const optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
-      const link = document.createElement("a");
-      link.href = `article.html?slug=${encodeURIComponent(
-        article.slug
-      )}&file=${encodeURIComponent(article.filename)}`;
-      link.className = "card";
+/* ======================
+   HOTTEST
+   ====================== */
+hottestContainer.innerHTML = "";
 
-      const now = new Date();
-      const isToday =
-        article.date.getDate() === now.getDate() &&
-        article.date.getMonth() === now.getMonth() &&
-        article.date.getFullYear() === now.getFullYear();
-      const dateDisplay = isToday
-        ? "à " +
-          article.date.toLocaleTimeString("fr-FR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : article.date.toLocaleDateString("fr-FR", {
-            day: "numeric",
-            month: "short",
-          });
+// 🎭 Carte factice qui joue le rôle de "voisin" avant la première vraie carte
+const rootStyles = getComputedStyle(document.documentElement);
+const pageXMobile = rootStyles.getPropertyValue("--page-x-mobile").trim() || "20px";
+const pageX = rootStyles.getPropertyValue("--page-x").trim() || "20px";
+const isDesktop = window.matchMedia("(min-width: 769px)").matches;
+const spacerWidth = isDesktop ? pageX : pageXMobile;
 
-      const loadingAttr = j === 0 ? "eager" : "lazy";
-      link.innerHTML = `
-        <img src="${optimizedThumb}" alt="" decoding="async" loading="${loadingAttr}">
-        <div class="card-content">
-          <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
-          <h3>${article.title}</h3>
-        </div>`;
-      fragHot.appendChild(link);
-    });
-    hottestContainer.appendChild(fragHot);
+// on la déclare comme une vraie carte pour le layout (même classe .card)
+const fakeCard = document.createElement("a");
+fakeCard.className = "card hottest-spacer";
+fakeCard.href = "javascript:void(0)";
+fakeCard.setAttribute("aria-hidden", "true");
+fakeCard.tabIndex = -1;
+
+// traitement comme une carte mais : invisible et non interactive
+fakeCard.style.flex = `0 0 ${spacerWidth}`;
+fakeCard.style.maxWidth = spacerWidth;
+fakeCard.style.opacity = "0";
+fakeCard.style.pointerEvents = "none";
+// pas de bordure / ombre / contenu
+fakeCard.style.border = "none";
+fakeCard.style.boxShadow = "none";
+fakeCard.style.background = "transparent";
+fakeCard.style.padding = "0";
+
+hottestContainer.appendChild(fakeCard);
+
+// vraies cartes HOTTEST
+const hottest = all.filter((a) => a.important).slice(0, 3);
+const fragHot = document.createDocumentFragment();
+
+hottest.forEach((article, j) => {
+  const optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
+  const link = document.createElement("a");
+  link.href = `article.html?slug=${encodeURIComponent(
+    article.slug
+  )}&file=${encodeURIComponent(article.filename)}`;
+  link.className = "card";
+
+  const now = new Date();
+  const isToday =
+    article.date.getDate() === now.getDate() &&
+    article.date.getMonth() === now.getMonth() &&
+    article.date.getFullYear() === now.getFullYear();
+  const dateDisplay = isToday
+    ? "à " +
+      article.date.toLocaleTimeString("fr-FR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : article.date.toLocaleDateString("fr-FR", {
+        day: "numeric",
+        month: "short",
+      });
+
+  const loadingAttr = j === 0 ? "eager" : "lazy";
+  link.innerHTML = `
+    <img src="${optimizedThumb}" alt="" decoding="async" loading="${loadingAttr}">
+    <div class="card-content">
+      <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
+      <h3>${article.title}</h3>
+    </div>`;
+  fragHot.appendChild(link);
+});
+
+hottestContainer.appendChild(fragHot);
 
     /* ======================
        RENDER PRINCIPAL (feed)
