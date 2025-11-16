@@ -243,7 +243,12 @@ fakeCard.setAttribute("aria-hidden", "true");
 fakeCard.tabIndex = -1;
 
 // traitement comme une carte mais : invisible et non interactive
-fakeCard.style.flex = `0 0 ${spacerWidth}`;
+const adjustedWidth = isDesktop
+  ? `calc(${pageX} - 14px)`
+  : `calc(${pageXMobile} - 14px)`;
+
+fakeCard.style.flex = `0 0 ${adjustedWidth}`;
+fakeCard.style.maxWidth = adjustedWidth;`;
 fakeCard.style.maxWidth = spacerWidth;
 fakeCard.style.opacity = "0";
 fakeCard.style.pointerEvents = "none";
