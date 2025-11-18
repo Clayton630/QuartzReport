@@ -770,7 +770,7 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   ✨ Liseré Iridescent "Métal Holographique" (Version Finale)
+   ✨ Liseré Iridescent "Holographic Steel" (4 couleurs + Argent froid)
    ========================= */
 
 /* 1. Rotation fluide */
@@ -780,10 +780,10 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; }
 }
 
-/* 2. Respiration organique */
+/* 2. Respiration subtile */
 @keyframes breathe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.4; }       /* On descend moins bas pour garder l'éclat métal visible */
+  50%  { opacity: 0.6; } /* Variation plus douce pour garder le métal visible */
   100% { opacity: 1; }
 }
 
@@ -792,7 +792,8 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  /* Ombre portée légèrement bleutée pour matcher l'acier */
+  box-shadow: 0 8px 20px rgba(10, 20, 40, 0.12);
 }
 
 /* 4. Le liseré Magique */
@@ -801,30 +802,34 @@ body, button, input, textarea, select {
   position: absolute;
   inset: 0;
   border-radius: 28px;
-  padding: 2.5px;
+  padding: 1.8px;  /* ⚡️ PLUS FIN (Élégance Apple) */
   
-  /* 🌈 LE SECRET MÉTALLIQUE :
-     On utilise du gris clair (#e0e0e0) et du blanc pur (#ffffff) pour le métal,
-     et on "coince" les couleurs vives (Cyan #00ffff / Rose #ff00cc) entre deux éclats blancs.
-     C'est ce contraste Blanc > Couleur > Blanc qui crée l'effet chromé. 
+  /* 🌈 LE SPECTRE MÉTALLIQUE COMPLET :
+     Base : Gris-Bleu froid (#cfd6e6) pour l'acier.
+     Séparateurs : Blanc pur (#fff) pour la lumière.
+     Couleurs : Cyan > Violet > Rose > Or
   */
   background: linear-gradient(
     125deg, 
-    #e0e0e0 0%,     /* Argenté doux (base métal) */
-    #ffffff 30%,    /* Blanc pur (Reflet avant couleur) */
-    #00ffff 45%,    /* FLASH CYAN SATURÉ */
-    #ffffff 50%,    /* Blanc pur (Pic de brillance central - le "Coup d'éclat") */
-    #ff00cc 55%,    /* FLASH ROSE SATURÉ */
-    #ffffff 70%,    /* Blanc pur (Reflet après couleur) */
-    #e0e0e0 100%    /* Retour à l'argenté */
+    #cfd6e6 0%,     /* Acier Froid (Début) */
+    #ffffff 15%,    /* Éclat Lumière */
+    #00ffff 25%,    /* 1. CYAN ÉLECTRIQUE */
+    #ffffff 35%,    /* Éclat Lumière */
+    #bd00ff 45%,    /* 2. VIOLET PROFOND */
+    #ffffff 55%,    /* Éclat Lumière */
+    #ff00cc 65%,    /* 3. ROSE MAGENTA */
+    #ffffff 75%,    /* Éclat Lumière */
+    #ffd700 85%,    /* 4. OR PUR */
+    #ffffff 95%,    /* Éclat final */
+    #cfd6e6 100%    /* Acier Froid (Fin) */
   );
   
-  background-size: 300% 300%;
+  /* Zoom suffisant pour bien voir les séparations */
+  background-size: 400% 400%;
   
-  /* On garde tes réglages d'animation parfaits */
   animation: 
-    iridescentShine 6s linear infinite,
-    breathe 8s ease-in-out infinite;
+    iridescentShine 8s linear infinite, /* Rotation un poil plus lente pour le réalisme */
+    breathe 6s ease-in-out infinite;
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
