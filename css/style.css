@@ -770,7 +770,7 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   ✨ Liseré Iridescent "Platinum Holographic" (Version Désaturée & Vivante)
+   ✨ Liseré Iridescent "High Contrast Platinum" (Visible & Classe)
    ========================= */
 
 /* 1. Rotation fluide */
@@ -780,10 +780,10 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; }
 }
 
-/* 2. Respiration marquée (Retour de l'effet vivant) */
+/* 2. Respiration visible (ne disparaît plus) */
 @keyframes breathe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.3; }       /* ✅ On descend à 30% pour bien voir la "respiration" */
+  50%  { opacity: 0.65; }      /* ✅ On garde 65% de visibilité au minimum */
   100% { opacity: 1; }
 }
 
@@ -792,7 +792,7 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  box-shadow: 0 8px 20px rgba(10, 20, 40, 0.1);
+  box-shadow: 0 8px 20px rgba(10, 20, 40, 0.12);
 }
 
 /* 4. Le liseré Magique */
@@ -801,30 +801,30 @@ body, button, input, textarea, select {
   position: absolute;
   inset: 0;
   border-radius: 28px;
-  padding: 1.8px;
+  padding: 2px;  /* ✅ 2px : Le compromis parfait pour la visibilité */
   
-  /* 🌈 LE SPECTRE "PLATINUM" :
-     On remplace les néons par des teintes "glacées" et pastels.
-     Le mélange Gris (#bdc3c7) + Blanc + Pastels crée l'effet argenté réaliste.
+  /* 🌈 LE SECRET DU CONTRASTE :
+     On utilise un gris plus sombre (#9ca3af) pour la base acier.
+     Cela fait "popper" les couleurs pastels (Bleu/Violet/Rose) et le Blanc.
   */
   background: linear-gradient(
     125deg, 
-    #bdc3c7 0%,     /* Argent Mat (Base) */
-    #ffffff 20%,    /* Éclat Lumière */
-    #dbeafe 30%,    /* Bleu Glacé (Subtil) */
-    #ffffff 40%,    /* Éclat Lumière */
-    #e9d5ff 50%,    /* Violet Brumeux (Subtil) */
-    #ffffff 60%,    /* Éclat Lumière */
-    #fce7f3 70%,    /* Rose Poudré (Subtil) */
-    #ffffff 80%,    /* Éclat Lumière */
-    #bdc3c7 100%    /* Argent Mat (Fin) */
+    #9ca3af 0%,     /* Acier Moyen (Plus sombre pour le contraste) */
+    #ffffff 20%,    /* Éclat Blanc Pur */
+    #89cff0 30%,    /* Bleu Baby (Plus visible que le glacé) */
+    #ffffff 40%,    /* Éclat Blanc Pur */
+    #c4b5fd 50%,    /* Violet Soft (Plus visible) */
+    #ffffff 60%,    /* Éclat Blanc Pur */
+    #f9a8d4 70%,    /* Rose Quartz (Plus visible) */
+    #ffffff 80%,    /* Éclat Blanc Pur */
+    #9ca3af 100%    /* Acier Moyen */
   );
   
   background-size: 400% 400%;
   
   animation: 
-    iridescentShine 5s linear infinite,   /* Un peu plus rapide pour faire jouer les reflets */
-    breathe 7s ease-in-out infinite;      /* Respiration lente et profonde */
+    iridescentShine 5s linear infinite,
+    breathe 6s ease-in-out infinite;
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
