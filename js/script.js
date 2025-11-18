@@ -261,7 +261,7 @@ if (!isDesktop) {
 }
 
 /* === 2) Vraies cartes HOTTEST === */
-const hottest = all.filter((a) => a.important).slice(0, 3);
+const hottest = all.filter((a) => a.important);
 const fragHot = document.createDocumentFragment();
 
 hottest.forEach((article, j) => {
