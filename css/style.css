@@ -370,7 +370,8 @@ body, button, input, textarea, select {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-  padding: 30px var(--page-x);
+  padding-top: 30px;      /* espace visuel au-dessus */
+  padding-bottom: 30px;   /* espace visuel au-dessous */
 }
 
 .hottest-grid::-webkit-scrollbar { display: none; }
@@ -749,4 +750,11 @@ body, button, input, textarea, select {
 /* === HOTTEST : décalage propre de la première carte === */
 .hottest-grid .card:first-child {
   margin-left: var(--page-x-mobile);
+}
+
+@media (min-width: 769px) {
+  .hottest-grid .card:first-child {
+    /* ✅ On force la marge à 0 car le JS a déjà calculé l'espace parfait */
+    margin-left: 0 !important;
+  }
 }
