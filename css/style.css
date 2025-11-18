@@ -770,20 +770,20 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   ✨ Liseré Iridescent "High Contrast Platinum" (Visible & Classe)
+   ✨ Liseré Iridescent "Ghost Platinum" (Lent & Organique)
    ========================= */
 
-/* 1. Rotation fluide */
+/* 1. Rotation Très Lente */
 @keyframes iridescentShine {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* 2. Respiration visible (ne disparaît plus) */
+/* 2. Respiration Profonde (Disparaît presque totalement) */
 @keyframes breathe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.65; }      /* ✅ On garde 65% de visibilité au minimum */
+  50%  { opacity: 0.05; }      /* ✅ Descend à 5% : Quasiment invisible */
   100% { opacity: 1; }
 }
 
@@ -801,30 +801,28 @@ body, button, input, textarea, select {
   position: absolute;
   inset: 0;
   border-radius: 28px;
-  padding: 2px;  /* ✅ 2px : Le compromis parfait pour la visibilité */
+  padding: 2px;
   
-  /* 🌈 LE SECRET DU CONTRASTE :
-     On utilise un gris plus sombre (#9ca3af) pour la base acier.
-     Cela fait "popper" les couleurs pastels (Bleu/Violet/Rose) et le Blanc.
-  */
+  /* 🌈 LE MÉLANGE PLATINUM (Contraste élevé) */
   background: linear-gradient(
     125deg, 
-    #9ca3af 0%,     /* Acier Moyen (Plus sombre pour le contraste) */
-    #ffffff 20%,    /* Éclat Blanc Pur */
-    #89cff0 30%,    /* Bleu Baby (Plus visible que le glacé) */
-    #ffffff 40%,    /* Éclat Blanc Pur */
-    #c4b5fd 50%,    /* Violet Soft (Plus visible) */
-    #ffffff 60%,    /* Éclat Blanc Pur */
-    #f9a8d4 70%,    /* Rose Quartz (Plus visible) */
-    #ffffff 80%,    /* Éclat Blanc Pur */
-    #9ca3af 100%    /* Acier Moyen */
+    #9ca3af 0%,     /* Acier sombre */
+    #ffffff 20%,    /* Éclat Blanc */
+    #89cff0 30%,    /* Bleu Baby */
+    #ffffff 40%,    /* Éclat Blanc */
+    #c4b5fd 50%,    /* Violet Soft */
+    #ffffff 60%,    /* Éclat Blanc */
+    #f9a8d4 70%,    /* Rose Quartz */
+    #ffffff 80%,    /* Éclat Blanc */
+    #9ca3af 100%    /* Acier sombre */
   );
   
   background-size: 400% 400%;
   
+  /* ⚡️ TIMING AJUSTÉ : Très lent */
   animation: 
-    iridescentShine 5s linear infinite,
-    breathe 6s ease-in-out infinite;
+    iridescentShine 12s linear infinite,   /* Rotation au ralenti */
+    breathe 10s ease-in-out infinite;      /* Respiration longue et profonde */
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
