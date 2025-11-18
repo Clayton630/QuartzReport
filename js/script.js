@@ -227,7 +227,6 @@ async function loadArticles() {
    HOTTEST
    ====================== */
 hottestContainer.innerHTML = "";
-
 /* === 1) Carte factice (spacer) comportement identique à une carte === */
 const rootStyles = getComputedStyle(document.documentElement);
 const pageXMobile = rootStyles.getPropertyValue("--page-x-mobile").trim() || "20px";
@@ -235,28 +234,31 @@ const pageX = rootStyles.getPropertyValue("--page-x").trim() || "20px";
 
 const isDesktop = window.matchMedia("(min-width: 769px)").matches;
 
-// espacement exact (marge latérale – gap)
-const adjustedWidth = isDesktop
-  ? `calc(${pageX} - 14px)`
-  : `calc(${pageXMobile} - 14px)`;
+// On arrête ici si on est sur Desktop (le CSS gère déjà la marge)
+if (!isDesktop) {
 
-// création de la pseudo-carte
-const fakeCard = document.createElement("a");
-fakeCard.className = "card hottest-spacer";
-fakeCard.href = "javascript:void(0)";
-fakeCard.setAttribute("aria-hidden", "true");
-fakeCard.tabIndex = -1;
+  // espacement exact (marge latérale – gap)
+  // Note: plus besoin de calculer adjustedWidth pour le desktop ici
+  const adjustedWidth = `calc(${pageXMobile} - 14px)`;
 
-fakeCard.style.flex = `0 0 ${adjustedWidth}`;
-fakeCard.style.maxWidth = adjustedWidth;
-fakeCard.style.opacity = "0";
-fakeCard.style.pointerEvents = "none";
-fakeCard.style.border = "none";
-fakeCard.style.boxShadow = "none";
-fakeCard.style.background = "transparent";
-fakeCard.style.padding = "0";
+  // création de la pseudo-carte
+  const fakeCard = document.createElement("a");
+  fakeCard.className = "card hottest-spacer";
+  fakeCard.href = "javascript:void(0)";
+  fakeCard.setAttribute("aria-hidden", "true");
+  fakeCard.tabIndex = -1;
 
-hottestContainer.appendChild(fakeCard);
+  fakeCard.style.flex = `0 0 ${adjustedWidth}`;
+  fakeCard.style.maxWidth = adjustedWidth;
+  fakeCard.style.opacity = "0";
+  fakeCard.style.pointerEvents = "none";
+  fakeCard.style.border = "none";
+  fakeCard.style.boxShadow = "none";
+  fakeCard.style.background = "transparent";
+  fakeCard.style.padding = "0";
+
+  hottestContainer.appendChild(fakeCard);
+}
 
 /* === 2) Vraies cartes HOTTEST === */
 const hottest = all.filter((a) => a.important).slice(0, 3);
