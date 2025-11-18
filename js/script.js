@@ -234,31 +234,28 @@ const pageX = rootStyles.getPropertyValue("--page-x").trim() || "20px";
 
 const isDesktop = window.matchMedia("(min-width: 769px)").matches;
 
-// On arrête ici si on est sur Desktop (le CSS gère déjà la marge)
-if (!isDesktop) {
+// ✅ On calcule la largeur pour tout le monde (Desktop ET Mobile)
+const adjustedWidth = isDesktop
+  ? `calc(${pageX} - 14px)`
+  : `calc(${pageXMobile} - 14px)`;
 
-  // espacement exact (marge latérale – gap)
-  // Note: plus besoin de calculer adjustedWidth pour le desktop ici
-  const adjustedWidth = `calc(${pageXMobile} - 14px)`;
+// création de la pseudo-carte
+const fakeCard = document.createElement("a");
+fakeCard.className = "card hottest-spacer";
+fakeCard.href = "javascript:void(0)";
+fakeCard.setAttribute("aria-hidden", "true");
+fakeCard.tabIndex = -1;
 
-  // création de la pseudo-carte
-  const fakeCard = document.createElement("a");
-  fakeCard.className = "card hottest-spacer";
-  fakeCard.href = "javascript:void(0)";
-  fakeCard.setAttribute("aria-hidden", "true");
-  fakeCard.tabIndex = -1;
+fakeCard.style.flex = `0 0 ${adjustedWidth}`;
+fakeCard.style.maxWidth = adjustedWidth;
+fakeCard.style.opacity = "0";
+fakeCard.style.pointerEvents = "none";
+fakeCard.style.border = "none";
+fakeCard.style.boxShadow = "none";
+fakeCard.style.background = "transparent";
+fakeCard.style.padding = "0";
 
-  fakeCard.style.flex = `0 0 ${adjustedWidth}`;
-  fakeCard.style.maxWidth = adjustedWidth;
-  fakeCard.style.opacity = "0";
-  fakeCard.style.pointerEvents = "none";
-  fakeCard.style.border = "none";
-  fakeCard.style.boxShadow = "none";
-  fakeCard.style.background = "transparent";
-  fakeCard.style.padding = "0";
-
-  hottestContainer.appendChild(fakeCard);
-}
+hottestContainer.appendChild(fakeCard);
 
 /* === 2) Vraies cartes HOTTEST === */
 const hottest = all.filter((a) => a.important);
