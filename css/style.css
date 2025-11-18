@@ -770,47 +770,59 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   ✨ Liseré Iridescent "Hottest" (Version Corrigée)
+   ✨ Liseré Iridescent "Hottest" (Version Ultimate : Saturée & Respirante)
    ========================= */
 
-/* 1. L'animation : on bouge le dégradé */
+/* 1. Animation de rotation (Mouvement du dégradé) */
 @keyframes iridescentShine {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* 2. Préparation de la carte : ON TUE LA BORDURE EXISTANTE */
-.hottest-grid .card:not(.hottest-spacer) {
-  position: relative;
-  border: none !important;    /* ⚡️ CRUCIAL : On supprime la bordure CSS classique */
-  background-clip: padding-box;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1); /* On garde l'ombre, mais sans bordure */
+/* 2. Animation de respiration (Apparition / Disparition lente) */
+@keyframes breathe {
+  0%   { opacity: 1; }         /* Pleine intensité */
+  50%  { opacity: 0.25; }      /* Devient très subtil (presque invisible) */
+  100% { opacity: 1; }         /* Revient à pleine intensité */
 }
 
-/* 3. Le liseré Magique */
+/* 3. Préparation de la carte : Suppression bordure classique */
+.hottest-grid .card:not(.hottest-spacer) {
+  position: relative;
+  border: none !important;
+  background-clip: padding-box;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* 4. Le liseré Magique */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
-  inset: 0;                   /* Colle parfaitement aux 4 bords */
-  border-radius: 28px;        /* Doit être identique au radius de la carte */
-  padding: 2.5px;             /* ⚡️ ÉPAISSEUR VISIBLE (plus large) */
+  inset: 0;                   /* Colle parfaitement aux bords */
+  border-radius: 28px;        /* Radius identique à la carte */
+  padding: 2.5px;             /* Épaisseur bien visible */
   
-  /* 🌈 Le Dégradé Métallique BOOSTÉ */
+  /* 🌈 Couleurs BOOSTÉES (Saturées & Métalliques) */
   background: linear-gradient(
     115deg, 
-    rgba(255, 255, 255, 0.6) 0%,    /* Blanc doux */
-    #ffb6c1 25%,                    /* Rose pastel vif (100% opacité) */
-    #89CFF0 50%,                    /* Bleu baby vif (100% opacité) */
-    #ffffff 60%,                    /* Blanc Éclatant pur (Métal) */
-    #e0b0ff 75%,                    /* Mauve vif (100% opacité) */
-    rgba(255, 255, 255, 0.6) 100%
+    #ff00cc 0%,     /* Rose Néon intense */
+    #00ffff 25%,    /* Cyan Électrique */
+    #ffffff 45%,    /* Blanc Pur (Éclat Métal central) */
+    #ffffff 55%,    /* Blanc Pur (Éclat Métal suite) */
+    #aa00ff 75%,    /* Violet Électrique */
+    #ff00cc 100%    /* Boucle sur le Rose */
   );
-  background-size: 300% 300%;     /* Zoom pour des transitions fluides */
+  background-size: 300% 300%;
   
-  animation: iridescentShine 3s linear infinite; /* Animation un peu plus rapide */
+  /* ⚡️ DOUBLE ANIMATION COMBINÉE */
+  /* 1. iridescentShine : 6s (Rotation lente et fluide) */
+  /* 2. breathe : 8s (Cycle de respiration très lent) */
+  animation: 
+    iridescentShine 6s linear infinite,
+    breathe 8s ease-in-out infinite;
   
-  /* Le Masque qui ne garde que la bordure */
+  /* Le Masque magique (ne garde que la bordure) */
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
      linear-gradient(#fff 0 0);
@@ -818,5 +830,5 @@ body, button, input, textarea, select {
   mask-composite: exclude;
   
   pointer-events: none;
-  z-index: 100; /* S'assure d'être au-dessus de l'image et de tout le reste */
+  z-index: 100;
 }
