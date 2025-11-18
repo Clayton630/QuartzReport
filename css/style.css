@@ -770,7 +770,7 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   ✨ Liseré Iridescent "Holographic Steel" (4 couleurs + Argent froid)
+   ✨ Liseré Iridescent "Platinum Holographic" (Version Désaturée & Vivante)
    ========================= */
 
 /* 1. Rotation fluide */
@@ -780,10 +780,10 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; }
 }
 
-/* 2. Respiration subtile */
+/* 2. Respiration marquée (Retour de l'effet vivant) */
 @keyframes breathe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.6; } /* Variation plus douce pour garder le métal visible */
+  50%  { opacity: 0.3; }       /* ✅ On descend à 30% pour bien voir la "respiration" */
   100% { opacity: 1; }
 }
 
@@ -792,8 +792,7 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  /* Ombre portée légèrement bleutée pour matcher l'acier */
-  box-shadow: 0 8px 20px rgba(10, 20, 40, 0.12);
+  box-shadow: 0 8px 20px rgba(10, 20, 40, 0.1);
 }
 
 /* 4. Le liseré Magique */
@@ -802,34 +801,30 @@ body, button, input, textarea, select {
   position: absolute;
   inset: 0;
   border-radius: 28px;
-  padding: 1.8px;  /* ⚡️ PLUS FIN (Élégance Apple) */
+  padding: 1.8px;
   
-  /* 🌈 LE SPECTRE MÉTALLIQUE COMPLET :
-     Base : Gris-Bleu froid (#cfd6e6) pour l'acier.
-     Séparateurs : Blanc pur (#fff) pour la lumière.
-     Couleurs : Cyan > Violet > Rose > Or
+  /* 🌈 LE SPECTRE "PLATINUM" :
+     On remplace les néons par des teintes "glacées" et pastels.
+     Le mélange Gris (#bdc3c7) + Blanc + Pastels crée l'effet argenté réaliste.
   */
   background: linear-gradient(
     125deg, 
-    #cfd6e6 0%,     /* Acier Froid (Début) */
-    #ffffff 15%,    /* Éclat Lumière */
-    #00ffff 25%,    /* 1. CYAN ÉLECTRIQUE */
-    #ffffff 35%,    /* Éclat Lumière */
-    #bd00ff 45%,    /* 2. VIOLET PROFOND */
-    #ffffff 55%,    /* Éclat Lumière */
-    #ff00cc 65%,    /* 3. ROSE MAGENTA */
-    #ffffff 75%,    /* Éclat Lumière */
-    #ffd700 85%,    /* 4. OR PUR */
-    #ffffff 95%,    /* Éclat final */
-    #cfd6e6 100%    /* Acier Froid (Fin) */
+    #bdc3c7 0%,     /* Argent Mat (Base) */
+    #ffffff 20%,    /* Éclat Lumière */
+    #dbeafe 30%,    /* Bleu Glacé (Subtil) */
+    #ffffff 40%,    /* Éclat Lumière */
+    #e9d5ff 50%,    /* Violet Brumeux (Subtil) */
+    #ffffff 60%,    /* Éclat Lumière */
+    #fce7f3 70%,    /* Rose Poudré (Subtil) */
+    #ffffff 80%,    /* Éclat Lumière */
+    #bdc3c7 100%    /* Argent Mat (Fin) */
   );
   
-  /* Zoom suffisant pour bien voir les séparations */
   background-size: 400% 400%;
   
   animation: 
-    iridescentShine 8s linear infinite, /* Rotation un poil plus lente pour le réalisme */
-    breathe 6s ease-in-out infinite;
+    iridescentShine 5s linear infinite,   /* Un peu plus rapide pour faire jouer les reflets */
+    breathe 7s ease-in-out infinite;      /* Respiration lente et profonde */
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
