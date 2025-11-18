@@ -236,7 +236,7 @@ const isDesktop = window.matchMedia("(min-width: 769px)").matches;
 
 // ✅ On calcule la largeur pour tout le monde (Desktop ET Mobile)
 const adjustedWidth = isDesktop
-  ? `calc(${pageX} - 14px)`
+  ? `calc(${pageX} - 20px)`
   : `calc(${pageXMobile} - 14px)`;
 
 // création de la pseudo-carte
