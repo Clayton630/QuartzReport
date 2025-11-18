@@ -370,8 +370,7 @@ body, button, input, textarea, select {
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-  padding-top: 30px;      /* espace visuel au-dessus */
-  padding-bottom: 30px;   /* espace visuel au-dessous */
+  padding: 30px var(--page-x);
 }
 
 .hottest-grid::-webkit-scrollbar { display: none; }
