@@ -365,7 +365,7 @@ body, button, input, textarea, select {
   position: relative;
   z-index: 1;
   display: flex;
-  gap: 14px;
+  gap: var(--page-x);
   scroll-snap-type: x mandatory;
   overflow-x: auto;
   overflow-y: visible;
@@ -373,6 +373,9 @@ body, button, input, textarea, select {
   padding-top: 30px;      /* espace visuel au-dessus */
   padding-bottom: 30px;
   padding-right: var(--page-x);/* espace visuel au-dessous */
+  .hottest-spacer {
+  scroll-snap-align: none !important;
+  }
 }
 
 .hottest-grid::-webkit-scrollbar { display: none; }
