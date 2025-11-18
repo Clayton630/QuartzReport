@@ -755,8 +755,13 @@ body, button, input, textarea, select {
 }
 
 @media (min-width: 769px) {
+  .hottest-grid {
+    /* ✅ On augmente l'écart pour qu'il matche la marge (20px) */
+    /* Ainsi, la carte précédente sera pile poil hors champ */
+    gap: var(--page-x); 
+  }
+
   .hottest-grid .card:first-child {
-    /* ✅ On force la marge à 0 car le JS a déjà calculé l'espace parfait */
     margin-left: 0 !important;
   }
 }
