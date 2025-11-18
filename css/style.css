@@ -750,9 +750,3 @@ body, button, input, textarea, select {
 .hottest-grid .card:first-child {
   margin-left: var(--page-x-mobile);
 }
-
-@media (min-width: 769px) {
-  .hottest-grid .card:first-child {
-    margin-left: var(--page-x);
-  }
-}
