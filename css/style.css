@@ -768,22 +768,21 @@ body, button, input, textarea, select {
     margin-left: 0 !important;
   }
 }
-
 /* =========================
-   ✨ Liseré "LIQUID CHROME" (Métal Pur & Haute Visibilité)
+   ✨ Liseré "SILVER PRISM" (Métal Clair & Couleurs Vives)
    ========================= */
 
-/* 1. Rotation (On garde la fluidité) */
+/* 1. Rotation (Vitesse moyenne pour bien voir l'éclat) */
 @keyframes iridescentShine {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* 2. Respiration "Solide" (Ne disparaît jamais) */
+/* 2. Respiration marquée (L'effet s'atténue mais reste présent) */
 @keyframes breathe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.4; }       /* ✅ STOP à 40% : Le métal reste toujours visible */
+  50%  { opacity: 0.5; }       /* On garde 50% de présence minimum */
   100% { opacity: 1; }
 }
 
@@ -792,42 +791,44 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  /* Ombre plus marquée pour détacher le métal */
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); 
+  /* Ombre douce et propre pour détacher la carte */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); 
 }
 
-/* 4. Le liseré Chrome */
+/* 4. Le liseré Argenté */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 28px;
-  padding: 2px;  /* Épaisseur idéale */
+  padding: 2px;
   
-  /* 💿 LE SECRET DU CHROME RÉALISTE : 
-     Le contraste violent entre le Gris Foncé (#4b5563) et le Blanc (#fff).
-     C'est ça qui donne l'impression de "reflet" dur sur une surface polie.
-     J'ai ajouté une pointe de Bleu Acier (#e0f2fe) pour le réalisme froid.
+  /* 💿 LE SECRET DU VRAI MÉTAL LUMINEUX :
+     Base : Argent clair (#d1d5db) et Blanc (#ffffff).
+     Couleurs : On utilise des teintes "froides" et nettes (Cyan, Violet, Magenta).
+     Les transitions sont plus rapides pour imiter le reflet dur du métal.
   */
   background: linear-gradient(
-    135deg, 
-    #374151 0%,     /* Gris Anthracite (Ombre métal) */
-    #9ca3af 15%,    /* Gris Moyen */
-    #ffffff 25%,    /* ⚡️ FLASH BLANC PUR */
-    #e0f2fe 30%,    /* Bleu Acier très pâle (froid) */
-    #ffffff 35%,    /* ⚡️ FLASH BLANC PUR */
-    #64748b 50%,    /* Gris Ardoise (Contraste central) */
-    #ffffff 65%,    /* ⚡️ FLASH BLANC PUR */
-    #cbd5e1 75%,    /* Argent */
-    #ffffff 85%,    /* ⚡️ FLASH BLANC PUR */
-    #374151 100%    /* Gris Anthracite (Ombre métal) */
+    125deg, 
+    #d1d5db 0%,     /* Argent Mat */
+    #ffffff 20%,    /* ⚡️ LUMIÈRE BLANCHE (Reflet) */
+    #38bdf8 25%,    /* 💎 CYAN CRISTALLIN (Visible) */
+    #ffffff 30%,    /* ⚡️ LUMIÈRE BLANCHE */
+    #c084fc 45%,    /* 💎 VIOLET AMÉTHYSTE (Visible) */
+    #ffffff 50%,    /* ⚡️ GROS ÉCLAT CENTRAL */
+    #f472b6 55%,    /* 💎 ROSE MÉTALLISÉ (Visible) */
+    #ffffff 70%,    /* ⚡️ LUMIÈRE BLANCHE */
+    #818cf8 75%,    /* 💎 BLEU INDIGO (Visible) */
+    #ffffff 80%,    /* ⚡️ LUMIÈRE BLANCHE (Reflet) */
+    #d1d5db 100%    /* Argent Mat */
   );
   
-  background-size: 300% 300%; /* Zoom un peu réduit pour densifier les reflets */
+  /* On zoome moins pour que les bandes de couleurs soient plus nettes/fines */
+  background-size: 200% 200%; 
   
   animation: 
-    iridescentShine 6s linear infinite,  /* Vitesse moyenne pour faire briller les arêtes */
-    breathe 5s ease-in-out infinite;     /* Respiration plus rapide et plus "vivante" */
+    iridescentShine 4s linear infinite,  /* Rotation un peu plus dynamique */
+    breathe 6s ease-in-out infinite;     /* Respiration fluide */
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
@@ -837,4 +838,5 @@ body, button, input, textarea, select {
   
   pointer-events: none;
   z-index: 100;
+} 100;
 }
