@@ -770,7 +770,7 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "TITANIUM FROST" (Structure Acier & Reflets Glacés)
+   💎 Liseré "TITANIUM LUMINOUS" (Argent Clair & Reflets Glacés)
    ========================= */
 
 /* 1. Animation Furtive (Inchangée) */
@@ -784,7 +784,7 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; opacity: 0; }
 }
 
-/* 2. La Carte (Conteneur Stable) */
+/* 2. La Carte (Conteneur) */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
   border: none !important;
@@ -793,13 +793,12 @@ body, button, input, textarea, select {
   
   overflow: hidden;
   border-radius: 28px; 
-  /* Fix Rendu GPU */
   transform: translate3d(0, 0, 0); 
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
-/* 3. Le Liseré (Géométrie Sûre & Couleurs Glacées) */
+/* 3. Le Liseré Argenté Clair */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
@@ -809,25 +808,25 @@ body, button, input, textarea, select {
   border-radius: 29px;
   padding: 3px;
   
-  /* 💎 LE GRADIENT "FROST" :
-     Base : On a gardé tes Gris Contrastés (#64748b / #94a3b8).
-     Couleurs : On a remplacé les vifs par du Pastel Glacé.
-     -> Bleu Ciel Vif (#38bdf8) devient Bleu Glacier (#bae6fd).
-     -> Violet Vif (#c084fc) devient Lavande Glacée (#e9d5ff).
+  /* 💎 LE GRADIENT "SILVER" (Gris Éclaircis) :
+     J'ai remonté la luminosité de tous les gris.
+     - Le plus sombre est maintenant #94a3b8 (Gris Perle).
+     - Le milieu est #cbd5e1 (Argent).
+     Cela donne un rendu beaucoup plus "Aluminium Brossé" que "Acier Sombre".
   */
   background: linear-gradient(
     125deg,
-    #64748b 0%,     /* Acier Sombre (Base solide) */
-    #f1f5f9 15%,    /* Blanc Métal */
+    #94a3b8 0%,     /* Gris Perle (Base plus claire) */
+    #f8fafc 15%,    /* Blanc Nuage */
     #ffffff 25%,    /* ⚡️ ÉCLAT PUR */
-    #bae6fd 30%,    /* ❄️ BLEU GLACIER (Pastel) */
+    #bae6fd 30%,    /* ❄️ BLEU GLACIER */
     #ffffff 35%,    /* ⚡️ ÉCLAT PUR */
-    #94a3b8 50%,    /* Acier Moyen (Contraste) */
+    #cbd5e1 50%,    /* Argent Clair (Contraste doux) */
     #ffffff 65%,    /* ⚡️ ÉCLAT PUR */
-    #e9d5ff 70%,    /* ❄️ LAVANDE GLACÉE (Pastel) */
+    #e9d5ff 70%,    /* ❄️ LAVANDE GLACÉE */
     #ffffff 75%,    /* ⚡️ ÉCLAT PUR */
-    #f1f5f9 85%,    /* Blanc Métal */
-    #64748b 100%    /* Acier Sombre (Base solide) */
+    #f8fafc 85%,    /* Blanc Nuage */
+    #94a3b8 100%    /* Gris Perle (Base plus claire) */
   );
   
   background-size: 300% 300%;
