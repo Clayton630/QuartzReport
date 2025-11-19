@@ -843,3 +843,13 @@ body, button, input, textarea, select {
   pointer-events: none;
   z-index: 100;
 }
+
+/* =========================
+   ✨ Restauration du Hover (Compatible Titane)
+   ========================= */
+
+.hottest-grid .card:not(.hottest-spacer):hover {
+  transform: translate3d(0, -4px, 0);
+  box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.2);
+  filter: brightness(1.02); */
+}
