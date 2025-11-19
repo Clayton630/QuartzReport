@@ -770,10 +770,10 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "TITANIUM ULTIMATE" (Visible, Shiny & Pixel Perfect)
+   💎 Liseré "TITANIUM STABLE" (Anti-Glitch & Extra Shiny)
    ========================= */
 
-/* 1. Animation Furtive (Inchangée : Fluide & Organique) */
+/* 1. Animation Furtive (Fluide & Organique) */
 @keyframes stealthFlow {
   /* --- ALLER --- */
   0% { background-position: 0% 50%; opacity: 0; }
@@ -787,56 +787,58 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; opacity: 0; }
 }
 
-/* 2. La Carte : Nettoyage & Masque */
+/* 2. La Carte : Conteneur blindé */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
-  border: none !important; /* On supprime toute bordure parasite */
+  border: none !important;
   background-clip: border-box;
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
   
-  overflow: hidden;       /* Coupe nette */
+  overflow: hidden;
   border-radius: 28px; 
-  transform: translateZ(0);
+  /* ⚡️ FIX RENDU : Force le GPU à gérer les pixels */
+  transform: translate3d(0, 0, 0); 
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
-/* 3. Le Liseré Unique (Ajusté pour la brillance) */
+/* 3. Le Liseré : Géométrie "Sûre" */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   
-  /* ✅ CALAGE SUB-PIXEL :
-     On déborde de 0.5px pour boucher le haut sans abîmer les coins.
+  /* ✅ GÉOMÉTRIE BLINDÉE :
+     On déborde franchement (-1px) pour ne laisser aucune chance aux coins.
+     On augmente le padding (3px) pour compenser la coupe.
+     Résultat visuel : ~2px nets.
   */
-  inset: -0.5px;
-  border-radius: 28.5px; /* 28px + 0.5px */
+  inset: -1px;
+  border-radius: 29px; /* 28px + 1px de débord */
+  padding: 3px;
   
-  /* ⚡️ VISIBILITÉ AUGMENTÉE :
-     On passe de 2px à 2.2px. C'est le "petit peu plus" qui change tout.
-  */
-  padding: 2.2px;
-  
-  /* 💎 LE GRADIENT "SHINY CHROME" :
-     Base : Acier Froid (#94a3b8) pour le contraste (plus shiny que l'argent pâle).
-     Lumière : Des Blancs Purs (#ffffff) très serrés autour des couleurs.
-     Couleurs : Bleu Glacier & Lavande (Pastels métalliques).
+  /* 💎 LE GRADIENT "EXTRA SHINY" :
+     J'ai renforcé le contraste Acier/Blanc pour que ça brille plus.
+     Bleu (#38bdf8) et Violet (#c084fc) un peu plus saturés pour la visibilité.
   */
   background: linear-gradient(
     125deg,
-    #94a3b8 0%,     /* Acier Froid (Base contrastée) */
+    #64748b 0%,     /* Acier Sombre (Contraste fort) */
     #f1f5f9 15%,    /* Blanc Métal */
-    #ffffff 25%,    /* ⚡️ ÉCLAT BLANC TRANCHANT */
-    #bae6fd 30%,    /* 💎 Bleu Glacier (Reflet) */
-    #ffffff 35%,    /* ⚡️ ÉCLAT BLANC TRANCHANT */
-    #cbd5e1 50%,    /* Argent Pur (Centre) */
-    #ffffff 65%,    /* ⚡️ ÉCLAT BLANC TRANCHANT */
-    #e9d5ff 70%,    /* 💎 Lavande (Reflet) */
-    #ffffff 75%,    /* ⚡️ ÉCLAT BLANC TRANCHANT */
+    #ffffff 25%,    /* ⚡️ ÉCLAT PUR (Miroir) */
+    #38bdf8 30%,    /* 💎 Bleu Ciel Vif */
+    #ffffff 35%,    /* ⚡️ ÉCLAT PUR */
+    #94a3b8 50%,    /* Acier Moyen */
+    #ffffff 65%,    /* ⚡️ ÉCLAT PUR */
+    #c084fc 70%,    /* 💎 Violet Améthyste Vif */
+    #ffffff 75%,    /* ⚡️ ÉCLAT PUR */
     #f1f5f9 85%,    /* Blanc Métal */
-    #94a3b8 100%    /* Acier Froid (Base contrastée) */
+    #64748b 100%    /* Acier Sombre */
   );
   
   background-size: 300% 300%;
   
+  /* ⚡️ FIX ANTI-LAG : On prévient le navigateur que ça va bouger */
+  will-change: background-position, opacity;
   animation: stealthFlow 8s ease-in-out infinite;
   
   -webkit-mask: 
