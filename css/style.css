@@ -768,42 +768,22 @@ body, button, input, textarea, select {
     margin-left: 0 !important;
   }
 }
-
 /* =========================
-   💎 Liseré "STEALTH TITANIUM" (Apparition / Disparition Synchronisée)
+   💎 Liseré "STEALTH TITANIUM V2" (Couleurs Renforcées)
    ========================= */
 
-/* ⚡️ L'ANIMATION FUSIONNÉE : 
-   Gère à la fois la Position (x) et l'Opacité (y) pour une synchro parfaite.
-*/
+/* ⚡️ L'ANIMATION FURTIVE (Inchangée, car elle était parfaite) */
 @keyframes stealthFlow {
-  /* --- ALLER (Gauche vers Droite) --- */
-  0% { 
-    background-position: 0% 50%; 
-    opacity: 0;      /* Invisible au départ (virage) */
-  }
-  15% {
-    opacity: 1;      /* Apparaît rapidement pendant le trajet */
-  }
-  35% {
-    opacity: 1;      /* Reste visible */
-  }
-  50% { 
-    background-position: 100% 50%; 
-    opacity: 0;      /* Disparaît AVANT de s'arrêter (virage) */
-  }
+  /* --- ALLER --- */
+  0% { background-position: 0% 50%; opacity: 0; }
+  15% { opacity: 1; }
+  35% { opacity: 1; }
+  50% { background-position: 100% 50%; opacity: 0; }
 
-  /* --- RETOUR (Droite vers Gauche) --- */
-  65% {
-    opacity: 1;      /* Réapparaît au retour */
-  }
-  85% {
-    opacity: 1;      /* Reste visible */
-  }
-  100% { 
-    background-position: 0% 50%; 
-    opacity: 0;      /* Disparaît à l'arrivée (virage) */
-  }
+  /* --- RETOUR --- */
+  65% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { background-position: 0% 50%; opacity: 0; }
 }
 
 /* Préparation de la carte */
@@ -811,11 +791,10 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  /* Ombre diffuse et moderne */
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15); 
 }
 
-/* Le liseré Furtif */
+/* Le liseré Titane Boosté */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
@@ -823,19 +802,21 @@ body, button, input, textarea, select {
   border-radius: 28px;
   padding: 1.8px;
   
-  /* 💎 LE GRADIENT "HIGH-GLOSS" (On garde celui que tu aimais) :
-     Contraste fort Ardoise/Blanc pour l'effet Chrome/Titane.
+  /* 💎 LE GRADIENT AJUSTÉ :
+     J'ai remplacé le bleu très pâle (#bae6fd) par un Bleu Ciel Vif (#38bdf8).
+     J'ai remplacé le violet pâle (#e9d5ff) par un Violet Améthyste (#c084fc).
+     Le reste (Gris/Blanc) est identique pour garder l'aspect métal.
   */
   background: linear-gradient(
     125deg,
     #64748b 0%,     /* Ardoise */
     #f1f5f9 20%,    /* Gris clair */
     #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
-    #bae6fd 35%,    /* Bleu Ciel */
+    #38bdf8 35%,    /* ✅ Bleu Ciel (Plus visible) */
     #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
     #94a3b8 50%,    /* Gris Acier */
     #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
-    #e9d5ff 65%,    /* Violet Glacé */
+    #c084fc 65%,    /* ✅ Violet Améthyste (Plus visible) */
     #ffffff 70%,    /* ⚡️ ÉCLAT BLANC */
     #f1f5f9 80%,    /* Gris clair */
     #64748b 100%    /* Ardoise */
@@ -843,10 +824,6 @@ body, button, input, textarea, select {
   
   background-size: 300% 300%;
   
-  /* ⚡️ UNE SEULE ANIMATION :
-     8 secondes pour un cycle complet (Aller + Retour)
-     ease-in-out pour que le mouvement soit fluide (pas robotique).
-  */
   animation: stealthFlow 8s ease-in-out infinite;
   
   -webkit-mask: 
