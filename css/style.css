@@ -770,10 +770,10 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "PURE TITANIUM" (Ajustement Pixel-Perfect & Argent)
+   💎 Liseré "TITANIUM PERFECT FIT" (Double Couche : Solidité & Brillance)
    ========================= */
 
-/* 1. Animation Furtive (Fluide & Discrète) */
+/* 1. Animation Furtive (Inchangée) */
 @keyframes stealthFlow {
   /* --- ALLER --- */
   0% { background-position: 0% 50%; opacity: 0; }
@@ -787,44 +787,48 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; opacity: 0; }
 }
 
-/* 2. La Carte : Conteneur Propre */
+/* 2. La Carte */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
   border: none !important;
-  background-clip: border-box; /* Changement ici pour assurer le calage */
+  background-clip: border-box;
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
-  
-  /* Coupe l'image qui dépasse dans les coins */
   overflow: hidden;
   border-radius: 28px;
-  transform: translateZ(0); /* Force le GPU à bien dessiner les pixels */
+  transform: translateZ(0);
 }
 
-/* 3. Le Liseré : ZÉRO DÉCALAGE */
+/* 3. COUCHE 1 (::before) -> LE JOINT D'ÉTANCHÉITÉ
+   C'est une bordure solide qui bouche les coins. 
+   Elle est invisible sous l'animation mais empêche l'image de dépasser.
+*/
+.hottest-grid .card:not(.hottest-spacer)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  border: 1.5px solid #cbd5e1; /* Gris Argent Solide */
+  z-index: 90; /* En dessous de l'animation */
+  pointer-events: none;
+}
+
+/* 4. COUCHE 2 (::after) -> L'EFFET TITANE
+   L'animation vient se poser exactement sur la bordure solide.
+*/
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
-  
-  /* ✅ CORRECTION DU PIXEL MANQUANT :
-     On remet inset à 0. Le liseré se dessine DANS la carte.
-     Comme la carte a overflow: hidden, rien ne peut dépasser.
-     Et comme on est à 0, on touche forcément le bord haut.
-  */
   inset: 0;
-  border-radius: 28px; /* Exactement le même rayon que la carte */
-  padding: 2.2px;      /* Épaisseur suffisante pour être bien visible */
+  border-radius: 28px;
+  padding: 2px; /* Un poil plus large que le border solide pour bien le couvrir */
   
-  /* 💎 LE GRADIENT "ARGENT & PASTEL" :
-     Base : Beaucoup de Blanc (#ffffff) et d'Argent Clair (#cbd5e1).
-     Couleurs : Bleu Ciel (#bae6fd) et Lavande (#e9d5ff) très doux.
-     C'est lumineux, propre et métallique.
-  */
+  /* 💎 LE GRADIENT "PASTEL MÉTALLIQUE" */
   background: linear-gradient(
     125deg,
     #cbd5e1 0%,     /* Argent Clair */
     #f8fafc 20%,    /* Blanc nuage */
     #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
-    #bae6fd 35%,    /* 💎 Bleu Ciel Pastel */
+    #bae6fd 35%,    /* 💎 Bleu Glacier Pastel */
     #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
     #e2e8f0 50%,    /* Argent pur */
     #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
@@ -836,7 +840,6 @@ body, button, input, textarea, select {
   
   background-size: 300% 300%;
   
-  /* Animation furtive de 8 secondes */
   animation: stealthFlow 8s ease-in-out infinite;
   
   -webkit-mask: 
@@ -846,5 +849,5 @@ body, button, input, textarea, select {
   mask-composite: exclude;
   
   pointer-events: none;
-  z-index: 100;
+  z-index: 100; /* Au-dessus de tout */
 }
