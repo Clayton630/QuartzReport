@@ -770,21 +770,20 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   ✨ Liseré "SILVER RETURN" (Aller-Retour Fluide & Métal Clair)
+   💎 Liseré "TITANIUM LUSTER" (Ultra-Propre & Moderne)
    ========================= */
 
-/* 1. RETOUR DU PING-PONG (Aller-Retour) */
-/* C'est la seule façon d'avoir un mouvement 100% fluide sans coupure */
-@keyframes iridescentShine {
+/* 1. Mouvement Organique (Ping-Pong avec inertie) */
+@keyframes lusterFlow {
   0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; } /* Va au bout */
-  100% { background-position: 0% 50%; }  /* Revient au début */
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-/* 2. Respiration marquée */
-@keyframes breathe {
+/* 2. Respiration Luxe (Subtile mais présente) */
+@keyframes breatheLuxe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.4; }       /* Descend à 40% pour l'effet vivant */
+  50%  { opacity: 0.5; } /* Ne descend pas sous 50% pour garder la structure */
   100% { opacity: 1; }
 }
 
@@ -793,39 +792,47 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); 
+  /* Ombre diffuse moderne (moins dure, plus étalée) */
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
 }
 
-/* 4. Le liseré Argenté */
+/* 4. Le liseré Titane */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 28px;
-  padding: 2px;
+  padding: 1.5px; /* ⚡️ FINESSE OPTIMALE (Rendu "Tech") */
   
-  /* 💿 DÉGRADÉ MÉTAL CLAIR (Argent & Blanc)
-     On garde la structure "Prisme" mais adaptée pour l'aller-retour.
-     Gris Argent (#bdc3c7) aux bords pour sceller l'effet métal.
+  /* 💎 LE GRADIENT "TITANIUM" :
+     On abandonne les couleurs vives pour des nuances de lumière pure.
+     Blanc Pur (#fff) + Gris "Cool" (#9ca3af) + Touches infimes de bleu glacier (#e0f2fe).
+     C'est sobre, froid, et incroyablement moderne.
   */
   background: linear-gradient(
-    125deg, 
-    #bdc3c7 0%,     /* Argent Mat */
-    #ffffff 20%,    /* Éclat Blanc */
-    #a5f3fc 30%,    /* Cyan Glacé (Très pâle) */
-    #ffffff 45%,    /* Éclat Blanc Central */
-    #e9d5ff 55%,    /* Violet Glacé (Très pâle) */
-    #ffffff 70%,    /* Éclat Blanc */
-    #fbcfe8 80%,    /* Rose Glacé (Très pâle) */
-    #ffffff 90%,    /* Éclat Blanc */
-    #bdc3c7 100%    /* Argent Mat */
+    125deg,
+    #9ca3af 0%,     /* Acier Mat (Base sombre) */
+    #f3f4f6 20%,    /* Blanc cassé */
+    #ffffff 30%,    /* ✨ ÉCLAT PUR (Reflet dur) */
+    #e0f2fe 35%,    /* Bleu Glacier (Profondeur subtile) */
+    #ffffff 40%,    /* ✨ ÉCLAT PUR */
+    #d1d5db 50%,    /* Argent (Transition) */
+    #ffffff 60%,    /* ✨ ÉCLAT PUR */
+    #f5f3ff 65%,    /* Violet Brume (Reflet irisé ultra-léger) */
+    #ffffff 70%,    /* ✨ ÉCLAT PUR */
+    #f3f4f6 80%,    /* Blanc cassé */
+    #9ca3af 100%    /* Acier Mat */
   );
   
-  background-size: 300% 300%; /* Zoom parfait pour voir les détails */
+  background-size: 300% 300%;
   
+  /* ⚡️ ANIMATION "LIQUIDE" :
+     ease-in-out = Accélération/Décélération naturelle. 
+     C'est beaucoup moins "mécanique" que le linear.
+  */
   animation: 
-    iridescentShine 6s linear infinite,  /* 6s = Mouvement calme et premium */
-    breathe 7s ease-in-out infinite;     /* Respiration naturelle */
+    lusterFlow 7s ease-in-out infinite, 
+    breatheLuxe 8s ease-in-out infinite; 
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
