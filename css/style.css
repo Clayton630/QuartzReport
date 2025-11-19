@@ -770,64 +770,84 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "HIGH-GLOSS TITANIUM" (Visible, Contrasté & Luxueux)
+   💎 Liseré "STEALTH TITANIUM" (Apparition / Disparition Synchronisée)
    ========================= */
 
-/* 1. Mouvement Organique Fluide */
-@keyframes lusterFlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* ⚡️ L'ANIMATION FUSIONNÉE : 
+   Gère à la fois la Position (x) et l'Opacité (y) pour une synchro parfaite.
+*/
+@keyframes stealthFlow {
+  /* --- ALLER (Gauche vers Droite) --- */
+  0% { 
+    background-position: 0% 50%; 
+    opacity: 0;      /* Invisible au départ (virage) */
+  }
+  15% {
+    opacity: 1;      /* Apparaît rapidement pendant le trajet */
+  }
+  35% {
+    opacity: 1;      /* Reste visible */
+  }
+  50% { 
+    background-position: 100% 50%; 
+    opacity: 0;      /* Disparaît AVANT de s'arrêter (virage) */
+  }
+
+  /* --- RETOUR (Droite vers Gauche) --- */
+  65% {
+    opacity: 1;      /* Réapparaît au retour */
+  }
+  85% {
+    opacity: 1;      /* Reste visible */
+  }
+  100% { 
+    background-position: 0% 50%; 
+    opacity: 0;      /* Disparaît à l'arrivée (virage) */
+  }
 }
 
-/* 2. Respiration "Haute Intensité" (Reste toujours très visible) */
-@keyframes breatheLuxe {
-  0%   { opacity: 1; }
-  50%  { opacity: 0.8; } /* ✅ Ne descend pas sous 80% : Brillance permanente */
-  100% { opacity: 1; }
-}
-
-/* 3. Préparation de la carte (Ombre + Nettoyage bordure) */
+/* Préparation de la carte */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  /* Ombre légèrement plus marquée pour détacher le métal brillant */
+  /* Ombre diffuse et moderne */
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15); 
 }
 
-/* 4. Le liseré Titane Brillant */
+/* Le liseré Furtif */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 28px;
-  padding: 1.8px; /* ✅ Un poil plus épais pour la visibilité */
+  padding: 1.8px;
   
-  /* 💎 LE GRADIENT "HIGH CONTRAST" :
-     Base sombre (#64748b) vs Blanc Pur (#ffffff).
-     C'est ce contraste fort qui donne l'effet "Chrome/Titane poli".
+  /* 💎 LE GRADIENT "HIGH-GLOSS" (On garde celui que tu aimais) :
+     Contraste fort Ardoise/Blanc pour l'effet Chrome/Titane.
   */
   background: linear-gradient(
     125deg,
-    #64748b 0%,     /* Ardoise (Ombre forte) */
+    #64748b 0%,     /* Ardoise */
     #f1f5f9 20%,    /* Gris clair */
-    #ffffff 30%,    /* ⚡️ ÉCLAT BLANC INTENSE */
-    #bae6fd 35%,    /* Bleu Ciel (Subtil mais visible) */
-    #ffffff 40%,    /* ⚡️ ÉCLAT BLANC INTENSE */
-    #94a3b8 50%,    /* Gris Acier (Transition) */
-    #ffffff 60%,    /* ⚡️ ÉCLAT BLANC INTENSE */
-    #e9d5ff 65%,    /* Violet Glacé (Subtil mais visible) */
-    #ffffff 70%,    /* ⚡️ ÉCLAT BLANC INTENSE */
+    #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
+    #bae6fd 35%,    /* Bleu Ciel */
+    #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
+    #94a3b8 50%,    /* Gris Acier */
+    #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
+    #e9d5ff 65%,    /* Violet Glacé */
+    #ffffff 70%,    /* ⚡️ ÉCLAT BLANC */
     #f1f5f9 80%,    /* Gris clair */
-    #64748b 100%    /* Ardoise (Ombre forte) */
+    #64748b 100%    /* Ardoise */
   );
   
   background-size: 300% 300%;
   
-  animation: 
-    lusterFlow 7s ease-in-out infinite, 
-    breatheLuxe 6s ease-in-out infinite; 
+  /* ⚡️ UNE SEULE ANIMATION :
+     8 secondes pour un cycle complet (Aller + Retour)
+     ease-in-out pour que le mouvement soit fluide (pas robotique).
+  */
+  animation: stealthFlow 8s ease-in-out infinite;
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
