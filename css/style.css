@@ -850,7 +850,7 @@ body, button, input, textarea, select {
   /* Calage sub-pixel parfait */
   inset: -0.5px;
   border-radius: 28.5px;
-  padding: 3px;
+  padding: 2px;
   
   /* Gradient Titane Frost */
   background: linear-gradient(
