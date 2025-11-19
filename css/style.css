@@ -768,20 +768,23 @@ body, button, input, textarea, select {
     margin-left: 0 !important;
   }
 }
+
 /* =========================
-   ✨ Liseré "LIQUID SILVER" (Flux Continu & Métal Pur)
+   ✨ Liseré "SILVER RETURN" (Aller-Retour Fluide & Métal Clair)
    ========================= */
 
-/* 1. Flux Continu (Plus d'aller-retour violent) */
-@keyframes metalFlow {
+/* 1. RETOUR DU PING-PONG (Aller-Retour) */
+/* C'est la seule façon d'avoir un mouvement 100% fluide sans coupure */
+@keyframes iridescentShine {
   0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; } /* On avance tout droit à l'infini */
+  50% { background-position: 100% 50%; } /* Va au bout */
+  100% { background-position: 0% 50%; }  /* Revient au début */
 }
 
-/* 2. Respiration Profonde */
+/* 2. Respiration marquée */
 @keyframes breathe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.1; }       /* Descend à 10% (Quasi invisible) */
+  50%  { opacity: 0.4; }       /* Descend à 40% pour l'effet vivant */
   100% { opacity: 1; }
 }
 
@@ -793,7 +796,7 @@ body, button, input, textarea, select {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); 
 }
 
-/* 4. Le liseré Argent Liquide */
+/* 4. Le liseré Argenté */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
@@ -801,30 +804,28 @@ body, button, input, textarea, select {
   border-radius: 28px;
   padding: 2px;
   
-  /* 💿 LE VRAI MÉTAL FLUIDE :
-     Une boucle parfaite de Gris et de Blancs.
-     Le début et la fin du dégradé sont identiques (#cbd5e1) pour que la boucle soit invisible.
+  /* 💿 DÉGRADÉ MÉTAL CLAIR (Argent & Blanc)
+     On garde la structure "Prisme" mais adaptée pour l'aller-retour.
+     Gris Argent (#bdc3c7) aux bords pour sceller l'effet métal.
   */
   background: linear-gradient(
-    115deg, 
-    #cbd5e1 0%,     /* Gris Argent (Départ) */
-    #f1f5f9 15%,    /* Blanc Grisâtre */
-    #ffffff 25%,    /* ⚡️ ÉCLAT BLANC */
-    #94a3b8 35%,    /* Gris Acier (Ombre) */
-    #ffffff 45%,    /* ⚡️ ÉCLAT BLANC */
-    #cbd5e1 50%,    /* Gris Argent (Milieu) */
-    #f1f5f9 65%,    /* Blanc Grisâtre */
-    #ffffff 75%,    /* ⚡️ ÉCLAT BLANC */
-    #94a3b8 85%,    /* Gris Acier (Ombre) */
-    #ffffff 95%,    /* ⚡️ ÉCLAT BLANC */
-    #cbd5e1 100%    /* Gris Argent (Fin = Départ) */
+    125deg, 
+    #bdc3c7 0%,     /* Argent Mat */
+    #ffffff 20%,    /* Éclat Blanc */
+    #a5f3fc 30%,    /* Cyan Glacé (Très pâle) */
+    #ffffff 45%,    /* Éclat Blanc Central */
+    #e9d5ff 55%,    /* Violet Glacé (Très pâle) */
+    #ffffff 70%,    /* Éclat Blanc */
+    #fbcfe8 80%,    /* Rose Glacé (Très pâle) */
+    #ffffff 90%,    /* Éclat Blanc */
+    #bdc3c7 100%    /* Argent Mat */
   );
   
-  background-size: 200% 200%; /* Taille ajustée pour la fluidité */
+  background-size: 300% 300%; /* Zoom parfait pour voir les détails */
   
   animation: 
-    metalFlow 4s linear infinite,        /* Flux continu très fluide */
-    breathe 8s ease-in-out infinite;     /* Respiration lente */
+    iridescentShine 6s linear infinite,  /* 6s = Mouvement calme et premium */
+    breathe 7s ease-in-out infinite;     /* Respiration naturelle */
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
