@@ -768,11 +768,12 @@ body, button, input, textarea, select {
     margin-left: 0 !important;
   }
 }
+
 /* =========================
-   💎 Liseré "STEALTH TITANIUM V2" (Couleurs Renforcées)
+   💎 Liseré "PASTEL TITANIUM" (Reflets Glacés & Métal)
    ========================= */
 
-/* ⚡️ L'ANIMATION FURTIVE (Inchangée, car elle était parfaite) */
+/* ⚡️ L'ANIMATION FURTIVE (Inchangée) */
 @keyframes stealthFlow {
   /* --- ALLER --- */
   0% { background-position: 0% 50%; opacity: 0; }
@@ -794,7 +795,7 @@ body, button, input, textarea, select {
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15); 
 }
 
-/* Le liseré Titane Boosté */
+/* Le liseré Pastel Métallique */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
@@ -802,24 +803,23 @@ body, button, input, textarea, select {
   border-radius: 28px;
   padding: 1.8px;
   
-  /* 💎 LE GRADIENT AJUSTÉ :
-     J'ai remplacé le bleu très pâle (#bae6fd) par un Bleu Ciel Vif (#38bdf8).
-     J'ai remplacé le violet pâle (#e9d5ff) par un Violet Améthyste (#c084fc).
-     Le reste (Gris/Blanc) est identique pour garder l'aspect métal.
+  /* 💎 LE GRADIENT "PASTEL" :
+     On remplace les couleurs vives par des versions "glacées" (très claires).
+     Elles se fondent mieux avec le blanc et le gris pour un effet métal réaliste.
   */
   background: linear-gradient(
     125deg,
-    #64748b 0%,     /* Ardoise */
-    #f1f5f9 20%,    /* Gris clair */
+    #64748b 0%,     /* Ardoise (Ombre) */
+    #f8fafc 20%,    /* Blanc Grisâtre */
     #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
-    #38bdf8 35%,    /* ✅ Bleu Ciel (Plus visible) */
+    #bae6fd 35%,    /* ✅ Bleu Glacier Pastel (Doux et métallique) */
     #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
     #94a3b8 50%,    /* Gris Acier */
     #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
-    #c084fc 65%,    /* ✅ Violet Améthyste (Plus visible) */
+    #e9d5ff 65%,    /* ✅ Lavande Argenté (Doux et métallique) */
     #ffffff 70%,    /* ⚡️ ÉCLAT BLANC */
-    #f1f5f9 80%,    /* Gris clair */
-    #64748b 100%    /* Ardoise */
+    #f8fafc 80%,    /* Blanc Grisâtre */
+    #64748b 100%    /* Ardoise (Ombre) */
   );
   
   background-size: 300% 300%;
