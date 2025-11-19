@@ -770,7 +770,7 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "PASTEL TITANIUM" (Reflets Glacés & Métal)
+   💎 Liseré "WHITE SILVER TITANIUM" (Argent Clair & Pastels)
    ========================= */
 
 /* ⚡️ L'ANIMATION FURTIVE (Inchangée) */
@@ -792,10 +792,10 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15); 
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
 }
 
-/* Le liseré Pastel Métallique */
+/* Le liseré Argent Blanc */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
@@ -803,23 +803,24 @@ body, button, input, textarea, select {
   border-radius: 28px;
   padding: 1.8px;
   
-  /* 💎 LE GRADIENT "PASTEL" :
-     On remplace les couleurs vives par des versions "glacées" (très claires).
-     Elles se fondent mieux avec le blanc et le gris pour un effet métal réaliste.
+  /* 💎 LE GRADIENT "MOINS GRIS" :
+     Base : Gris Perle Moyen (#94a3b8) au lieu du sombre.
+     Dominante : Blanc (#ffffff) et Argent très clair (#e2e8f0).
+     Résultat : Un métal beaucoup plus lumineux et moins "sale".
   */
   background: linear-gradient(
     125deg,
-    #64748b 0%,     /* Ardoise (Ombre) */
-    #f8fafc 20%,    /* Blanc Grisâtre */
+    #94a3b8 0%,     /* Gris Perle (Base plus claire) */
+    #f1f5f9 20%,    /* Argent très clair */
     #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
-    #bae6fd 35%,    /* ✅ Bleu Glacier Pastel (Doux et métallique) */
+    #bae6fd 35%,    /* ✅ Bleu Glacier Pastel */
     #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
-    #94a3b8 50%,    /* Gris Acier */
+    #cbd5e1 50%,    /* Gris Argent (Au lieu du gris acier) */
     #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
-    #e9d5ff 65%,    /* ✅ Lavande Argenté (Doux et métallique) */
+    #e9d5ff 65%,    /* ✅ Lavande Argenté */
     #ffffff 70%,    /* ⚡️ ÉCLAT BLANC */
-    #f8fafc 80%,    /* Blanc Grisâtre */
-    #64748b 100%    /* Ardoise (Ombre) */
+    #f1f5f9 80%,    /* Argent très clair */
+    #94a3b8 100%    /* Gris Perle */
   );
   
   background-size: 300% 300%;
