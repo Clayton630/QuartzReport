@@ -770,7 +770,7 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "WHITE SILVER TITANIUM" (Argent Clair & Pastels)
+   💎 Liseré "WHITE SILVER TITANIUM" (Fix Coins Parfaits)
    ========================= */
 
 /* ⚡️ L'ANIMATION FURTIVE (Inchangée) */
@@ -793,29 +793,40 @@ body, button, input, textarea, select {
   border: none !important;
   background-clip: padding-box;
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
+  /* IMPORTANT : Le clipping doit être strict pour cette astuce */
+  overflow: hidden; 
+  /* Petit fix pour Safari/iOS pour bien clipper les coins */
+  transform: translateZ(0); 
 }
 
-/* Le liseré Argent Blanc */
+/* Le liseré Argent Blanc (Ajusté pour couvrir les coins) */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
-  inset: 0;
-  border-radius: 28px;
-  padding: 1.8px;
   
-  /* 💎 LE GRADIENT "MOINS GRIS" :
-     Base : Gris Perle Moyen (#94a3b8) au lieu du sombre.
-     Dominante : Blanc (#ffffff) et Argent très clair (#e2e8f0).
-     Résultat : Un métal beaucoup plus lumineux et moins "sale".
+  /* ✅ ASTUCE DU DÉBORDEMENT :
+     On fait dépasser le liseré de 1px (-1px) tout autour.
+     Comme la carte est en "overflow: hidden", cela force le liseré
+     à remplir 100% de la zone visible, sans aucun pixel manquant.
   */
+  inset: -1px;
+  
+  /* On adapte le radius (+1px) pour suivre parfaitement la courbe extérieure */
+  border-radius: 29px; 
+  
+  /* On augmente le padding pour compenser le 1px qui est coupé dehors.
+     (1.8px visible + 1px coupé = 2.8px total) */
+  padding: 2.8px;
+  
+  /* 💎 LE GRADIENT (Identique) */
   background: linear-gradient(
     125deg,
-    #94a3b8 0%,     /* Gris Perle (Base plus claire) */
+    #94a3b8 0%,     /* Gris Perle */
     #f1f5f9 20%,    /* Argent très clair */
     #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
     #bae6fd 35%,    /* ✅ Bleu Glacier Pastel */
     #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
-    #cbd5e1 50%,    /* Gris Argent (Au lieu du gris acier) */
+    #cbd5e1 50%,    /* Gris Argent */
     #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
     #e9d5ff 65%,    /* ✅ Lavande Argenté */
     #ffffff 70%,    /* ⚡️ ÉCLAT BLANC */
