@@ -770,10 +770,10 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "CRYSTAL TITANIUM" (Coins Parfaits & Couleurs Pures)
+   💎 Liseré "ABSOLUTE TITANIUM" (Serrage Parfait & Argent Pur)
    ========================= */
 
-/* 1. Animation Furtive Fluide */
+/* 1. Animation Furtive (Inchangée) */
 @keyframes stealthFlow {
   /* --- ALLER --- */
   0% { background-position: 0% 50%; opacity: 0; }
@@ -787,49 +787,57 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; opacity: 0; }
 }
 
-/* 2. Préparation de la carte : Le secret des coins nets */
+/* 2. La Carte : Le Masque de Fer */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
   border: none !important;
   background-clip: padding-box;
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
   
-  /* ✅ CRUCIAL : Coupe tout ce qui dépasse du radius */
+  /* ✅ COUPE NETTE : Tout ce qui dépasse de 28px est supprimé */
   overflow: hidden;
-  /* Fix Safari pour le clipping des coins */
-  transform: translateZ(0); 
-  border-radius: 28px; /* On s'assure que le radius est bien défini ici */
+  border-radius: 28px;
+  transform: translateZ(0); /* Force le GPU à lisser les bords (Safari fix) */
 }
 
-/* 3. Le liseré Cristal */
+/* 3. Le Liseré : Ajustement Géométrique */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   
-  /* ✅ RETOUR À LA PRÉCISION :
-     inset: 0 colle le liseré exactement au bord de la carte.
-     Comme la carte est "overflow: hidden", l'image est coupée au même endroit.
-     Le liseré vient se poser PAR DESSUS la coupure.
+  /* 📐 LA GÉOMÉTRIE PARFAITE :
+     On commence 1px DEHORS (-1px). Le parent coupe ce pixel.
+     Cela force le liseré à remplir 100% du bord visible sans jour.
   */
-  inset: 0;
-  border-radius: 28px; /* Identique à la carte pour un match parfait */
-  padding: 2px;        /* Épaisseur suffisante pour couvrir l'arête de l'image */
+  inset: -1px;
   
-  /* 💎 LE GRADIENT "CRISTAL" :
-     Base : Blanc Pur (#ffffff) et Argent Très Clair (#e2e8f0).
-     Couleurs : Pastels un peu plus "Punchy" pour être visibles sur le blanc.
+  /* On augmente le radius de 1px pour suivre la courbe parfaitement (28 + 1) */
+  border-radius: 29px;
+  
+  /* Calcul de l'épaisseur visible :
+     On veut 1.8px visible.
+     On a 1px coupé dehors.
+     Donc on met 2.8px de padding total.
+  */
+  padding: 2.8px;
+  
+  /* 💎 LE GRADIENT "ARGENT PUR" (Moins Gris, Plus Lumière) :
+     J'ai remplacé le gris perle (#94a3b8) par un Argent #cbd5e1.
+     J'ai ajouté plus de blanc pour "manger" le gris.
   */
   background: linear-gradient(
     125deg,
-    #e2e8f0 0%,     /* Argent Clair (Base) */
-    #ffffff 20%,    /* ⚡️ ÉCLAT BLANC */
-    #7dd3fc 30%,    /* 💎 Bleu Ciel (Vif mais pastel) */
+    #cbd5e1 0%,     /* Argent Clair (Au lieu du gris) */
+    #f8fafc 20%,    /* Blanc cassé */
+    #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
+    #bae6fd 35%,    /* 💎 Bleu Glacier (Subtil) */
     #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
-    #cbd5e1 50%,    /* Gris Argent (Contraste léger) */
+    #e2e8f0 50%,    /* Argent très pâle (Au lieu de l'acier) */
     #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
-    #d8b4fe 70%,    /* 💎 Violet Lavande (Vif mais pastel) */
-    #ffffff 80%,    /* ⚡️ ÉCLAT BLANC */
-    #e2e8f0 100%    /* Argent Clair */
+    #e9d5ff 65%,    /* 💎 Lavande (Subtil) */
+    #ffffff 70%,    /* ⚡️ ÉCLAT BLANC */
+    #f8fafc 80%,    /* Blanc cassé */
+    #cbd5e1 100%    /* Argent Clair */
   );
   
   background-size: 300% 300%;
@@ -843,5 +851,5 @@ body, button, input, textarea, select {
   mask-composite: exclude;
   
   pointer-events: none;
-  z-index: 100; /* Reste bien au-dessus de l'image */
+  z-index: 100;
 }
