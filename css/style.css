@@ -1,4 +1,4 @@
-/* =========================================================
+jklbn vgcfdszaé"'çà^pl$ùM. ÷bngfvdezé"'/* =========================================================
    QuartzReport — CSS complet (consolidé)
    ========================================================= */
 
@@ -770,20 +770,20 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "TITANIUM LUSTER" (Ultra-Propre & Moderne)
+   💎 Liseré "HIGH-GLOSS TITANIUM" (Visible, Contrasté & Luxueux)
    ========================= */
 
-/* 1. Mouvement Organique (Ping-Pong avec inertie) */
+/* 1. Mouvement Organique Fluide */
 @keyframes lusterFlow {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
 
-/* 2. Respiration Luxe (Subtile mais présente) */
+/* 2. Respiration "Haute Intensité" (Reste toujours très visible) */
 @keyframes breatheLuxe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.5; } /* Ne descend pas sous 50% pour garder la structure */
+  50%  { opacity: 0.8; } /* ✅ Ne descend pas sous 80% : Brillance permanente */
   100% { opacity: 1; }
 }
 
@@ -792,47 +792,43 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  /* Ombre diffuse moderne (moins dure, plus étalée) */
-  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
+  /* Ombre légèrement plus marquée pour détacher le métal brillant */
+  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15); 
 }
 
-/* 4. Le liseré Titane */
+/* 4. Le liseré Titane Brillant */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: 28px;
-  padding: 1.5px; /* ⚡️ FINESSE OPTIMALE (Rendu "Tech") */
+  padding: 1.8px; /* ✅ Un poil plus épais pour la visibilité */
   
-  /* 💎 LE GRADIENT "TITANIUM" :
-     On abandonne les couleurs vives pour des nuances de lumière pure.
-     Blanc Pur (#fff) + Gris "Cool" (#9ca3af) + Touches infimes de bleu glacier (#e0f2fe).
-     C'est sobre, froid, et incroyablement moderne.
+  /* 💎 LE GRADIENT "HIGH CONTRAST" :
+     Base sombre (#64748b) vs Blanc Pur (#ffffff).
+     C'est ce contraste fort qui donne l'effet "Chrome/Titane poli".
+     J'ai gardé les micro-teintes bleues/violettes mais légèrement renforcées.
   */
   background: linear-gradient(
     125deg,
-    #9ca3af 0%,     /* Acier Mat (Base sombre) */
-    #f3f4f6 20%,    /* Blanc cassé */
-    #ffffff 30%,    /* ✨ ÉCLAT PUR (Reflet dur) */
-    #e0f2fe 35%,    /* Bleu Glacier (Profondeur subtile) */
-    #ffffff 40%,    /* ✨ ÉCLAT PUR */
-    #d1d5db 50%,    /* Argent (Transition) */
-    #ffffff 60%,    /* ✨ ÉCLAT PUR */
-    #f5f3ff 65%,    /* Violet Brume (Reflet irisé ultra-léger) */
-    #ffffff 70%,    /* ✨ ÉCLAT PUR */
-    #f3f4f6 80%,    /* Blanc cassé */
-    #9ca3af 100%    /* Acier Mat */
+    #64748b 0%,     /* Ardoise (Ombre forte) */
+    #f1f5f9 20%,    /* Gris clair */
+    #ffffff 30%,    /* ⚡️ ÉCLAT BLANC INTENSE */
+    #bae6fd 35%,    /* Bleu Ciel (Subtil mais visible) */
+    #ffffff 40%,    /* ⚡️ ÉCLAT BLANC INTENSE */
+    #94a3b8 50%,    /* Gris Acier (Transition) */
+    #ffffff 60%,    /* ⚡️ ÉCLAT BLANC INTENSE */
+    #e9d5ff 65%,    /* Violet Glacé (Subtil mais visible) */
+    #ffffff 70%,    /* ⚡️ ÉCLAT BLANC INTENSE */
+    #f1f5f9 80%,    /* Gris clair */
+    #64748b 100%    /* Ardoise (Ombre forte) */
   );
   
   background-size: 300% 300%;
   
-  /* ⚡️ ANIMATION "LIQUIDE" :
-     ease-in-out = Accélération/Décélération naturelle. 
-     C'est beaucoup moins "mécanique" que le linear.
-  */
   animation: 
     lusterFlow 7s ease-in-out infinite, 
-    breatheLuxe 8s ease-in-out infinite; 
+    breatheLuxe 6s ease-in-out infinite; 
   
   -webkit-mask: 
      linear-gradient(#fff 0 0) content-box, 
