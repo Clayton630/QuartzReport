@@ -768,65 +768,56 @@ body, button, input, textarea, select {
     margin-left: 0 !important;
   }
 }
+
 /* =========================
-   💎 Liseré "TITANIUM GEOMETRY FIX" (Coins Retendus & Double Couche)
+   💎 Liseré "TITANIUM ONE" (Single Layer & Sub-Pixel Perfect)
    ========================= */
 
 /* 1. Animation Furtive (Inchangée) */
 @keyframes stealthFlow {
+  /* --- ALLER --- */
   0% { background-position: 0% 50%; opacity: 0; }
   15% { opacity: 1; }
   35% { opacity: 1; }
   50% { background-position: 100% 50%; opacity: 0; }
+
+  /* --- RETOUR --- */
   65% { opacity: 1; }
   85% { opacity: 1; }
   100% { background-position: 0% 50%; opacity: 0; }
 }
 
-/* 2. La Carte : Le Conteneur Maître */
+/* 2. La Carte */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
-  border: none !important;
+  /* ⚡️ IMPORTANT : On tue l'ancienne bordure blanche ici */
+  border: none !important; 
   background-clip: border-box;
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
   
-  /* Coupe nette à 28px */
   overflow: hidden;
   border-radius: 28px; 
   transform: translateZ(0);
 }
 
-/* 3. COUCHE 1 (::before) -> LE JOINT SOLIDE
-   ✅ CORRECTION : Rayon réduit à 27px.
-   Cela retend le coin pour qu'il ne paraisse pas "plus gros" que la carte.
-*/
-.hottest-grid .card:not(.hottest-spacer)::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  
-  /* On enlève 1px au radius pour compenser l'effet d'optique */
-  border-radius: 27px; 
-  
-  border: 1.5px solid #cbd5e1; /* Gris Argent Solide */
-  z-index: 90;
-  pointer-events: none;
-}
-
-/* 4. COUCHE 2 (::after) -> L'EFFET TITANE ANIMÉ
-   ✅ CORRECTION : Rayon réduit à 27px aussi.
-*/
+/* 3. Le Liseré Unique (Juste ::after) */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
-  inset: 0;
   
-  /* On suit la correction géométrique */
-  border-radius: 27px;
+  /* ✅ LA CORRECTION SUB-PIXEL :
+     On déborde de 0.5px seulement. 
+     Ça suffit pour boucher le trou du haut sans casser les coins.
+  */
+  inset: -0.5px;
   
+  /* On ajuste le radius : 28px (carte) + 0.5px (débord) = 28.5px */
+  border-radius: 28.5px;
+  
+  /* Épaisseur visuelle */
   padding: 2px;
   
-  /* 💎 LE GRADIENT "PASTEL MÉTALLIQUE" (Inchangé) */
+  /* 💎 LE GRADIENT "PASTEL MÉTALLIQUE" (Celui que tu aimais) */
   background: linear-gradient(
     125deg,
     #cbd5e1 0%,     /* Argent Clair */
@@ -843,6 +834,7 @@ body, button, input, textarea, select {
   );
   
   background-size: 300% 300%;
+  
   animation: stealthFlow 8s ease-in-out infinite;
   
   -webkit-mask: 
