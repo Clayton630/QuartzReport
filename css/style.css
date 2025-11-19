@@ -769,19 +769,19 @@ body, button, input, textarea, select {
   }
 }
 /* =========================
-   ✨ Liseré "HYPER CHROME" (Rotation Conique & Miroir)
+   ✨ Liseré "LIQUID SILVER" (Flux Continu & Métal Pur)
    ========================= */
 
-/* 1. Rotation Conique (La lumière tourne autour de la carte) */
-@keyframes rotateLight {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
+/* 1. Flux Continu (Plus d'aller-retour violent) */
+@keyframes metalFlow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; } /* On avance tout droit à l'infini */
 }
 
-/* 2. Respiration (Le métal reste toujours visible et solide) */
-@keyframes breatheChrome {
+/* 2. Respiration Profonde */
+@keyframes breathe {
   0%   { opacity: 1; }
-  50%  { opacity: 0.7; }       /* Variation subtile de l'intensité */
+  50%  { opacity: 0.1; }       /* Descend à 10% (Quasi invisible) */
   100% { opacity: 1; }
 }
 
@@ -790,72 +790,48 @@ body, button, input, textarea, select {
   position: relative;
   border: none !important;
   background-clip: padding-box;
-  /* Ombre forte pour détacher le métal du fond */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-  /* Important : On s'assure que le liseré ne déborde pas bizarrement */
-  border-radius: 28px; 
-  z-index: 1; /* Crée un contexte d'empilement */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); 
 }
 
-/* 4. Le liseré CHROME LIQUIDE */
-.hottest-grid .card:not(.hottest-spacer)::before {
-  content: "";
-  position: absolute;
-  inset: -2.5px; /* ⚡️ Épaisseur du trait (négatif pour sortir du cadre) */
-  border-radius: 32px; /* Un peu plus grand que la carte (28px + épaisseur) */
-  padding: 2.5px;      /* Même valeur que le inset */
-  
-  /* 💿 LE SECRET DU CONIC-GRADIENT (Effet Radar / CD) :
-     On simule un reflet qui tourne à 360°.
-     - Base : Gris Métal (#9ca3af) et Blanc (#fff).
-     - Diffraction : Des traits fins de couleurs (Cyan/Magenta) coincés dans le blanc.
-  */
-  background: conic-gradient(
-    from 0deg,
-    #9ca3af 0%,     /* Acier */
-    #ffffff 10%,    /* ⚡️ Éclat Blanc */
-    #9ca3af 20%,    /* Acier */
-    #374151 30%,    /* Gris Foncé (Contraste Miroir) */
-    #9ca3af 40%,    /* Acier */
-    
-    /* 🌈 LA DIFFRACTION (L'effet Arc-en-ciel dans le chrome) */
-    #ffffff 48%,    /* Blanc */
-    #00ffff 50%,    /* CYAN VIF */
-    #ffffff 52%,    /* Blanc */
-    #ff00ff 54%,    /* MAGENTA VIF */
-    #ffffff 56%,    /* Blanc */
-    
-    #9ca3af 60%,    /* Acier */
-    #374151 70%,    /* Gris Foncé */
-    #ffffff 85%,    /* ⚡️ Grand Éclat Final */
-    #9ca3af 100%    /* Boucle */
-  );
-  
-  /* Le Masque pour ne garder que la bordure */
-  -webkit-mask: 
-    linear-gradient(#fff 0 0) content-box, 
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  
-  /* Animation de rotation pure */
-  animation: rotateLight 6s linear infinite;
-  
-  pointer-events: none;
-  z-index: -1; /* Se place DERRIÈRE le contenu de la carte mais DEVANT le fond */
-}
-
-/* 5. Ajout d'une surcouche pour la brillance (Optionnel mais ajoute du réalisme) */
+/* 4. Le liseré Argent Liquide */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
-  inset: -2.5px;
-  border-radius: 32px;
-  background: inherit; /* Réutilise le dégradé */
-  filter: blur(4px);   /* Crée un halo lumineux autour du métal */
-  opacity: 0.4;
-  z-index: -2;
+  inset: 0;
+  border-radius: 28px;
+  padding: 2px;
+  
+  /* 💿 LE VRAI MÉTAL FLUIDE :
+     Une boucle parfaite de Gris et de Blancs.
+     Le début et la fin du dégradé sont identiques (#cbd5e1) pour que la boucle soit invisible.
+  */
+  background: linear-gradient(
+    115deg, 
+    #cbd5e1 0%,     /* Gris Argent (Départ) */
+    #f1f5f9 15%,    /* Blanc Grisâtre */
+    #ffffff 25%,    /* ⚡️ ÉCLAT BLANC */
+    #94a3b8 35%,    /* Gris Acier (Ombre) */
+    #ffffff 45%,    /* ⚡️ ÉCLAT BLANC */
+    #cbd5e1 50%,    /* Gris Argent (Milieu) */
+    #f1f5f9 65%,    /* Blanc Grisâtre */
+    #ffffff 75%,    /* ⚡️ ÉCLAT BLANC */
+    #94a3b8 85%,    /* Gris Acier (Ombre) */
+    #ffffff 95%,    /* ⚡️ ÉCLAT BLANC */
+    #cbd5e1 100%    /* Gris Argent (Fin = Départ) */
+  );
+  
+  background-size: 200% 200%; /* Taille ajustée pour la fluidité */
+  
   animation: 
-    rotateLight 6s linear infinite,
-    breatheChrome 4s ease-in-out infinite;
+    metalFlow 4s linear infinite,        /* Flux continu très fluide */
+    breathe 8s ease-in-out infinite;     /* Respiration lente */
+  
+  -webkit-mask: 
+     linear-gradient(#fff 0 0) content-box, 
+     linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  
+  pointer-events: none;
+  z-index: 100;
 }
