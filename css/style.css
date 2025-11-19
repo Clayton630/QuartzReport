@@ -770,10 +770,10 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "TITANIUM ONE" (Single Layer & Sub-Pixel Perfect)
+   💎 Liseré "TITANIUM ULTIMATE" (Visible, Shiny & Pixel Perfect)
    ========================= */
 
-/* 1. Animation Furtive (Inchangée) */
+/* 1. Animation Furtive (Inchangée : Fluide & Organique) */
 @keyframes stealthFlow {
   /* --- ALLER --- */
   0% { background-position: 0% 50%; opacity: 0; }
@@ -787,50 +787,52 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; opacity: 0; }
 }
 
-/* 2. La Carte */
+/* 2. La Carte : Nettoyage & Masque */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
-  /* ⚡️ IMPORTANT : On tue l'ancienne bordure blanche ici */
-  border: none !important; 
+  border: none !important; /* On supprime toute bordure parasite */
   background-clip: border-box;
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
   
-  overflow: hidden;
+  overflow: hidden;       /* Coupe nette */
   border-radius: 28px; 
   transform: translateZ(0);
 }
 
-/* 3. Le Liseré Unique (Juste ::after) */
+/* 3. Le Liseré Unique (Ajusté pour la brillance) */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   
-  /* ✅ LA CORRECTION SUB-PIXEL :
-     On déborde de 0.5px seulement. 
-     Ça suffit pour boucher le trou du haut sans casser les coins.
+  /* ✅ CALAGE SUB-PIXEL :
+     On déborde de 0.5px pour boucher le haut sans abîmer les coins.
   */
   inset: -0.5px;
+  border-radius: 28.5px; /* 28px + 0.5px */
   
-  /* On ajuste le radius : 28px (carte) + 0.5px (débord) = 28.5px */
-  border-radius: 28.5px;
+  /* ⚡️ VISIBILITÉ AUGMENTÉE :
+     On passe de 2px à 2.2px. C'est le "petit peu plus" qui change tout.
+  */
+  padding: 2.2px;
   
-  /* Épaisseur visuelle */
-  padding: 2px;
-  
-  /* 💎 LE GRADIENT "PASTEL MÉTALLIQUE" (Celui que tu aimais) */
+  /* 💎 LE GRADIENT "SHINY CHROME" :
+     Base : Acier Froid (#94a3b8) pour le contraste (plus shiny que l'argent pâle).
+     Lumière : Des Blancs Purs (#ffffff) très serrés autour des couleurs.
+     Couleurs : Bleu Glacier & Lavande (Pastels métalliques).
+  */
   background: linear-gradient(
     125deg,
-    #cbd5e1 0%,     /* Argent Clair */
-    #f8fafc 20%,    /* Blanc nuage */
-    #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
-    #bae6fd 35%,    /* 💎 Bleu Glacier Pastel */
-    #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
-    #e2e8f0 50%,    /* Argent pur */
-    #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
-    #e9d5ff 65%,    /* 💎 Lavande Pastel */
-    #ffffff 70%,    /* ⚡️ ÉCLAT BLANC */
-    #f8fafc 80%,    /* Blanc nuage */
-    #cbd5e1 100%    /* Argent Clair */
+    #94a3b8 0%,     /* Acier Froid (Base contrastée) */
+    #f1f5f9 15%,    /* Blanc Métal */
+    #ffffff 25%,    /* ⚡️ ÉCLAT BLANC TRANCHANT */
+    #bae6fd 30%,    /* 💎 Bleu Glacier (Reflet) */
+    #ffffff 35%,    /* ⚡️ ÉCLAT BLANC TRANCHANT */
+    #cbd5e1 50%,    /* Argent Pur (Centre) */
+    #ffffff 65%,    /* ⚡️ ÉCLAT BLANC TRANCHANT */
+    #e9d5ff 70%,    /* 💎 Lavande (Reflet) */
+    #ffffff 75%,    /* ⚡️ ÉCLAT BLANC TRANCHANT */
+    #f1f5f9 85%,    /* Blanc Métal */
+    #94a3b8 100%    /* Acier Froid (Base contrastée) */
   );
   
   background-size: 300% 300%;
