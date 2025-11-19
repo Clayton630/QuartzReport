@@ -290,10 +290,11 @@ hottest.forEach((article, j) => {
   const loadingAttr = j === 0 ? "eager" : "lazy";
 
   link.innerHTML = `
-    <img src="${optimizedThumb}" alt="" decoding="async" loading="${loadingAttr}">
-    <div class="card-content">
-      <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
-      <h3>${article.title}</h3>
+   <div class="card-inner"> <img src="${optimizedThumb}" alt="" decoding="async" loading="${loadingAttr}">
+       <div class="card-content">
+         <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
+         <h3>${article.title}</h3>
+       </div>
     </div>`;
 
   fragHot.appendChild(link);
