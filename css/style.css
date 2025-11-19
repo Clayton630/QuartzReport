@@ -1,4 +1,4 @@
-jklbn vgcfdszaé"'çà^pl$ùM. ÷bngfvdezé"'/* =========================================================
+/* =========================================================
    QuartzReport — CSS complet (consolidé)
    ========================================================= */
 
@@ -787,7 +787,7 @@ body, button, input, textarea, select {
   100% { opacity: 1; }
 }
 
-/* 3. Préparation de la carte */
+/* 3. Préparation de la carte (Ombre + Nettoyage bordure) */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
   border: none !important;
@@ -807,7 +807,6 @@ body, button, input, textarea, select {
   /* 💎 LE GRADIENT "HIGH CONTRAST" :
      Base sombre (#64748b) vs Blanc Pur (#ffffff).
      C'est ce contraste fort qui donne l'effet "Chrome/Titane poli".
-     J'ai gardé les micro-teintes bleues/violettes mais légèrement renforcées.
   */
   background: linear-gradient(
     125deg,
