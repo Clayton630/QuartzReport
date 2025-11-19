@@ -855,17 +855,17 @@ body, button, input, textarea, select {
   /* Gradient Titane Frost */
   background: linear-gradient(
     125deg,
-    #94a3b8 0%,
+    #a7b7cc 0%,
     #f1f5f9 15%,
     #ffffff 25%,
     #bae6fd 30%,
     #ffffff 35%,
-    #94a3b8 50%,
+    #a7b7cc 50%,
     #ffffff 65%,
     #e9d5ff 70%,
     #ffffff 75%,
     #f1f5f9 85%,
-    #94a3b8 100%
+    #a7b7cc 100%
   );
   
   background-size: 300% 300%;
