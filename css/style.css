@@ -770,24 +770,21 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "TITANIUM STABLE" (Anti-Glitch & Extra Shiny)
+   💎 Liseré "TITANIUM FROST" (Structure Acier & Reflets Glacés)
    ========================= */
 
-/* 1. Animation Furtive (Fluide & Organique) */
+/* 1. Animation Furtive (Inchangée) */
 @keyframes stealthFlow {
-  /* --- ALLER --- */
   0% { background-position: 0% 50%; opacity: 0; }
   15% { opacity: 1; }
   35% { opacity: 1; }
   50% { background-position: 100% 50%; opacity: 0; }
-
-  /* --- RETOUR --- */
   65% { opacity: 1; }
   85% { opacity: 1; }
   100% { background-position: 0% 50%; opacity: 0; }
 }
 
-/* 2. La Carte : Conteneur blindé */
+/* 2. La Carte (Conteneur Stable) */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
   border: none !important;
@@ -796,48 +793,45 @@ body, button, input, textarea, select {
   
   overflow: hidden;
   border-radius: 28px; 
-  /* ⚡️ FIX RENDU : Force le GPU à gérer les pixels */
+  /* Fix Rendu GPU */
   transform: translate3d(0, 0, 0); 
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 }
 
-/* 3. Le Liseré : Géométrie "Sûre" */
+/* 3. Le Liseré (Géométrie Sûre & Couleurs Glacées) */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   
-  /* ✅ GÉOMÉTRIE BLINDÉE :
-     On déborde franchement (-1px) pour ne laisser aucune chance aux coins.
-     On augmente le padding (3px) pour compenser la coupe.
-     Résultat visuel : ~2px nets.
-  */
+  /* Géométrie "Anti-Glitch" (Inchangée) */
   inset: -1px;
-  border-radius: 29px; /* 28px + 1px de débord */
+  border-radius: 29px;
   padding: 3px;
   
-  /* 💎 LE GRADIENT "EXTRA SHINY" :
-     J'ai renforcé le contraste Acier/Blanc pour que ça brille plus.
-     Bleu (#38bdf8) et Violet (#c084fc) un peu plus saturés pour la visibilité.
+  /* 💎 LE GRADIENT "FROST" :
+     Base : On a gardé tes Gris Contrastés (#64748b / #94a3b8).
+     Couleurs : On a remplacé les vifs par du Pastel Glacé.
+     -> Bleu Ciel Vif (#38bdf8) devient Bleu Glacier (#bae6fd).
+     -> Violet Vif (#c084fc) devient Lavande Glacée (#e9d5ff).
   */
   background: linear-gradient(
     125deg,
-    #64748b 0%,     /* Acier Sombre (Contraste fort) */
+    #64748b 0%,     /* Acier Sombre (Base solide) */
     #f1f5f9 15%,    /* Blanc Métal */
-    #ffffff 25%,    /* ⚡️ ÉCLAT PUR (Miroir) */
-    #38bdf8 30%,    /* 💎 Bleu Ciel Vif */
+    #ffffff 25%,    /* ⚡️ ÉCLAT PUR */
+    #bae6fd 30%,    /* ❄️ BLEU GLACIER (Pastel) */
     #ffffff 35%,    /* ⚡️ ÉCLAT PUR */
-    #94a3b8 50%,    /* Acier Moyen */
+    #94a3b8 50%,    /* Acier Moyen (Contraste) */
     #ffffff 65%,    /* ⚡️ ÉCLAT PUR */
-    #c084fc 70%,    /* 💎 Violet Améthyste Vif */
+    #e9d5ff 70%,    /* ❄️ LAVANDE GLACÉE (Pastel) */
     #ffffff 75%,    /* ⚡️ ÉCLAT PUR */
     #f1f5f9 85%,    /* Blanc Métal */
-    #64748b 100%    /* Acier Sombre */
+    #64748b 100%    /* Acier Sombre (Base solide) */
   );
   
   background-size: 300% 300%;
   
-  /* ⚡️ FIX ANTI-LAG : On prévient le navigateur que ça va bouger */
   will-change: background-position, opacity;
   animation: stealthFlow 8s ease-in-out infinite;
   
