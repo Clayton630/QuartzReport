@@ -770,10 +770,10 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   💎 Liseré "WHITE SILVER TITANIUM" (Fix Coins Parfaits)
+   💎 Liseré "CRYSTAL TITANIUM" (Coins Parfaits & Couleurs Pures)
    ========================= */
 
-/* ⚡️ L'ANIMATION FURTIVE (Inchangée) */
+/* 1. Animation Furtive Fluide */
 @keyframes stealthFlow {
   /* --- ALLER --- */
   0% { background-position: 0% 50%; opacity: 0; }
@@ -787,51 +787,49 @@ body, button, input, textarea, select {
   100% { background-position: 0% 50%; opacity: 0; }
 }
 
-/* Préparation de la carte */
+/* 2. Préparation de la carte : Le secret des coins nets */
 .hottest-grid .card:not(.hottest-spacer) {
   position: relative;
   border: none !important;
   background-clip: padding-box;
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12); 
-  /* IMPORTANT : Le clipping doit être strict pour cette astuce */
-  overflow: hidden; 
-  /* Petit fix pour Safari/iOS pour bien clipper les coins */
+  
+  /* ✅ CRUCIAL : Coupe tout ce qui dépasse du radius */
+  overflow: hidden;
+  /* Fix Safari pour le clipping des coins */
   transform: translateZ(0); 
+  border-radius: 28px; /* On s'assure que le radius est bien défini ici */
 }
 
-/* Le liseré Argent Blanc (Ajusté pour couvrir les coins) */
+/* 3. Le liseré Cristal */
 .hottest-grid .card:not(.hottest-spacer)::after {
   content: "";
   position: absolute;
   
-  /* ✅ ASTUCE DU DÉBORDEMENT :
-     On fait dépasser le liseré de 1px (-1px) tout autour.
-     Comme la carte est en "overflow: hidden", cela force le liseré
-     à remplir 100% de la zone visible, sans aucun pixel manquant.
+  /* ✅ RETOUR À LA PRÉCISION :
+     inset: 0 colle le liseré exactement au bord de la carte.
+     Comme la carte est "overflow: hidden", l'image est coupée au même endroit.
+     Le liseré vient se poser PAR DESSUS la coupure.
   */
-  inset: -1px;
+  inset: 0;
+  border-radius: 28px; /* Identique à la carte pour un match parfait */
+  padding: 2px;        /* Épaisseur suffisante pour couvrir l'arête de l'image */
   
-  /* On adapte le radius (+1px) pour suivre parfaitement la courbe extérieure */
-  border-radius: 29px; 
-  
-  /* On augmente le padding pour compenser le 1px qui est coupé dehors.
-     (1.8px visible + 1px coupé = 2.8px total) */
-  padding: 2.8px;
-  
-  /* 💎 LE GRADIENT (Identique) */
+  /* 💎 LE GRADIENT "CRISTAL" :
+     Base : Blanc Pur (#ffffff) et Argent Très Clair (#e2e8f0).
+     Couleurs : Pastels un peu plus "Punchy" pour être visibles sur le blanc.
+  */
   background: linear-gradient(
     125deg,
-    #94a3b8 0%,     /* Gris Perle */
-    #f1f5f9 20%,    /* Argent très clair */
-    #ffffff 30%,    /* ⚡️ ÉCLAT BLANC */
-    #bae6fd 35%,    /* ✅ Bleu Glacier Pastel */
+    #e2e8f0 0%,     /* Argent Clair (Base) */
+    #ffffff 20%,    /* ⚡️ ÉCLAT BLANC */
+    #7dd3fc 30%,    /* 💎 Bleu Ciel (Vif mais pastel) */
     #ffffff 40%,    /* ⚡️ ÉCLAT BLANC */
-    #cbd5e1 50%,    /* Gris Argent */
+    #cbd5e1 50%,    /* Gris Argent (Contraste léger) */
     #ffffff 60%,    /* ⚡️ ÉCLAT BLANC */
-    #e9d5ff 65%,    /* ✅ Lavande Argenté */
-    #ffffff 70%,    /* ⚡️ ÉCLAT BLANC */
-    #f1f5f9 80%,    /* Argent très clair */
-    #94a3b8 100%    /* Gris Perle */
+    #d8b4fe 70%,    /* 💎 Violet Lavande (Vif mais pastel) */
+    #ffffff 80%,    /* ⚡️ ÉCLAT BLANC */
+    #e2e8f0 100%    /* Argent Clair */
   );
   
   background-size: 300% 300%;
@@ -845,5 +843,5 @@ body, button, input, textarea, select {
   mask-composite: exclude;
   
   pointer-events: none;
-  z-index: 100;
+  z-index: 100; /* Reste bien au-dessus de l'image */
 }
