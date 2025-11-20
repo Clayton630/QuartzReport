@@ -365,16 +365,22 @@ body, button, input, textarea, select {
   position: relative;
   z-index: 1;
   display: flex;
-  /* On remet l'écart dynamique */
-  gap: var(--page-x); 
+  gap: var(--page-x);
   scroll-snap-type: x mandatory;
   overflow-x: auto;
-  overflow-y: visible; /* IMPORTANT : Permet à l'ombre de dépasser en haut/bas */
+  
+  /* ✅ IMPORTANT : Laisse dépasser l'ombre verticalement */
+  overflow-y: visible;
   overscroll-behavior-x: contain;
   
-  /* Padding généreux pour que les ombres ne soient pas coupées par le scroll container */
-  padding: 40px var(--page-x); 
-  margin-top: -10px; /* Compensation visuelle du padding-top augmenté */
+  /* ✅ PADDING ASYMÉTRIQUE (Le secret pour l'ombre) :
+     Haut : 40px
+     Côtés : var(--page-x)
+     Bas : 60px (Augmenté pour que l'ombre du hover ait la place d'exister)
+  */
+  padding: 40px var(--page-x) 60px var(--page-x); 
+  
+  margin-top: -10px; /* Compensation visuelle */
 }
 
 /* Empêche le snap sur le spacer */
@@ -384,10 +390,7 @@ body, button, input, textarea, select {
 
 .hottest-grid::-webkit-scrollbar { display: none; }
 
-/* ✅ 1. LA CARTE (COQUILLE EXTERNE) 
-   Gère : Layout, Marges, Mouvement, OMBRE.
-   Doit être en overflow: visible pour l'ombre.
-*/
+/* ✅ 1. LA CARTE (COQUILLE EXTERNE) */
 .hottest-grid .card {
   flex: 0 0 80%;
   max-width: 320px;
@@ -398,21 +401,26 @@ body, button, input, textarea, select {
   display: flex;
   flex-direction: column;
   
-  /* Reset styles visuels (transférés au inner) */
+  /* Reset styles */
   text-decoration: none;
   color: inherit;
   background: transparent; 
   border: none;
   
-  /* ⚡️ L'OMBRE EST ICI (Non coupée) */
+  /* Ombre de base */
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12);
-  border-radius: 28px; /* Nécessaire pour que l'ombre suive la forme */
+  border-radius: 28px;
   
-  /* Animation Mouvement */
-  transform-origin: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* ✅ FIX ANTI-CLIGNOTEMENT (FLICKER FIX) :
+     1. On définit un point de départ explicite (0,0,0).
+     2. On utilise will-change pour préparer le GPU.
+     3. On lisse la transition avec une courbe cubic-bezier plus stable.
+  */
+  transform: translate3d(0, 0, 0); 
+  will-change: transform, box-shadow;
+  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
+              box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   
-  /* IMPORTANT : Permet à l'ombre de vivre */
   overflow: visible !important; 
 }
 
@@ -875,10 +883,9 @@ body, button, input, textarea, select {
 /* =========================
    ✨ Restauration du Hover (Souris Uniquement)
    ========================= */
-
-/* ✅ On active le hover SEULEMENT si l'appareil gère le survol (Souris/Trackpad) */
 @media (hover: hover) {
   .hottest-grid .card:not(.hottest-spacer):hover {
+    /* Le mouvement reste le même, mais stabilisé par le bloc .card ci-dessus */
     transform: translate3d(0, -4px, 0);
     box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.2);
     filter: brightness(1.02);
