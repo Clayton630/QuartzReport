@@ -815,25 +815,30 @@ body, button, input, textarea, select {
 
 /* === HOTTEST : Calage Mobile & Desktop === */
 
-/* 1. On nettoie la marge sur le premier élément (Spacer ou Carte) */
-.hottest-grid .card:first-child {
-  margin-left: 0 !important; /* ✅ Fini les 20px en trop sur mobile */
+/* 1. On nettoie la marge ET le snap (clipping) sur le début de liste.
+   On cible :first-child (Spacer) et :nth-child(2) (Première vraie carte)
+   pour être sûr que le calage soit parfait sur tous les écrans.
+*/
+.hottest-grid .card:first-child,
+.hottest-grid .card:nth-child(2) {
+  margin-left: 0 !important;
+  scroll-margin-left: 0 !important; /* ✅ C'est cette ligne qui corrige le clipping */
 }
 
 /* 2. Sur Mobile : On cache le spacer */
-/* Le padding du conteneur (20px) suffit à créer l'alignement parfait avec les catégories */
 @media (max-width: 768px) {
   .hottest-spacer {
     display: none !important;
   }
 }
 
-/* 3. Sur Desktop : On garde la marge à 0 (le spacer JS fait le travail) */
+/* 3. Sur Desktop : On s'assure que la marge reste à 0 */
 @media (min-width: 769px) {
   .hottest-grid .card:first-child {
     margin-left: 0 !important;
   }
 }
+
 /* =========================
    💎 Liseré "TITANIUM LUMINOUS" (Appliqué sur .card-inner)
    ========================= */
