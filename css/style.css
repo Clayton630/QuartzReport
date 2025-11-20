@@ -813,18 +813,23 @@ body, button, input, textarea, select {
 }
 
 
-/* === HOTTEST : décalage propre de la première carte === */
+/* === HOTTEST : Calage Mobile & Desktop === */
+
+/* 1. On nettoie la marge sur le premier élément (Spacer ou Carte) */
 .hottest-grid .card:first-child {
-  margin-left: var(--page-x-mobile);
+  margin-left: 0 !important; /* ✅ Fini les 20px en trop sur mobile */
 }
 
-@media (min-width: 769px) {
-  .hottest-grid {
-    /* ✅ On augmente l'écart pour qu'il matche la marge (20px) */
-    /* Ainsi, la carte précédente sera pile poil hors champ */
-    gap: var(--page-x); 
+/* 2. Sur Mobile : On cache le spacer */
+/* Le padding du conteneur (20px) suffit à créer l'alignement parfait avec les catégories */
+@media (max-width: 768px) {
+  .hottest-spacer {
+    display: none !important;
   }
+}
 
+/* 3. Sur Desktop : On garde la marge à 0 (le spacer JS fait le travail) */
+@media (min-width: 769px) {
   .hottest-grid .card:first-child {
     margin-left: 0 !important;
   }
