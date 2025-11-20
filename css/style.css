@@ -442,16 +442,6 @@ body, button, input, textarea, select {
   backface-visibility: hidden;
 }
 
-/* Hover sur la CARTE (l'élément parent) */
-.hottest-grid .card:not(.hottest-spacer):hover {
-  /* On lève la carte entière */
-  transform: translate3d(0, -6px, 0);
-  /* On intensifie l'ombre sur le parent */
-  box-shadow: 0 22px 45px -8px rgba(0, 0, 0, 0.22);
-  /* Petit effet de lumière optionnel */
-  /* filter: brightness(1.02); */
-}
-
 /* Adaptation images */
 .card-inner > img {
   display: block;
@@ -883,11 +873,14 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   ✨ Restauration du Hover (Compatible Titane)
+   ✨ Restauration du Hover (Souris Uniquement)
    ========================= */
 
-.hottest-grid .card:not(.hottest-spacer):hover {
-  transform: translate3d(0, -4px, 0);
-  box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.2);
-  filter: brightness(1.02); */
+/* ✅ On active le hover SEULEMENT si l'appareil gère le survol (Souris/Trackpad) */
+@media (hover: hover) {
+  .hottest-grid .card:not(.hottest-spacer):hover {
+    transform: translate3d(0, -4px, 0);
+    box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.02);
+  }
 }
