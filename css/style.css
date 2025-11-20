@@ -411,12 +411,15 @@ body, button, input, textarea, select {
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12);
   border-radius: 28px;
   
-  /* ✅ FIX ANTI-CLIGNOTEMENT (FLICKER FIX) :
-     1. On définit un point de départ explicite (0,0,0).
-     2. On utilise will-change pour préparer le GPU.
-     3. On lisse la transition avec une courbe cubic-bezier plus stable.
+  /* ✅ FIX ANTI-CLIGNOTEMENT SAFARI :
+     1. translate3d(0,0,0) : Active l'accélération matérielle au repos.
+     2. backface-visibility : Empêche le clignotement des faces arrière.
+     3. will-change : Prévient le navigateur des futures modifs.
   */
-  transform: translate3d(0, 0, 0); 
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden; /* Indispensable pour Safari */
+  backface-visibility: hidden;
+  
   will-change: transform, box-shadow;
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
               box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -881,13 +884,13 @@ body, button, input, textarea, select {
 }
 
 /* =========================
-   ✨ Restauration du Hover (Souris Uniquement)
+   ✨ Restauration du Hover (Souris Uniquement & Sans Bug)
    ========================= */
 @media (hover: hover) {
   .hottest-grid .card:not(.hottest-spacer):hover {
-    /* Le mouvement reste le même, mais stabilisé par le bloc .card ci-dessus */
+    /* Mouvement fluide */
     transform: translate3d(0, -4px, 0);
+    /* Ombre renforcée */
     box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.2);
-    filter: brightness(1.02);
   }
 }
