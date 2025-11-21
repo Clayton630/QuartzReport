@@ -416,9 +416,6 @@ body, button, input, textarea, select {
      2. backface-visibility : Empêche le clignotement des faces arrière.
      3. will-change : Prévient le navigateur des futures modifs.
   */
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden; /* Indispensable pour Safari */
-  backface-visibility: hidden;
   
   will-change: transform, box-shadow;
   transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
