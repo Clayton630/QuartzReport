@@ -368,19 +368,16 @@ body, button, input, textarea, select {
   gap: var(--page-x);
   scroll-snap-type: x mandatory;
   overflow-x: auto;
-  
-  /* ✅ IMPORTANT : Laisse dépasser l'ombre verticalement */
   overflow-y: visible;
   overscroll-behavior-x: contain;
   
-  /* ✅ PADDING ASYMÉTRIQUE (Le secret pour l'ombre) :
-     Haut : 40px
-     Côtés : var(--page-x)
-     Bas : 60px (Augmenté pour que l'ombre du hover ait la place d'exister)
-  */
+  /* ✅ On définit la zone d'accroche (snap) à 20px du bord */
+  scroll-padding-left: var(--page-x); 
+  
+  /* Padding asymétrique (Haut 40, Côtés 20, Bas 60) */
   padding: 40px var(--page-x) 60px var(--page-x); 
   
-  margin-top: -10px; /* Compensation visuelle */
+  margin-top: -10px;
 }
 
 /* Empêche le snap sur le spacer */
@@ -395,7 +392,12 @@ body, button, input, textarea, select {
   flex: 0 0 80%;
   max-width: 320px;
   scroll-snap-align: start;
-  scroll-margin-left: var(--page-x);
+  
+  /* ✅ ZÉRO MARGE SUR LA CARTE :
+     Elle va s'aligner sur le "scroll-padding-left" du conteneur (20px).
+     Résultat : 20px pile, pas 40px, pas 0px.
+  */
+  scroll-margin-left: 0;
   
   /* Layout */
   display: flex;
@@ -407,17 +409,13 @@ body, button, input, textarea, select {
   background: transparent; 
   border: none;
   
-  /* Ombre de base */
+  /* Ombre */
   box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12);
   border-radius: 28px;
   
-  /* ✅ FIX ANTI-CLIGNOTEMENT SAFARI :
-     1. translate3d(0,0,0) : Active l'accélération matérielle au repos.
-     2. backface-visibility : Empêche le clignotement des faces arrière.
-     3. will-change : Prévient le navigateur des futures modifs.
-  */
+  /* Fix Safari & Anim */
   transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden; /* Indispensable pour Safari */
+  -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   
   will-change: transform, box-shadow;
