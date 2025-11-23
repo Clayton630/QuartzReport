@@ -395,7 +395,7 @@ body, button, input, textarea, select {
   flex: 0 0 80%;
   max-width: 320px;
   scroll-snap-align: start;
-  scroll-margin-left: var(--page-x);
+  scroll-margin-left: 1;
   
   /* Layout */
   display: flex;
