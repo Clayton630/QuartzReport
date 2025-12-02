@@ -788,27 +788,30 @@ body, button, input, textarea, select {
   animation-fill-mode: none;
 }
 }
-/* Pression : Agrandissement + Fond Blanc (Style Hover Desktop) */
+
+/* 1. Pression : Grand Agrandissement + Douceur (Modifié) */
 .main-nav a.pressed {
-  transform: scale(1.12); /* ✅ On agrandit au lieu de rétrécir */
+  transform: scale(1.22); /* ✅ 1.22 : Ça sort vraiment de l'écran */
   
-  /* ✅ On force le style "Hover" (Blanc + Ombres) */
+  /* Style Hover (Blanc Lumineux) */
   background: #ffffff !important; 
   color: #111 !important;
+  
+  /* Ombre large pour l'effet de lévitation */
   box-shadow:
     inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 2px 20px rgba(0,0,0,0.1);
+    0 10px 30px rgba(0,0,0,0.15);
 
-  /* On anime 'all' pour que la couleur change en même temps que la taille */
-  transition: all 240ms cubic-bezier(0.32, 0.07, 0.0, 1.0);
+  /* ⏳ 400ms : Transition lente et luxueuse à l'appui */
+  transition: all 400ms cubic-bezier(0.2, 0.9, 0.3, 1.0);
 }
 
-/* Relâchement : retour très fluide, lent, avec un léger amorti */
+/* 2. Relâchement : Retour élastique (Inchangé, on le garde !) */
 .main-nav a.pressed-release {
   transform: scale(1);
+  /* L'effet ressort quand on lâche */
   transition: transform 420ms cubic-bezier(0.16, 1.1, 0.3, 1.0);
-  /* courbe élastique amortie, très organique */
 }
 
 
