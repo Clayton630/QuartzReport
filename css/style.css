@@ -794,10 +794,10 @@ body, button, input, textarea, select {
    ========================= */
 
 /* 1. Pression : EXPLOSIVE (200ms) */
+/* 1. Pression : Grande Amplitude & Mouvement Posé */
 .main-nav a.pressed {
-  transform: scale(1.15); /* Taille idéale */
+  transform: scale(1.25); /* ✅ On grossit franchement (+25%) */
   
-  /* On force le blanc */
   background: #ffffff !important; 
   color: #111 !important;
   
@@ -806,19 +806,17 @@ body, button, input, textarea, select {
     inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
     0 15px 35px rgba(0,0,0,0.15);
 
-  /* ⚡️ 200ms seulement : C'est immédiat sous le doigt.
-     La courbe démarre très vite pour réagir à l'instant T. */
-  transition: all 200ms cubic-bezier(0.1, 0.9, 0.2, 1.0);
+  /* ⏳ 400ms : C'est plus lent qu'avant (200ms), donc moins "électrique".
+     La courbe reste fluide pour éviter l'effet linéaire robotique. */
+  transition: all 400ms cubic-bezier(0.1, 0.9, 0.2, 1.0);
 }
 
-/* 2. Relâchement : PLANANT (500ms) */
+/* 2. Relâchement : Retour en douceur */
 .main-nav a.pressed-release {
   transform: scale(1);
   
-  /* 🐢 500ms : Le retour prend son temps.
-     La transition 'all' permet à la couleur active de fondre doucement 
-     à la place du blanc pendant que le bouton redescend. */
-  transition: all 500ms cubic-bezier(0.25, 1, 0.5, 1);
+  /* On garde une durée longue pour l'atterrissage */
+  transition: all 600ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* === HOTTEST : Calage Mobile & Desktop === */
