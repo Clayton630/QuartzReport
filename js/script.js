@@ -564,41 +564,32 @@ async function loadArticles() {
         link.addEventListener("touchend", (e) => {
           if (isScrolling) return; // Si on scrollait, on ne fait rien
 
-          // On empêche le clic fantôme qui pourrait suivre
+          // On empêche le clic fantôme
           if (e.cancelable) e.preventDefault();
 
           const cat = link.getAttribute("data-category");
 
-          // ⚡️ CALCUL MALIN :
-          // L'animation CSS de grossissement dure 200ms (voir CSS plus bas).
-          // Si l'utilisateur a appuyé 50ms, on attend 150ms de plus pour finir le "Pop".
-          // Si l'utilisateur a appuyé 300ms, on n'attend pas (0ms).
-          const animationDuration = 200;
-          const timePressed = Date.now() - touchStartTime;
-          const remainingTime = Math.max(0, animationDuration - timePressed);
+          // ✅ MODIFICATION : PLUS AUCUN DÉLAI.
+          // Dès que le doigt quitte l'écran, on lance le relâchement.
+          // L'animation CSS gérera la fluidité toute seule (interpolation).
 
-          setTimeout(() => {
-            // 1. On lance l'animation de retour VISUELLE
-            link.classList.remove("pressed");
-            link.classList.add("pressed-release");
+          // 1. On inverse l'animation VISUELLE immédiatement
+          link.classList.remove("pressed");
+          link.classList.add("pressed-release");
 
-            // 2. On change l'état "Actif" (Couleur)
-            categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
-            link.classList.add("active");
-            applyActive(cat);
+          // 2. On change l'état "Actif" (Couleur)
+          categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+          link.classList.add("active");
+          applyActive(cat);
 
-            // 3. ⚡️ ASTUCE PERFORMANCE :
-            // On utilise requestAnimationFrame pour dire au navigateur :
-            // "Finis de dessiner l'animation de retour d'abord, PUIS charge les articles".
-            // Ça évite le micro-freeze (effet "aspiré") du re-render.
+          // 3. ⚡️ PERF : On diffère le chargement des articles
+          // On laisse le navigateur dessiner le début du "dégonflement" avant de charger le contenu.
+          requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
-                render(filtered);
-              });
+              const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+              render(filtered);
             });
-
-          }, remainingTime);
+          });
         });
 
         // --- CLICK (Desktop / Fallback) ---
