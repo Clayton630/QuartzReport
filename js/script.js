@@ -1,907 +1,667 @@
-/* =========================================================
-   QuartzReport — CSS complet (consolidé)
-   ========================================================= */
+"use strict";
 
 /* =========================
-   Variables globales
+   Utils dates
    ========================= */
-:root {
-  /* marge horizontale de page (utilisée partout) */
-  --page-x: 20px;
-  --page-x-mobile: 20px;
-  --bg-grad-a: #f3f6fb;
-  --bg-grad-b: #f7f7f7;
+function normalizeDate(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12, 0, 0, 0);
+}
+function addDays(d, n) {
+  const x = new Date(d);
+  x.setDate(x.getDate() + n);
+  return x;
+}
+function startOfWeekMonday(d) {
+  const x = normalizeDate(d);
+  const day = x.getDay() || 7;
+  x.setDate(x.getDate() - (day - 1));
+  return normalizeDate(x);
+}
+function ymdKey(d) {
+  return d.toISOString().split("T")[0];
+}
+function parseDate(str) {
+  const d = new Date(str);
+  return isNaN(d) ? new Date() : d;
+}
+function base64ToUtf8(base64) {
+  const binary = atob(base64.replace(/\n/g, ""));
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder("utf-8").decode(bytes);
 }
 
-/* Ajuste l’offset avec les zones sûres (iOS) et petites largeurs */
-@supports(padding:max(0px)) {
-  :root {
-    --page-x-mobile: max(16px, env(safe-area-inset-left));
+/* =========================
+   Couleurs catégories (dynamiques)
+   ========================= */
+function buildCategoryColorMap(categories) {
+  const palette = [
+    "#4B73FA", "#FF6F61", "#2ECC71", "#F4C542", "#9B59B6",
+    "#00B8D9", "#E67E22", "#1ABC9C", "#E84393", "#16A085",
+    "#D35400", "#2980B9", "#C0392B", "#27AE60", "#8E44AD"
+  ];
+  const colorMap = { Tous: "none", Autre: "#555555" };
+  let i = 0;
+  for (const c of categories) {
+    if (c === "Tous" || c === "Autre") continue;
+    colorMap[c] = palette[i % palette.length];
+    i++;
+  }
+  return colorMap;
+}
+
+/* =========================
+   Stroke interne + halo coloré
+   ========================= */
+function getStrokeWidthPx() {
+  const dpr = window.devicePixelRatio || 1;
+  if (dpr >= 3) return 0.9;
+  if (dpr >= 2) return 0.8;
+  return 0.7;
+}
+function applyInnerStroke(linkEl, whiteAlpha = 0.5, colorHint = null) {
+  const baseW = 0.8;
+  const dpr = window.devicePixelRatio || 1;
+  const w = baseW * (dpr >= 2 ? 0.9 : 1);
+  const pixelAligned = Math.round(w * dpr) / dpr;
+  const strokeColor = "rgba(255,255,255," + whiteAlpha + ")";
+  const hint = colorHint && /^#([0-9A-Fa-f]{6})$/.test(colorHint)
+    ? colorHint + "40"
+    : "rgba(0,0,0,0.15)";
+  const stroke1 = `inset ${pixelAligned * 0.6}px ${pixelAligned}px 0 0 ${strokeColor}`;
+  const stroke2 = `inset -${pixelAligned * 0.6}px -${pixelAligned}px 0 0 ${strokeColor}`;
+  const stroke3 = `inset 0 ${pixelAligned * 0.7}px 0 0 ${strokeColor}`;
+  const stroke4 = `inset 0 -${pixelAligned * 0.7}px 0 0 ${strokeColor}`;
+  const shadowSoft = `0 6px 26px ${hint}, 0 2px 8px rgba(0,0,0,0.15)`;
+  linkEl.style.boxShadow = `${stroke1}, ${stroke2}, ${stroke3}, ${stroke4}, ${shadowSoft}`;
+  linkEl.style.border = "none";
+  linkEl.style.backfaceVisibility = "hidden";
+  linkEl.style.webkitTransform = "translateZ(0)";
+}
+function clearInnerStroke(linkEl) {
+  linkEl.style.boxShadow = "";
+  linkEl.style.border = "";
+  linkEl.style.backfaceVisibility = "";
+  linkEl.style.webkitTransform = ""; // enlève translateZ(0) inline
+  linkEl.style.transform = "";       // au cas où
+}
+
+/* =========================
+   Optimisation et resize images (CDN externe)
+   ========================= */
+function getOptimizedImageUrl(url, maxWidth) {
+  try {
+    if (!url || !url.startsWith("http")) return url;
+    const clean = encodeURIComponent(url.split("?")[0]);
+    return `https://quartzreport-oauth.claytonelhorga.workers.dev/img?src=${clean}&w=${maxWidth}&q=85`;
+  } catch (e) {
+    console.error("getOptimizedImageUrl failed:", e);
+    return url;
   }
 }
 
 /* =========================
-   Reset & bases
+   Lazy helpers (LQIP + IO)
    ========================= */
-html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow-x: hidden;
-  background: linear-gradient(135deg, var(--bg-grad-a), var(--bg-grad-b));
+let ioThumb = null;
+function ensureThumbObserver() {
+  if (ioThumb) return ioThumb;
+  ioThumb = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        const real = el.getAttribute("data-bg");
+        if (real) {
+          el.style.backgroundImage = `url('${real}')`;
+          el.classList.add("thumb-ready");
+          el.removeAttribute("data-bg");
+        }
+        ioThumb.unobserve(el);
+      });
+    },
+    { rootMargin: "200px 0px", threshold: 0.01 }
+  );
+  return ioThumb;
 }
-
-body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  max-width: 100%;
-  min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: visible;
-  font-family: 'Inter', Arial, sans-serif;
-  color: #111;
-  padding-top: env(safe-area-inset-top);
-  position: relative;
-  isolation: isolate;
-  background: linear-gradient(135deg, var(--bg-grad-a), var(--bg-grad-b));
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-html, body {
-  background-color: #f6f6f7;
+function prepareThumb(divEl, realUrl) {
+  divEl.style.backgroundImage = "url('data:image/gif;base64,R0lGODlhAQABAAAAACw=')";
+  divEl.style.filter = "blur(8px)";
+  divEl.style.transform = "translateZ(0)";
+  const optimized = getOptimizedImageUrl(realUrl, 800);
+  divEl.setAttribute("data-bg", optimized);
+  ensureThumbObserver().observe(divEl);
 }
 
 /* =========================
-   🌈 Reflet iridescent animé (haut de page)
+   Chargement principal (feed)
    ========================= */
-@keyframes iridescentFlow {
-  0% { background-position: 0% 50%; filter: brightness(1.05) saturate(1.25); }
-  50% { background-position: 100% 50%; filter: brightness(1.15) saturate(1.35); }
-  100% { background-position: 0% 50%; filter: brightness(1.05) saturate(1.25); }
-}
+async function loadArticles() {
+  const container = document.getElementById("articles");
+  const hottestContainer = document.getElementById("hottest");
+  const categoriesContainer = document.getElementById("categories");
 
-body::before {
-  content: "";
-  position: absolute;
-  top: -10vh;
-  left: 0;
-  width: 100%;
-  height: 68vh;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    linear-gradient(65deg,
-      rgba(135,175,255,0.75) 0%,
-      rgba(120,250,235,0.7) 14%,
-      rgba(185,255,205,0.7) 30%,
-      rgba(220,190,255,0.75) 45%,
-      rgba(255,190,250,0.75) 60%,
-      rgba(255,215,225,0.65) 75%,
-      rgba(255,240,200,0.55) 90%,
-      rgba(255,255,255,0.45) 100%
+  const repo = "Clayton630/QuartzReport";
+  const branch = "main";
+  const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
+
+  try {
+    const resp = await fetch(
+      `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
+      { cache: "force-cache" }
     );
-  background-size: 400% 400%;
-  background-position: 0% 50%;
-  filter: blur(26px) brightness(1.1) saturate(1.4);
-  animation: iridescentFlow 15s ease-in-out infinite;
-  mask-image: linear-gradient(to bottom,
-    rgba(0,0,0,1) 0%,
-    rgba(0,0,0,0.95) 65%,
-    rgba(0,0,0,0.55) 80%,
-    rgba(0,0,0,0) 100%
-  );
-  -webkit-mask-image: linear-gradient(to bottom,
-    rgba(0,0,0,1) 0%,
-    rgba(0,0,0,0.95) 65%,
-    rgba(0,0,0,0.55) 80%,
-    rgba(0,0,0,0) 100%
-  );
-}
+    if (!resp.ok) throw new Error("Erreur chargement liste articles");
 
+    const files = await resp.json();
+    const mdFiles = files.filter((f) => /\.md$/i.test(f.name));
 
-/* 🔵 Supprime le highlight bleu iOS/Android sur les liens */
-.main-nav a {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-}
+    async function fetchAllWithLimit(urls, limit) {
+      const results = [];
+      let i = 0;
+      async function next() {
+        if (i >= urls.length) return;
+        const idx = i++;
+        try {
+          const r = await fetch(urls[idx], { cache: "force-cache" });
+          results[idx] = await r.json();
+        } catch {
+          results[idx] = null;
+        }
+        return next();
+      }
+      const workers = [];
+      for (let k = 0; k < limit; k++) workers.push(next());
+      await Promise.all(workers);
+      return results;
+    }
 
-/* =========================
-   Police globale QuartzSans (rendu SF Pro universel)
-   ========================= */
-@font-face {
-  font-family: "QuartzSans";
-  src: local("SF Pro Text Regular"),
-       local("SF Pro Display Regular"),
-       local("Inter Variable"),
-       local("Inter"),
-       url("https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLT9R6fdtO.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
+    const urls = mdFiles.map(
+      (file) =>
+        `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}`
+    );
+    const apiDatas = await fetchAllWithLimit(urls, 6);
 
-/* ✅ Application globale sans modifier les graisses/tailles existantes */
-body, button, input, textarea, select {
-  font-family: "QuartzSans", -apple-system, BlinkMacSystemFont, "Segoe UI",
-               Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif !important;
-  font-variation-settings: "wght" inherit;
-}
+    const all = [];
+    for (let i = 0; i < mdFiles.length; i++) {
+      const file = mdFiles[i];
+      const apiData = apiDatas[i];
+      if (!apiData || !apiData.content) continue;
+      const text = base64ToUtf8(apiData.content);
 
-/* =========================
-   Header
-   ========================= */
-.site-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: calc(12px + env(safe-area-inset-top)) var(--page-x) 12px var(--page-x);
-  background: none;
-  border: none;
-  box-shadow: none;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-sizing: border-box;
-  overflow: visible;
-  isolation: isolate;
-}
+      const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
+      let meta = {},
+        body = text;
+      if (match) {
+        const yaml = match[1].trim();
+        body = match[2].trim();
+        yaml.split("\n").forEach((line) => {
+          const parts = line.split(":");
+          const k = parts.shift().trim();
+          const rest = parts.join(":").trim().replace(/^"|"$/g, "");
+          meta[k] = rest;
+        });
+      }
 
-.site-header::after {
-  content: "";
-  position: absolute;
-  top: -20px;
-  left: 0;
-  right: 0;
-  height: 20px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
-  pointer-events: none;
-  z-index: -1;
-}
+      const dateObj = parseDate(meta.date || "");
+      const slug = file.name.replace(/\.md$/i, "");
+      let cover = meta.thumbnail || "img/article-placeholder.jpg";
+      const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
+      if (!meta.thumbnail && firstImg) cover = firstImg[1];
 
-/* ✅ Logo QuartzReport */
-.logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.logo-img {
-  height: 28px;
-  width: auto;
-  display: block;
-  filter: brightness(0);
-  transition: transform 0.2s ease;
-}
-.logo-img:hover { transform: scale(1.05); }
-@media (min-width: 768px) { .logo-img { height: 26px; } }
+      all.push({
+        filename: file.name,
+        slug,
+        title: meta.title || "Sans titre",
+        date: dateObj,
+        author: meta.author || "Inconnu",
+        description: meta.description || "",
+        thumbnail: cover,
+        category: meta.category || "Autre",
+        important: meta.important === "true" || meta.important === true,
+        body,
+      });
+    }
 
-/* =========================
-   💧 Bouton combiné (recherche + menu)
-   ========================= */
-.icons {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  overflow: visible;
-}
+    all.sort((a, b) => b.date - a.date);
 
-.dual-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 86px;
-  height: 42px;
-  border-radius: 50px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
-    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
-    rgba(255,255,255,0.65);
-  border: 0.5px solid rgba(255,255,255,0.35);
-  backdrop-filter: blur(14px) saturate(200%);
-  -webkit-backdrop-filter: blur(14px) saturate(200%);
-  box-shadow:
-    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-    inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 2px 20px rgba(0,0,0,0.1);
-  cursor: pointer;
-  transition: all 0.25s ease;
-  padding: 0 12px;
-}
+    /* ======================
+       HOTTEST
+       ====================== */
+    hottestContainer.innerHTML = "";
+    /* === 1) Carte factice (spacer) comportement identique à une carte === */
+    const rootStyles = getComputedStyle(document.documentElement);
+    const pageXMobile = rootStyles.getPropertyValue("--page-x-mobile").trim() || "20px";
+    const pageX = rootStyles.getPropertyValue("--page-x").trim() || "20px";
 
-.dual-icon-btn:hover {
-  background: rgba(255,255,255,1);
-  transform: scale(1.03);
-}
+    const isDesktop = window.matchMedia("(min-width: 769px)").matches;
 
-.dual-icon-btn i {
-  font-size: 1.3rem;
-  color: #111;
-  line-height: 0;
-  transition: transform 0.2s ease;
-}
-.dual-icon-btn i:hover { transform: scale(1.15); }
+    // ✅ On calcule la largeur pour tout le monde (Desktop ET Mobile)
+    const adjustedWidth = isDesktop
+      ? `calc(${pageX} - 20px)`
+      : `calc(${pageXMobile} - 20px)`;
 
-/* Mobile bouton combiné */
-@media (max-width: 768px) {
-  .dual-icon-btn {
-    height: 44px;
-    width: 94px;
-    padding: 0 10px;
-    justify-content: space-between;
-  }
-  .dual-icon-btn i { font-size: 1.55rem; }
-}
+    // création de la pseudo-carte
+    const fakeCard = document.createElement("a");
+    fakeCard.className = "card hottest-spacer";
+    fakeCard.href = "javascript:void(0)";
+    fakeCard.setAttribute("aria-hidden", "true");
+    fakeCard.tabIndex = -1;
 
-@media (max-width: 768px) {
-  .main-nav a.lock-transform {
-    transform: scale(1) !important;
-    transition: transform 120ms ease-out !important;
-  }
-}
+    fakeCard.style.flex = `0 0 ${adjustedWidth}`;
+    fakeCard.style.maxWidth = adjustedWidth;
+    fakeCard.style.opacity = "0";
+    fakeCard.style.pointerEvents = "none";
+    fakeCard.style.border = "none";
+    fakeCard.style.boxShadow = "none";
+    fakeCard.style.background = "transparent";
+    fakeCard.style.padding = "0";
 
-/* =========================
-   Navigation (catégories dynamiques)
-   ========================= */
-/* Conteneur scrollable sans snap, parfaitement aligné avec le reste */
-.main-nav {
-  width: 100%;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-  scroll-snap-type: none; /* ✅ pas de snap */
-  margin: 8px 0 0 0;
-  padding: 0; /* on gère les marges via l’UL */
-}
+    hottestContainer.appendChild(fakeCard);
 
-.main-nav::-webkit-scrollbar { display: none; }
+    /* === 2) Vraies cartes HOTTEST === */
+    const hottest = all.filter((a) => a.important);
+    const fragHot = document.createDocumentFragment();
 
-/* Rangée de catégories : alignement identique aux autres sections */
-.main-nav ul {
-  display: flex;
-  gap: 12px;
-  list-style: none;
-  margin: 0;
-  padding: 0 var(--page-x);   /* ✅ mêmes marges que hottest/articles */
-  min-width: max-content;     /* ✅ garantit l’étalement et le scroll jusqu’au bout */
-  align-items: center;
-}
+    hottest.forEach((article, j) => {
+      const optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
 
-/* Spacer logique à droite pour que la dernière catégorie ne soit pas mangée */
-.main-nav ul::after {
-  content: "";
-  flex: 0 0 var(--page-x);
-}
+      const link = document.createElement("a");
+      link.href = `article.html?slug=${encodeURIComponent(
+        article.slug
+      )}&file=${encodeURIComponent(article.filename)}`;
+      link.className = "card";
 
-/* Items */
-.main-nav li { flex: 0 0 auto; }
+      const now = new Date();
+      const isToday =
+        article.date.getDate() === now.getDate() &&
+        article.date.getMonth() === now.getMonth() &&
+        article.date.getFullYear() === now.getFullYear();
 
-/* Lien/pill de catégorie (style unifié) */
-.main-nav a {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 18px;
-  border-radius: 50px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(255,255,255,0.5), rgba(255,255,255,0) 70%),
-    radial-gradient(circle at 70% 70%, rgba(255,255,255,0.2), rgba(255,255,255,0) 80%),
-    rgba(255,255,255,0.65);
-  border: 0.5px solid rgba(255,255,255,0.35);
-  backdrop-filter: blur(14px) saturate(200%);
-  -webkit-backdrop-filter: blur(14px) saturate(200%);
-  font-family: "QuartzSans", -apple-system, BlinkMacSystemFont, "Segoe UI",
-               Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", sans-serif;
-  font-weight: 440;
-  font-variation-settings: "wght" 440;
-  font-size: 1rem;
-  color: #111;
-  text-decoration: none;
-  /* ⚡️ VITESSE COULEUR : 0.15s (Très rapide) */
-  transition: all 0.15s ease-out;
-  box-shadow:
-    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-    inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 2px 20px rgba(0,0,0,0.1);
-  line-height: 1;
-}
+      const dateDisplay = isToday
+        ? "à " +
+        article.date.toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+        : article.date.toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "short",
+        });
 
-@media (hover: hover) and (pointer: fine) {
-  .main-nav a:not(.active):hover {
-    background: rgba(255,255,255,1);
-    transform: scale(1.12);
-    box-shadow:
-      inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-      inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-      0 2px 20px rgba(0,0,0,0.1);
-  }
-}
+      const loadingAttr = j === 0 ? "eager" : "lazy";
 
-.main-nav a.active {
-  background: rgba(255,255,255,1);
-  border: 0.5px solid rgba(0,0,0,0.1);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  font-weight: 500;
-  transform: scale(1.12);
-}
+      link.innerHTML = `
+   <div class="card-inner"> <img src="${optimizedThumb}" alt="" decoding="async" loading="${loadingAttr}">
+       <div class="card-content">
+         <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
+         <h3>${article.title}</h3>
+       </div>
+    </div>`;
 
-/* Mobile — hauteur réellement réduite (sans changer la taille police trop) */
-@media (max-width: 480px) {
-  .main-nav ul {
-    padding-left: var(--page-x-mobile);
-    padding-right: var(--page-x-mobile);
-  }
-  .main-nav a {
-    padding: 8px 16px;
-    font-size: 0.97rem;
-    line-height: 1;
-    border-radius: 34px;
-  }
-}
+      fragHot.appendChild(link);
+    });
 
-/* =========================
-   Section Hottest (Structure Corrigée Shadow/Overflow)
-   ========================= */
-.hottest {
-  padding: 20px 0;
-  overflow: visible;
-}
+    hottestContainer.appendChild(fragHot);
 
-.hottest-wrapper {
-  position: relative;
-  z-index: 1;
-  padding: 0;
-  overflow: visible;
-}
+    /* ======================
+       RENDER PRINCIPAL (feed)
+       ====================== */
+    async function render(list) {
+      container.innerHTML = "";
+      const isMobile = window.matchMedia("(max-width: 768px)").matches;
+      if (isMobile) {
+        const byDay = {};
+        list.forEach((a) => (byDay[ymdKey(a.date)] ||= []).push(a));
+        const sortedDays = Object.keys(byDay).sort(
+          (a, b) => new Date(b) - new Date(a)
+        );
+        for (const k of sortedDays) {
+          const d = new Date(k);
+          const dateStr = d.toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+          });
+          const block = document.createElement("div");
+          block.className = "day-block";
+          block.innerHTML = `<h3 class="day-title">${dateStr}</h3>`;
+          container.appendChild(block);
+          const articles = byDay[k].sort((a, b) => b.date - a.date);
+          for (let i4 = 0; i4 < articles.length; i4 += 4) {
+            const chunk = articles.slice(i4, i4 + 4);
+            const frag = document.createDocumentFragment();
+            chunk.forEach((article) => {
+              const time = article.date.toLocaleTimeString("fr-FR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              const el = document.createElement("div");
+              el.className = "day-article";
+              el.innerHTML = `
+                <a href="article.html?slug=${encodeURIComponent(
+                article.slug
+              )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                  <div class="thumb"></div>
+                  <div class="day-article-info">
+                    <p class="day-meta">Par ${article.author}, à ${time}</p>
+                    <h4>${article.title}</h4>
+                    <p class="day-desc">${article.description}</p>
+                  </div>
+                </a>`;
+              const t = el.querySelector(".thumb");
+              prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
+              frag.appendChild(el);
+            });
+            block.appendChild(frag);
+            await new Promise((res) => setTimeout(res, 200));
+          }
+        }
+      } else {
+        const mondayThis = startOfWeekMonday(new Date());
+        const mondayNext = addDays(mondayThis, 7);
+        const mondayPrev = addDays(mondayThis, -7);
+        const weeks = { current: {}, previous: {}, others: {} };
+        list.forEach((article) => {
+          const d = normalizeDate(article.date);
+          const dayKey = ymdKey(d);
+          const dTime = d.getTime();
+          if (dTime >= mondayThis && dTime < mondayNext)
+            (weeks.current[dayKey] ||= []).push(article);
+          else if (dTime >= mondayPrev && dTime < mondayThis)
+            (weeks.previous[dayKey] ||= []).push(article);
+          else {
+            const wk = startOfWeekMonday(d);
+            const wkKey = ymdKey(wk);
+            (weeks.others[wkKey] ||= {});
+            (weeks.others[wkKey][dayKey] ||= []).push(article);
+          }
+        });
 
-.hottest-grid {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  gap: var(--page-x);
-  scroll-snap-type: x mandatory;
-  overflow-x: auto;
-  
-  /* ✅ IMPORTANT : Laisse dépasser l'ombre verticalement */
-  overflow-y: visible;
-  overscroll-behavior-x: contain;
-  
-  /* ✅ PADDING ASYMÉTRIQUE (Le secret pour l'ombre) :
-     Haut : 40px
-     Côtés : var(--page-x)
-     Bas : 60px (Augmenté pour que l'ombre du hover ait la place d'exister)
-  */
-  padding: 40px var(--page-x) 60px var(--page-x); 
-  
-  margin-top: -10px; /* Compensation visuelle */
-}
+        async function renderWeek(title, daysMap) {
+          if (!Object.keys(daysMap).length) return;
+          const weekBlock = document.createElement("div");
+          weekBlock.className = "week-block";
+          weekBlock.innerHTML = `<h3 class="week-title">${title}</h3>`;
+          const carousel = document.createElement("div");
+          carousel.className = "week-carousel";
+          const sortedDays = Object.keys(daysMap).sort(
+            (a, b) => new Date(b) - new Date(a)
+          );
+          for (const dayKey of sortedDays) {
+            const d = new Date(dayKey);
+            const label = d.toLocaleDateString("fr-FR", {
+              day: "numeric",
+              month: "long",
+            });
+            const dayBlock = document.createElement("div");
+            dayBlock.className = "day-block";
+            dayBlock.innerHTML = `<h3 class="day-title">${label}</h3>`;
+            const articles = daysMap[dayKey].sort((a, b) => b.date - a.date);
+            for (let i5 = 0; i5 < articles.length; i5 += 4) {
+              const chunk = articles.slice(i5, i5 + 4);
+              const frag = document.createDocumentFragment();
+              chunk.forEach((article) => {
+                const time = article.date.toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                });
+                const el = document.createElement("div");
+                el.className = "day-article";
+                el.innerHTML = `
+                  <a href="article.html?slug=${encodeURIComponent(
+                  article.slug
+                )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                    <div class="thumb"></div>
+                    <div class="day-article-info">
+                      <p class="day-meta">Par ${article.author}, à ${time}</p>
+                      <h4>${article.title}</h4>
+                      <p class="day-desc">${article.description}</p>
+                    </div>
+                  </a>`;
+                const t = el.querySelector(".thumb");
+                prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
+                frag.appendChild(el);
+              });
+              dayBlock.appendChild(frag);
+              await new Promise((res) => setTimeout(res, 200));
+            }
+            carousel.appendChild(dayBlock);
+          }
+          weekBlock.appendChild(carousel);
+          container.appendChild(weekBlock);
+        }
 
-/* Empêche le snap sur le spacer */
-.hottest-grid .hottest-spacer {
-  scroll-snap-align: none !important;
-}
+        await renderWeek("Cette semaine", weeks.current);
+        await renderWeek("La semaine dernière", weeks.previous);
 
-.hottest-grid::-webkit-scrollbar { display: none; }
+        const otherWeeks = Object.keys(weeks.others).sort(
+          (a, b) => new Date(b) - new Date(a)
+        );
+        for (const wkKey of otherWeeks) {
+          const start = new Date(wkKey);
+          const end = addDays(start, 6);
+          const title = `Semaine du ${start.toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+          })} au ${end.toLocaleDateString("fr-FR", {
+            day: "numeric",
+            month: "long",
+          })}`;
+          await renderWeek(title, weeks.others[wkKey]);
+        }
+      }
+    }
 
-/* ✅ 1. LA CARTE (COQUILLE EXTERNE) */
-.hottest-grid .card {
-  flex: 0 0 80%;
-  max-width: 320px;
-  scroll-snap-align: start;
-  scroll-margin-left: var(--page-x);
-  
-  /* Layout */
-  display: flex;
-  flex-direction: column;
-  
-  /* Reset styles */
-  text-decoration: none;
-  color: inherit;
-  background: transparent; 
-  border: none;
-  
-  /* Ombre de base */
-  box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12);
-  border-radius: 28px;
-  
-  /* ✅ FIX ANTI-CLIGNOTEMENT SAFARI :
-     1. translate3d(0,0,0) : Active l'accélération matérielle au repos.
-     2. backface-visibility : Empêche le clignotement des faces arrière.
-     3. will-change : Prévient le navigateur des futures modifs.
-  */
-  
-  will-change: transform, box-shadow;
-  transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
-              box-shadow 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  
-  overflow: visible !important; 
-}
+    /* ======================
+       Catégories
+       ====================== */
+    function buildCategories(list, active = "Tous") {
+      if (!categoriesContainer) return;
+      const nav = categoriesContainer.closest(".main-nav");
+      const prevScroll = nav ? nav.scrollLeft : 0;
+      const cats = Array.from(
+        new Set(list.map((a) => a.category))
+      ).filter((c) => c !== "Autre");
+      cats.push("Autre");
+      const colorMap = buildCategoryColorMap(cats);
+      const html =
+        `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""
+        }">Tous</a></li>` +
+        cats
+          .map(
+            (c) =>
+              `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""
+              }">${c}</a></li>`
+          )
+          .join("");
+      categoriesContainer.innerHTML = html;
 
-/* ✅ 2. L'INTÉRIEUR (CONTENU VISUEL)
-   Gère : Fond, Image, Clipping, LISERÉ TITANE.
-   Doit être en overflow: hidden pour couper proprement.
-*/
-.card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  
-  /* Styles visuels */
-  background: rgba(255,255,255,0.35);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  
-  /* ⚡️ LE CLIPPING EST ICI */
-  overflow: hidden;
-  border-radius: 28px;
-  
-  /* Fix GPU pour Safari (bords nets) */
-  transform: translate3d(0,0,0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
+      function applyActive(cat) {
+        categoriesContainer.querySelectorAll("a").forEach((a) => {
+          a.style.background = "";
+          a.style.color = "";
+          a.style.backdropFilter = "";
+          a.style.webkitBackdropFilter = "";
+          clearInnerStroke(a);
 
-/* Adaptation images */
-.card-inner > img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border: none;
-}
+        });
+        const link = categoriesContainer.querySelector(
+          `a[data-category="${cat}"]`
+        );
+        if (!link) return;
+        if (cat === "Tous") {
+          link.style.background = "rgba(255,255,255,0.22)";
+          link.style.color = "#111";
+        } else {
+          const baseColor = colorMap[cat] || "#4B73FA";
 
-/* Contenu texte */
-.card-content {
-  flex: 1;
-  padding: 14px 16px 16px;
-}
-.card-content h3 {
-  font-size: 1.05rem;
-  margin: 6px 0 0;
-  color: #111;
-  text-align: left;
-  font-weight: 600;
-}
-.card-content p {
-  margin: 0;
-  font-size: 13px;
-  color: #0000008a;
-  font-weight: 400;
-  line-height: 1.3;
-}
-/* === Responsive Mobile Fixes === */
-@media (max-width: 768px) {
-  .hottest-grid .card {
-    flex: 0 0 65%;
-    max-width: 260px;
-  }
-  /* Ajustement padding container pour mobile */
-  .hottest-grid {
-    padding-top: 30px;
-    padding-bottom: 40px; /* Plus d'espace pour l'ombre mobile */
-  }
-}
+          // Conversion hex → RGB
+          const rgb = baseColor.match(/[A-Fa-f0-9]{2}/g)
+            .map(x => parseInt(x, 16));
 
-@media (min-width: 769px) {
-  .hottest-grid .card:first-child {
-    margin-left: 0 !important;
-  }
-}
+          const [r, g, b] = rgb;
+          const max = Math.max(r, g, b);
 
-/* =========================
-   Articles du feed
-   ========================= */
-.articles {
-  padding: 20px var(--page-x);
-  overflow: visible;
-}
+          // 💥 Paramètres : très saturé + très clair
+          const saturationBoost = 1.9;   // pousse la couleur
+          const brightnessBoost = 1.6;   // presque blanc
 
-.day-block {
-  background: #fff;
-  border-radius: 23px;
-  padding: 14px 14px 8px 14px;
-  margin-bottom: 26px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.04);
-  box-sizing: border-box;
-}
+          // Calcul RGB ajusté
+          const rr = Math.min(255, (r / max) * 255 * saturationBoost * brightnessBoost);
+          const gg = Math.min(255, (g / max) * 255 * saturationBoost * brightnessBoost);
+          const bb = Math.min(255, (b / max) * 255 * saturationBoost * brightnessBoost);
 
-.day-title {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #111;
-  margin: 0 0 12px 4px;
-  text-transform: capitalize;
-}
+          const textColor = `rgb(${rr.toFixed(0)}, ${gg.toFixed(0)}, ${bb.toFixed(0)})`;
 
-.day-article {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 0;
-}
+          // Application styles
+          link.style.background = baseColor + "CC";
+          link.style.color = textColor;
+          link.style.backdropFilter = "blur(6px) saturate(180%)";
+          link.style.webkitBackdropFilter = "blur(6px) saturate(180%)";
+        }
+        applyInnerStroke(link, 0.5, cat === "Tous" ? null : colorMap[cat]);
+      }
 
-.day-article-link {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  text-decoration: none;
-  color: inherit;
-}
+      if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
+      /* ==============================
+         GESTION TACTILE FLUIDE (Optimisée)
+         ============================== */
+      categoriesContainer.querySelectorAll("a").forEach((link) => {
 
-.thumb {
-  width: 72px;
-  height: 72px;
-  border-radius: 12px;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  flex-shrink: 0;
-}
+        // Variables pour le swipe et le timing
+        let startX = 0;
+        let startY = 0;
+        let isScrolling = false;
+        let touchStartTime = 0; // Pour calculer la durée de l'appui
 
-.day-article-info { flex: 1; }
+        // --- TOUCH START ---
+        link.addEventListener("touchstart", (e) => {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          isScrolling = false;
+          touchStartTime = Date.now(); // On top le chrono
 
-.day-meta {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #777;
-}
+          // Reset immédiat des états précédents
+          link.classList.remove("pressed-release");
+          link.classList.remove("no-hover");
+          void link.offsetWidth; // Force le navigateur à prendre en compte le reset
 
-.day-article-info h4 {
-  margin: 4px 0 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111;
-  line-height: 1.3;
-}
+          // Lance l'agrandissement (CSS)
+          link.classList.add("pressed");
+        }, { passive: true });
 
-.day-separator {
-  height: 1px;
-  background: rgba(0,0,0,0.06);
-  margin: 6px 0;
-}
+        // --- TOUCH MOVE (Détection du scroll) ---
+        link.addEventListener("touchmove", (e) => {
+          const dx = Math.abs(e.touches[0].clientX - startX);
+          const dy = Math.abs(e.touches[0].clientY - startY);
 
-/* =========================
-   Résumé (description)
-   ========================= */
-.day-desc {
-  margin: 4px 0 0;
-  font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.65);
-  line-height: 1.45;
-  font-weight: 400;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
+          if (dx > 10 || dy > 10) { // Si on bouge un peu trop, c'est un scroll
+            isScrolling = true;
+            link.classList.remove("pressed"); // On annule l'effet visuel
+            link.classList.add("no-hover");
+          }
+        }, { passive: true });
 
-/* =========================
-   Responsive global
-   ========================= */
-@media (max-width: 480px) {
-  .logo-img { height: 27px; }
+        // --- TOUCH END (Action !) ---
+        // --- TOUCH END (Action !) ---
+        link.addEventListener("touchend", (e) => {
+          if (isScrolling) return;
 
-  /* catégories : taille/padding plus compact */
-  .main-nav a { font-size: 0.97rem; padding: 8px 16px; border-radius: 34px; }
+          if (e.cancelable) e.preventDefault();
 
-  .hottest-grid .card { flex: 0 0 65%; max-width: 260px; }
-  .card-content h3 { font-size: 1.05rem; }
+          const cat = link.getAttribute("data-category");
 
-  .article-header h3 { font-size: 1.3rem; }
-  .article-body { font-size: 0.95rem; }
-  .thumb { width: 64px; height: 64px; }
-  .day-title { font-size: 1rem; margin-bottom: 8px; }
-  .day-article-info h4 { font-size: 0.95rem; }
+          // ⚡️ LA CORRECTION EST ICI :
+          // On définit une durée minimale de 100ms (un clignement d'œil).
+          // - Si vous restez appuyé : ça agit en direct (0 délai).
+          // - Si vous tapez en éclair (20ms) : ça attend 80ms de plus pour que l'œil voie le "Pop".
+          const minAnimationTime = 100;
+          const timePressed = Date.now() - touchStartTime;
+          const remainingTime = Math.max(0, minAnimationTime - timePressed);
 
-  /* ❗ Correction : NE PAS mettre de padding sur hottest-wrapper */
-  .hottest-wrapper {
-    padding: 0; /* essential */
-  }
+          setTimeout(() => {
+            // 1. Relâchement visuel
+            link.classList.remove("pressed");
+            link.classList.add("pressed-release");
 
-  /* ❗ Le padding doit aller sur hottest-grid */
-  .hottest-grid {
-    padding-left: var(--page-x-mobile);
-    padding-right: var(--page-x-mobile);
-  }
+            // 2. Changement d'état
+            categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+            link.classList.add("active");
+            applyActive(cat);
 
-  /* articles */
-  .articles { padding: 20px var(--page-x-mobile); }
-}
+            // 3. Performance (Décalage du chargement lourd)
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+                render(filtered);
+              });
+            });
 
-/* =========================
-   Feed regroupé par jour / semaine (desktop)
-   ========================= */
-@media (min-width: 769px) {
-  .week-block { margin-bottom: 36px; }
+          }, remainingTime);
+        });
 
-  .week-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #111;
-    margin: 0 0 16px 4px;
-    text-transform: capitalize;
-  }
+        // --- CLICK (Desktop / Fallback) ---
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          // La logique desktop reste simple
+          const cat = link.getAttribute("data-category");
+          categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+          link.classList.add("active");
+          applyActive(cat);
+          const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+          render(filtered);
+        });
+      });
 
-  .week-carousel {
-    --day-card-w: 320px;
-    display: flex;
-    gap: 18px;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    padding: 0 4px;
-    align-items: flex-start;
-  }
+      function applyCategoryChange(link) {
+        const cat = link.getAttribute("data-category");
 
-  .week-carousel .day-block {
-    flex: 0 0 var(--day-card-w);
-    width: var(--day-card-w);
-    max-width: var(--day-card-w);
-    height: auto;
-    scroll-snap-align: start;
+        categoriesContainer
+          .querySelectorAll("a")
+          .forEach((a) => a.classList.remove("active"));
+
+        link.classList.add("active");
+        applyActive(cat);
+
+        const filtered =
+          cat === "Tous" ? all : all.filter((a) => a.category === cat);
+        render(filtered);
+      }
+      applyActive(active);
+    }
+
+    buildCategories(all, "Tous");
+    await render(all);
+
+    const css = document.createElement("style");
+    css.textContent =
+      ".thumb { transition: filter 220ms ease; } .thumb-ready { filter: blur(0px) !important; }";
+    document.head.appendChild(css);
+  } catch (err) {
+    console.error(err);
+    const container2 = document.getElementById("articles");
+    if (container2)
+      container2.innerHTML = "<p>Erreur lors du chargement des articles.</p>";
   }
 }
 
-/* =========================
-   Article — Page complète
-   ========================= */
-.article-cover {
-  position: relative;
-  width: 100vw;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  top: 0;
-  overflow: hidden;
-  max-height: 55vh;
-  border-radius: 0;
-}
+document.addEventListener("DOMContentLoaded", loadArticles);
 
-.article-cover img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.article-header {
-  text-align: center;
-  padding: 0 var(--page-x);
-}
-
-.article-header h1 {
-  font-size: 1.8rem;
-  font-weight: 700;
-  margin: 0.2rem 0 0.6rem;
-  color: #111;
-}
-
-.article-meta {
-  font-size: 0.9rem;
-  color: #666;
-  margin: 0 0 1.8rem;
-}
-
-.article-body {
-  font-size: 1rem;
-  color: #111;
-  line-height: 1.6;
-  padding: 0 var(--page-x) 2.5rem;
-}
-
-.article-body img {
-  width: 100%;
-  height: auto;
-  border-radius: 14px;
-  margin: 1.2rem 0;
-  object-fit: contain;
-}
-
-/* =========================
-   Titre "Tous les articles"
-   ========================= */
-.all-articles-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #111;
-  margin: 32px var(--page-x) 14px var(--page-x);
-  line-height: 1.3;
-  text-align: left;
-}
-
-/* =========================
-   Responsive — correction du 16/9 sur mobile
-   ========================= */
-@media (max-width: 768px) {
-  .hottest-wrapper { margin-top: 10px; }
-
-  .hottest-grid .card {
-    flex: 0 0 65%;
-    max-width: 260px;
+/* ==============================
+   Bouton combiné (recherche + menu)
+   ============================== */
+document.addEventListener("DOMContentLoaded", function () {
+  const searchIcon = document.querySelector(".search-icon");
+  const menuIcon = document.querySelector(".menu-icon");
+  if (searchIcon) {
+    searchIcon.addEventListener("click", (e) => {
+      e.stopPropagation();
+      console.log("Recherche ouverte");
+    });
   }
-
-  .hottest-grid .card > img {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    display: block;
-    height: auto;
+  if (menuIcon) {
+    menuIcon.addEventListener("click", (e) => {
+      e.stopPropagation();
+      console.log("Menu ouvert");
+    });
   }
+});
 
-  .card-content {
-    padding: 12px 14px 14px;
-  }
-
-  .card-content h3 {
-    font-size: 1rem;
-  }
-}
-
-/* ===== Nav: extended breathing space for shadows (desktop + mobile) ===== */
-.main-nav {
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
-
-  /* espace généreux pour ombres supérieures/inférieures */
-  padding-top: 32px;
-  padding-bottom: 42px;
-
-  /* neutralisation visuelle pour ne pas impacter la mise en page */
-  margin-top: -32px;
-  margin-bottom: -42px;
-
-  position: relative;
-  z-index: 2;
-}
-
-/* 📱 Variante mobile : ombres encore plus respirantes */
-@media (max-width: 768px) {
-  .main-nav {
-    padding-top: 36px;
-    padding-bottom: 52px;
-    margin-top: -36px;
-    margin-bottom: -52px;
-  }
-}
-
-/* 📱 Catégories légèrement plus petites mais toujours confortables */
-@media (max-width: 480px) {
-  .main-nav a {
-    padding: 9px 18px;
-    font-size: 1.0rem;
-    border-radius: 36px;
-  }
-/* 💫 Effet "press & release" fluide et élégant */
-@keyframes bounceTap {
-  0%   { transform: scale(1); }
-  40%  { transform: scale(0.90); }
-  100% { transform: scale(1); }
-}
-
-.main-nav a.tap-anim {
-  animation: bounceTap 850ms cubic-bezier(0.25, 0.8, 0.4, 1);
-  animation-fill-mode: none;
-}
-}
-/* =========================
-   ANIMATION TACTILE (V2 : Snappy & Smooth)
-   ========================= */
-
-/* 1. Pression : EXPLOSIVE (200ms) */
-/* 1. Pression : Grande Amplitude & Mouvement Posé */
-.main-nav a.pressed {
-  transform: scale(1.25); /* ✅ On grossit franchement (+25%) */
-  
-  background: #ffffff !important; 
-  color: #111 !important;
-  
-  box-shadow:
-    inset 0.8px 0.8px 0 rgba(255,255,255,0.85),
-    inset -0.8px -0.8px 0 rgba(255,255,255,0.75),
-    0 15px 35px rgba(0,0,0,0.15);
-
-  /* ⏳ 400ms : C'est plus lent qu'avant (200ms), donc moins "électrique".
-     La courbe reste fluide pour éviter l'effet linéaire robotique. */
-  transition: all 400ms cubic-bezier(0.1, 0.9, 0.2, 1.0);
-}
-
-/* 2. Relâchement : Retour en douceur */
-.main-nav a.pressed-release {
-  transform: scale(1);
-  
-  /* On garde une durée longue pour l'atterrissage */
-  transition: all 600ms cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-/* === HOTTEST : Calage Mobile & Desktop === */
-
-/* 1. On nettoie la marge sur le premier élément (Spacer ou Carte) */
-.hottest-grid .card:first-child {
-  margin-left: 0 !important; /* ✅ Fini les 20px en trop sur mobile */
-}
-
-/* 2. Sur Mobile : On cache le spacer */
-/* Le padding du conteneur (20px) suffit à créer l'alignement parfait avec les catégories */
-@media (max-width: 768px) {
-  .hottest-spacer {
-    display: none !important;
-  }
-}
-
-/* 3. Sur Desktop : On garde la marge à 0 (le spacer JS fait le travail) */
-@media (min-width: 769px) {
-  .hottest-grid .card:first-child {
-    margin-left: 0 !important;
-  }
-}
-/* =========================
-   💎 Liseré "TITANIUM LUMINOUS" (Appliqué sur .card-inner)
-   ========================= */
-
-@keyframes stealthFlow {
-  0% { background-position: 0% 50%; opacity: 0; }
-  15% { opacity: 1; }
-  35% { opacity: 1; }
-  50% { background-position: 100% 50%; opacity: 0; }
-  65% { opacity: 1; }
-  85% { opacity: 1; }
-  100% { background-position: 0% 50%; opacity: 0; }
-}
-
-/* Attention : On cible maintenant .card-inner et plus .card */
-.hottest-grid .card:not(.hottest-spacer) .card-inner::after {
-  content: "";
-  position: absolute;
-  
-  /* Calage sub-pixel parfait */
-  inset: -0.5px;
-  border-radius: 28.5px;
-  padding: 2px;
-  
-  /* Gradient Titane Frost */
-  background: linear-gradient(
-    125deg,
-    #a7b7cc 0%,
-    #f1f5f9 15%,
-    #ffffff 25%,
-    #bae6fd 30%,
-    #ffffff 35%,
-    #a7b7cc 50%,
-    #ffffff 65%,
-    #e9d5ff 70%,
-    #ffffff 75%,
-    #f1f5f9 85%,
-    #a7b7cc 100%
-  );
-  
-  background-size: 300% 300%;
-  will-change: background-position, opacity;
-  animation: stealthFlow 8s ease-in-out infinite;
-  
-  -webkit-mask: 
-     linear-gradient(#fff 0 0) content-box, 
-     linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  
-  pointer-events: none;
-  z-index: 100;
-}
-
-/* =========================
-   ✨ Restauration du Hover (Souris Uniquement & Sans Bug)
-   ========================= */
-@media (hover: hover) {
-  .hottest-grid .card:not(.hottest-spacer):hover {
-    /* Mouvement fluide */
-    transform: translate3d(0, -4px, 0);
-    /* Ombre renforcée */
-    box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.2);
-  }
-}
