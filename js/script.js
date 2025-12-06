@@ -223,73 +223,73 @@ async function loadArticles() {
 
     all.sort((a, b) => b.date - a.date);
 
-/* ======================
-   HOTTEST
-   ====================== */
-hottestContainer.innerHTML = "";
-/* === 1) Carte factice (spacer) comportement identique à une carte === */
-const rootStyles = getComputedStyle(document.documentElement);
-const pageXMobile = rootStyles.getPropertyValue("--page-x-mobile").trim() || "20px";
-const pageX = rootStyles.getPropertyValue("--page-x").trim() || "20px";
+    /* ======================
+       HOTTEST
+       ====================== */
+    hottestContainer.innerHTML = "";
+    /* === 1) Carte factice (spacer) comportement identique à une carte === */
+    const rootStyles = getComputedStyle(document.documentElement);
+    const pageXMobile = rootStyles.getPropertyValue("--page-x-mobile").trim() || "20px";
+    const pageX = rootStyles.getPropertyValue("--page-x").trim() || "20px";
 
-const isDesktop = window.matchMedia("(min-width: 769px)").matches;
+    const isDesktop = window.matchMedia("(min-width: 769px)").matches;
 
-// ✅ On calcule la largeur pour tout le monde (Desktop ET Mobile)
-const adjustedWidth = isDesktop
-  ? `calc(${pageX} - 20px)`
-  : `calc(${pageXMobile} - 20px)`;
+    // ✅ On calcule la largeur pour tout le monde (Desktop ET Mobile)
+    const adjustedWidth = isDesktop
+      ? `calc(${pageX} - 20px)`
+      : `calc(${pageXMobile} - 20px)`;
 
-// création de la pseudo-carte
-const fakeCard = document.createElement("a");
-fakeCard.className = "card hottest-spacer";
-fakeCard.href = "javascript:void(0)";
-fakeCard.setAttribute("aria-hidden", "true");
-fakeCard.tabIndex = -1;
+    // création de la pseudo-carte
+    const fakeCard = document.createElement("a");
+    fakeCard.className = "card hottest-spacer";
+    fakeCard.href = "javascript:void(0)";
+    fakeCard.setAttribute("aria-hidden", "true");
+    fakeCard.tabIndex = -1;
 
-fakeCard.style.flex = `0 0 ${adjustedWidth}`;
-fakeCard.style.maxWidth = adjustedWidth;
-fakeCard.style.opacity = "0";
-fakeCard.style.pointerEvents = "none";
-fakeCard.style.border = "none";
-fakeCard.style.boxShadow = "none";
-fakeCard.style.background = "transparent";
-fakeCard.style.padding = "0";
+    fakeCard.style.flex = `0 0 ${adjustedWidth}`;
+    fakeCard.style.maxWidth = adjustedWidth;
+    fakeCard.style.opacity = "0";
+    fakeCard.style.pointerEvents = "none";
+    fakeCard.style.border = "none";
+    fakeCard.style.boxShadow = "none";
+    fakeCard.style.background = "transparent";
+    fakeCard.style.padding = "0";
 
-hottestContainer.appendChild(fakeCard);
+    hottestContainer.appendChild(fakeCard);
 
-/* === 2) Vraies cartes HOTTEST === */
-const hottest = all.filter((a) => a.important);
-const fragHot = document.createDocumentFragment();
+    /* === 2) Vraies cartes HOTTEST === */
+    const hottest = all.filter((a) => a.important);
+    const fragHot = document.createDocumentFragment();
 
-hottest.forEach((article, j) => {
-  const optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
+    hottest.forEach((article, j) => {
+      const optimizedThumb = getOptimizedImageUrl(article.thumbnail, 1280);
 
-  const link = document.createElement("a");
-  link.href = `article.html?slug=${encodeURIComponent(
-    article.slug
-  )}&file=${encodeURIComponent(article.filename)}`;
-  link.className = "card";
+      const link = document.createElement("a");
+      link.href = `article.html?slug=${encodeURIComponent(
+        article.slug
+      )}&file=${encodeURIComponent(article.filename)}`;
+      link.className = "card";
 
-  const now = new Date();
-  const isToday =
-    article.date.getDate() === now.getDate() &&
-    article.date.getMonth() === now.getMonth() &&
-    article.date.getFullYear() === now.getFullYear();
+      const now = new Date();
+      const isToday =
+        article.date.getDate() === now.getDate() &&
+        article.date.getMonth() === now.getMonth() &&
+        article.date.getFullYear() === now.getFullYear();
 
-  const dateDisplay = isToday
-    ? "à " +
-      article.date.toLocaleTimeString("fr-FR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : article.date.toLocaleDateString("fr-FR", {
-        day: "numeric",
-        month: "short",
-      });
+      const dateDisplay = isToday
+        ? "à " +
+        article.date.toLocaleTimeString("fr-FR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+        : article.date.toLocaleDateString("fr-FR", {
+          day: "numeric",
+          month: "short",
+        });
 
-  const loadingAttr = j === 0 ? "eager" : "lazy";
+      const loadingAttr = j === 0 ? "eager" : "lazy";
 
-  link.innerHTML = `
+      link.innerHTML = `
    <div class="card-inner"> <img src="${optimizedThumb}" alt="" decoding="async" loading="${loadingAttr}">
        <div class="card-content">
          <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
@@ -297,11 +297,11 @@ hottest.forEach((article, j) => {
        </div>
     </div>`;
 
-  fragHot.appendChild(link);
-});
+      fragHot.appendChild(link);
+    });
 
-hottestContainer.appendChild(fragHot);
-     
+    hottestContainer.appendChild(fragHot);
+
     /* ======================
        RENDER PRINCIPAL (feed)
        ====================== */
@@ -337,8 +337,8 @@ hottestContainer.appendChild(fragHot);
               el.className = "day-article";
               el.innerHTML = `
                 <a href="article.html?slug=${encodeURIComponent(
-                  article.slug
-                )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                article.slug
+              )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
                   <div class="thumb"></div>
                   <div class="day-article-info">
                     <p class="day-meta">Par ${article.author}, à ${time}</p>
@@ -407,8 +407,8 @@ hottestContainer.appendChild(fragHot);
                 el.className = "day-article";
                 el.innerHTML = `
                   <a href="article.html?slug=${encodeURIComponent(
-                    article.slug
-                  )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
+                  article.slug
+                )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
                     <div class="thumb"></div>
                     <div class="day-article-info">
                       <p class="day-meta">Par ${article.author}, à ${time}</p>
@@ -463,14 +463,12 @@ hottestContainer.appendChild(fragHot);
       cats.push("Autre");
       const colorMap = buildCategoryColorMap(cats);
       const html =
-        `<li><a href="#" data-category="Tous" class="${
-          active === "Tous" ? "active" : ""
+        `<li><a href="#" data-category="Tous" class="${active === "Tous" ? "active" : ""
         }">Tous</a></li>` +
         cats
           .map(
             (c) =>
-              `<li><a href="#" data-category="${c}" class="${
-                active === c ? "active" : ""
+              `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""
               }">${c}</a></li>`
           )
           .join("");
@@ -483,7 +481,7 @@ hottestContainer.appendChild(fragHot);
           a.style.backdropFilter = "";
           a.style.webkitBackdropFilter = "";
           clearInnerStroke(a);
-           
+
         });
         const link = categoriesContainer.querySelector(
           `a[data-category="${cat}"]`
@@ -494,25 +492,25 @@ hottestContainer.appendChild(fragHot);
           link.style.color = "#111";
         } else {
           const baseColor = colorMap[cat] || "#4B73FA";
-      
+
           // Conversion hex → RGB
           const rgb = baseColor.match(/[A-Fa-f0-9]{2}/g)
             .map(x => parseInt(x, 16));
-      
+
           const [r, g, b] = rgb;
           const max = Math.max(r, g, b);
-      
+
           // 💥 Paramètres : très saturé + très clair
           const saturationBoost = 1.9;   // pousse la couleur
           const brightnessBoost = 1.6;   // presque blanc
-      
+
           // Calcul RGB ajusté
           const rr = Math.min(255, (r / max) * 255 * saturationBoost * brightnessBoost);
           const gg = Math.min(255, (g / max) * 255 * saturationBoost * brightnessBoost);
           const bb = Math.min(255, (b / max) * 255 * saturationBoost * brightnessBoost);
-      
+
           const textColor = `rgb(${rr.toFixed(0)}, ${gg.toFixed(0)}, ${bb.toFixed(0)})`;
-      
+
           // Application styles
           link.style.background = baseColor + "CC";
           link.style.color = textColor;
@@ -523,117 +521,113 @@ hottestContainer.appendChild(fragHot);
       }
 
       if (nav) requestAnimationFrame(() => (nav.scrollLeft = prevScroll));
-categoriesContainer.querySelectorAll("a").forEach((link) => {
+      /* ==============================
+         GESTION TACTILE FLUIDE (Optimisée)
+         ============================== */
+      categoriesContainer.querySelectorAll("a").forEach((link) => {
 
-  // === MOBILE ONLY TOUCH HANDLERS ===
-  if (/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        // Variables pour le swipe et le timing
+        let startX = 0;
+        let startY = 0;
+        let isScrolling = false;
+        let touchStartTime = 0; // Pour calculer la durée de l'appui
 
-    let startX = 0;
-    let startY = 0;
-    let isScrolling = false;
+        // --- TOUCH START ---
+        link.addEventListener("touchstart", (e) => {
+          startX = e.touches[0].clientX;
+          startY = e.touches[0].clientY;
+          isScrolling = false;
+          touchStartTime = Date.now(); // On top le chrono
 
-    link.addEventListener("touchstart", (e) => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-      isScrolling = false;
+          // Reset immédiat des états précédents
+          link.classList.remove("pressed-release");
+          link.classList.remove("no-hover");
+          void link.offsetWidth; // Force le navigateur à prendre en compte le reset
 
-      // reset propre
-      link.classList.remove("pressed-release");
-      link.classList.remove("no-hover");
-      void link.offsetWidth;
+          // Lance l'agrandissement (CSS)
+          link.classList.add("pressed");
+        }, { passive: true });
 
-      // lance l'enfoncement
-      link.classList.add("pressed");
-    });
+        // --- TOUCH MOVE (Détection du scroll) ---
+        link.addEventListener("touchmove", (e) => {
+          const dx = Math.abs(e.touches[0].clientX - startX);
+          const dy = Math.abs(e.touches[0].clientY - startY);
 
-    link.addEventListener("touchmove", (e) => {
-      const dx = Math.abs(e.touches[0].clientX - startX);
-      const dy = Math.abs(e.touches[0].clientY - startY);
+          if (dx > 10 || dy > 10) { // Si on bouge un peu trop, c'est un scroll
+            isScrolling = true;
+            link.classList.remove("pressed"); // On annule l'effet visuel
+            link.classList.add("no-hover");
+          }
+        }, { passive: true });
 
-      // 👉 swipe horizontal détecté
-      if (dx > 10 && dx > dy) {
-        isScrolling = true;
+        // --- TOUCH END (Action !) ---
+        link.addEventListener("touchend", (e) => {
+          if (isScrolling) return; // Si on scrollait, on ne fait rien
 
-        // on annule toute animation "press"
-        link.classList.remove("pressed");
-        link.classList.remove("pressed-release");
+          // On empêche le clic fantôme qui pourrait suivre
+          if (e.cancelable) e.preventDefault();
 
-        // coupe le hover pendant le swipe
-        link.classList.add("no-hover");
-      }
-    });
+          const cat = link.getAttribute("data-category");
 
-    link.addEventListener("touchend", () => {
-      // si c'était un swipe, on ne fait RIEN (juste reset)
-      if (isScrolling) {
-        link.classList.remove("pressed");
-        link.classList.remove("pressed-release");
-        link.classList.remove("no-hover");
-        isScrolling = false;
-        return;
-      }
+          // ⚡️ CALCUL MALIN :
+          // L'animation CSS de grossissement dure 200ms (voir CSS plus bas).
+          // Si l'utilisateur a appuyé 50ms, on attend 150ms de plus pour finir le "Pop".
+          // Si l'utilisateur a appuyé 300ms, on n'attend pas (0ms).
+          const animationDuration = 200;
+          const timePressed = Date.now() - touchStartTime;
+          const remainingTime = Math.max(0, animationDuration - timePressed);
 
-      const cat = link.getAttribute("data-category");
-      const pressDuration = 350; // doit matcher ton CSS
+          setTimeout(() => {
+            // 1. On lance l'animation de retour VISUELLE
+            link.classList.remove("pressed");
+            link.classList.add("pressed-release");
 
-      setTimeout(() => {
-        // transition vers "release"
-        link.classList.remove("pressed");
-        void link.offsetWidth;
-        link.classList.add("pressed-release");
+            // 2. On change l'état "Actif" (Couleur)
+            categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+            link.classList.add("active");
+            applyActive(cat);
 
-        // changement de catégorie après l'animation
-        categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+            // 3. ⚡️ ASTUCE PERFORMANCE :
+            // On utilise requestAnimationFrame pour dire au navigateur :
+            // "Finis de dessiner l'animation de retour d'abord, PUIS charge les articles".
+            // Ça évite le micro-freeze (effet "aspiré") du re-render.
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+                render(filtered);
+              });
+            });
+
+          }, remainingTime);
+        });
+
+        // --- CLICK (Desktop / Fallback) ---
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          // La logique desktop reste simple
+          const cat = link.getAttribute("data-category");
+          categoriesContainer.querySelectorAll("a").forEach(a => a.classList.remove("active"));
+          link.classList.add("active");
+          applyActive(cat);
+          const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+          render(filtered);
+        });
+      });
+
+      function applyCategoryChange(link) {
+        const cat = link.getAttribute("data-category");
+
+        categoriesContainer
+          .querySelectorAll("a")
+          .forEach((a) => a.classList.remove("active"));
+
         link.classList.add("active");
         applyActive(cat);
 
-        const filtered = cat === "Tous" ? all : all.filter(a => a.category === cat);
+        const filtered =
+          cat === "Tous" ? all : all.filter((a) => a.category === cat);
         render(filtered);
-      }, pressDuration);
-    });
-
-    link.addEventListener("touchcancel", () => {
-      link.classList.remove("pressed");
-      link.classList.remove("pressed-release");
-      link.classList.remove("no-hover");
-      isScrolling = false;
-    });
-  }
-
-  // === DESKTOP CLICK ===
-  link.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    const cat = link.getAttribute("data-category");
-
-    // activation visuelle et styles
-    categoriesContainer
-      .querySelectorAll("a")
-      .forEach((a) => a.classList.remove("active"));
-    link.classList.add("active");
-    applyActive(cat);
-
-    // filtrage
-    const filtered =
-      cat === "Tous" ? all : all.filter((a) => a.category === cat);
-    render(filtered);
-  });
-});
-
-function applyCategoryChange(link) {
-  const cat = link.getAttribute("data-category");
-
-  categoriesContainer
-    .querySelectorAll("a")
-    .forEach((a) => a.classList.remove("active"));
-
-  link.classList.add("active");
-  applyActive(cat);
-
-  const filtered =
-    cat === "Tous" ? all : all.filter((a) => a.category === cat);
-  render(filtered);
-}
+      }
       applyActive(active);
     }
 
