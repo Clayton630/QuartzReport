@@ -574,7 +574,7 @@ categoriesContainer.querySelectorAll("a").forEach((link) => {
       }
 
       const cat = link.getAttribute("data-category");
-      const pressDuration = 240; // doit matcher ton CSS
+      const pressDuration = 350; // doit matcher ton CSS
 
       setTimeout(() => {
         // transition vers "release"
