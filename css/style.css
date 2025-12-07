@@ -41,17 +41,30 @@ body {
   overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
-  padding-top: env(safe-area-inset-top);
+
+  /* ❌ SUPPRIMÉ : padding-top: env(safe-area-inset-top); 
+     C'est cette ligne qui créait la barre blanche physique en haut.
+     On laisse le body toucher le haut de l'écran. 
+  */
+
   position: relative;
   isolation: isolate;
-  background: linear-gradient(135deg, var(--bg-grad-a), var(--bg-grad-b));
+
+  /* ✅ TRANSPARENT : 
+     On s'assure que le body ne cache pas le dégradé animé (::before)
+     qui est positionné en z-index: -1.
+  */
+  background-color: transparent;
+  background: transparent;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 html,
 body {
-  background-color: #f6f6f7;
+  /* On laisse la transparence pour voir le ::before */
+  background-color: transparent;
 }
 
 /* =========================
@@ -76,13 +89,17 @@ body {
 
 body::before {
   content: "";
-  position: absolute;
+  /* ✅ FIXED : Le dégradé est collé au viewport.
+     Il couvre la Safe Area en permanence, sans bouger. */
+  position: fixed;
   top: -10vh;
   left: 0;
-  width: 100%;
+  width: 100vw;
   height: 68vh;
   z-index: -1;
   pointer-events: none;
+
+  /* Le reste (gradient et animation) est inchangé */
   background-image:
     linear-gradient(65deg,
       rgba(135, 175, 255, 0.75) 0%,
@@ -97,6 +114,7 @@ body::before {
   background-position: 0% 50%;
   filter: blur(26px) brightness(1.1) saturate(1.4);
   animation: iridescentFlow 15s ease-in-out infinite;
+
   mask-image: linear-gradient(to bottom,
       rgba(0, 0, 0, 1) 0%,
       rgba(0, 0, 0, 0.95) 65%,
@@ -107,6 +125,8 @@ body::before {
       rgba(0, 0, 0, 0.95) 65%,
       rgba(0, 0, 0, 0.55) 80%,
       rgba(0, 0, 0, 0) 100%);
+
+  will-change: transform;
 }
 
 
