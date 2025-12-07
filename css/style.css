@@ -23,35 +23,26 @@
 /* =========================
    Reset & bases
    ========================= */
+/* 1. Nettoyage du Body */
 html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  overflow-x: hidden;
-  background: linear-gradient(135deg, var(--bg-grad-a), var(--bg-grad-b));
+  /* Couleur de fond de sécurité (pour le rebond du BAS) */
+  background-color: #f6f6f7;
 }
 
 body {
   margin: 0;
   padding: 0;
   width: 100%;
-  max-width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
-  overflow-y: visible;
+  /* On laisse le fond transparent pour voir la div .background-fixed */
+  background-color: transparent;
+  /* PLUS DE PADDING TOP ICI (géré par le header) */
+
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
-  padding-top: env(safe-area-inset-top);
   position: relative;
   isolation: isolate;
-  background: linear-gradient(135deg, var(--bg-grad-a), var(--bg-grad-b));
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-html,
-body {
-  background-color: #f6f6f7;
 }
 
 /* =========================
@@ -74,15 +65,21 @@ body {
   }
 }
 
-body::before {
-  content: "";
-  position: absolute;
+/* 2. Le Vrai Fond (Remplace body::before) */
+.background-fixed {
+  /* POSITION FIXED : Collé à l'écran */
+  position: fixed;
   top: -10vh;
   left: 0;
-  width: 100%;
+  width: 100vw;
   height: 68vh;
+
+  /* Z-INDEX : On le met tout au fond, mais comme c'est un vrai élément,
+     Safari le verra toujours pour la barre de statut. */
   z-index: -1;
   pointer-events: none;
+
+  /* Votre gradient animé (copié-collé) */
   background-image:
     linear-gradient(65deg,
       rgba(135, 175, 255, 0.75) 0%,
@@ -97,16 +94,14 @@ body::before {
   background-position: 0% 50%;
   filter: blur(26px) brightness(1.1) saturate(1.4);
   animation: iridescentFlow 15s ease-in-out infinite;
-  mask-image: linear-gradient(to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 0.95) 65%,
-      rgba(0, 0, 0, 0.55) 80%,
-      rgba(0, 0, 0, 0) 100%);
-  -webkit-mask-image: linear-gradient(to bottom,
-      rgba(0, 0, 0, 1) 0%,
-      rgba(0, 0, 0, 0.95) 65%,
-      rgba(0, 0, 0, 0.55) 80%,
-      rgba(0, 0, 0, 0) 100%);
+
+  /* Masques */
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.95) 65%, rgba(0, 0, 0, 0.55) 80%, rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.95) 65%, rgba(0, 0, 0, 0.55) 80%, rgba(0, 0, 0, 0) 100%);
+
+  /* Force l'accélération matérielle (aide Safari à ne pas "perdre" le calque) */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 
