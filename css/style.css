@@ -23,26 +23,48 @@
 /* =========================
    Reset & bases
    ========================= */
-/* 1. Nettoyage du Body */
 html {
-  /* Couleur de fond de sécurité (pour le rebond du BAS) */
-  background-color: #f6f6f7;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  background: linear-gradient(135deg, var(--bg-grad-a), var(--bg-grad-b));
 }
 
 body {
   margin: 0;
   padding: 0;
   width: 100%;
+  max-width: 100%;
   min-height: 100vh;
-  /* On laisse le fond transparent pour voir la div .background-fixed */
-  background-color: transparent;
-  /* PLUS DE PADDING TOP ICI (géré par le header) */
-
+  overflow-x: hidden;
+  overflow-y: visible;
   font-family: 'Inter', Arial, sans-serif;
   color: #111;
+
+  /* ❌ SUPPRIMÉ : padding-top: env(safe-area-inset-top); 
+     C'est cette ligne qui créait la barre blanche physique en haut.
+     On laisse le body toucher le haut de l'écran. 
+  */
+
   position: relative;
   isolation: isolate;
+
+  /* ✅ TRANSPARENT : 
+     On s'assure que le body ne cache pas le dégradé animé (::before)
+     qui est positionné en z-index: -1.
+  */
+  background-color: transparent;
+  background: transparent;
+
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  /* On laisse la transparence pour voir le ::before */
+  background-color: transparent;
 }
 
 /* =========================
@@ -65,21 +87,19 @@ body {
   }
 }
 
-/* 2. Le Vrai Fond (Remplace body::before) */
-.background-fixed {
-  /* POSITION FIXED : Collé à l'écran */
+body::before {
+  content: "";
+  /* ✅ FIXED : Le dégradé est collé au viewport.
+     Il couvre la Safe Area en permanence, sans bouger. */
   position: fixed;
   top: -10vh;
   left: 0;
   width: 100vw;
   height: 68vh;
-
-  /* Z-INDEX : On le met tout au fond, mais comme c'est un vrai élément,
-     Safari le verra toujours pour la barre de statut. */
   z-index: -1;
   pointer-events: none;
 
-  /* Votre gradient animé (copié-collé) */
+  /* Le reste (gradient et animation) est inchangé */
   background-image:
     linear-gradient(65deg,
       rgba(135, 175, 255, 0.75) 0%,
@@ -95,13 +115,18 @@ body {
   filter: blur(26px) brightness(1.1) saturate(1.4);
   animation: iridescentFlow 15s ease-in-out infinite;
 
-  /* Masques */
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.95) 65%, rgba(0, 0, 0, 0.55) 80%, rgba(0, 0, 0, 0) 100%);
-  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 0.95) 65%, rgba(0, 0, 0, 0.55) 80%, rgba(0, 0, 0, 0) 100%);
+  mask-image: linear-gradient(to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.95) 65%,
+      rgba(0, 0, 0, 0.55) 80%,
+      rgba(0, 0, 0, 0) 100%);
+  -webkit-mask-image: linear-gradient(to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.95) 65%,
+      rgba(0, 0, 0, 0.55) 80%,
+      rgba(0, 0, 0, 0) 100%);
 
-  /* Force l'accélération matérielle (aide Safari à ne pas "perdre" le calque) */
   will-change: transform;
-  transform: translate3d(0, 0, 0);
 }
 
 
