@@ -1,5 +1,45 @@
 "use strict";
 
+const WORKER_ORIGIN = "https://quartzreport-oauth.claytonelhorga.workers.dev";
+const PLACEHOLDER_IMAGE = "img/article-placeholder.jpg";
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function parseFrontMatter(text) {
+  const match = text.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
+  if (!match) return { meta: {}, body: text.trim() };
+
+  const meta = {};
+  for (const line of match[1].split("\n")) {
+    const separator = line.indexOf(":");
+    if (separator < 1) continue;
+    const key = line.slice(0, separator).trim();
+    const value = line.slice(separator + 1).trim().replace(/^"|"$/g, "");
+    meta[key] = value;
+  }
+  return { meta, body: match[2].trim() };
+}
+
+function safeImageUrl(value) {
+  if (typeof value !== "string" || !value.trim()) return PLACEHOLDER_IMAGE;
+  try {
+    const candidate = new URL(value, window.location.origin);
+    if (candidate.protocol !== "https:" && candidate.protocol !== "http:") return PLACEHOLDER_IMAGE;
+    return candidate.origin === window.location.origin
+      ? `${candidate.pathname}${candidate.search}`
+      : candidate.toString();
+  } catch {
+    return PLACEHOLDER_IMAGE;
+  }
+}
+
 /* =========================
    Utils dates
    ========================= */
@@ -24,12 +64,6 @@ function parseDate(str) {
   const d = new Date(str);
   return isNaN(d) ? new Date() : d;
 }
-function base64ToUtf8(base64) {
-  const binary = atob(base64.replace(/\n/g, ""));
-  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
-  return new TextDecoder("utf-8").decode(bytes);
-}
-
 /* =========================
    Couleurs catégories (dynamiques)
    ========================= */
@@ -89,14 +123,9 @@ function clearInnerStroke(linkEl) {
    Optimisation et resize images (CDN externe)
    ========================= */
 function getOptimizedImageUrl(url, maxWidth) {
-  try {
-    if (!url || !url.startsWith("http")) return url;
-    const clean = encodeURIComponent(url.split("?")[0]);
-    return `https://quartzreport-oauth.claytonelhorga.workers.dev/img?src=${clean}&w=${maxWidth}&q=85`;
-  } catch (e) {
-    console.error("getOptimizedImageUrl failed:", e);
-    return url;
-  }
+  const safeUrl = safeImageUrl(url);
+  if (!safeUrl.startsWith("/img/uploads/")) return safeUrl;
+  return `${WORKER_ORIGIN}/img?src=${encodeURIComponent(safeUrl)}&w=${maxWidth}&q=85`;
 }
 
 /* =========================
@@ -112,7 +141,7 @@ function ensureThumbObserver() {
         const el = entry.target;
         const real = el.getAttribute("data-bg");
         if (real) {
-          el.style.backgroundImage = `url('${real}')`;
+          el.style.backgroundImage = `url("${real.replaceAll('"', "%22")}")`;
           el.classList.add("thumb-ready");
           el.removeAttribute("data-bg");
         }
@@ -140,75 +169,23 @@ async function loadArticles() {
   const hottestContainer = document.getElementById("hottest");
   const categoriesContainer = document.getElementById("categories");
 
-  const repo = "Clayton630/QuartzReport";
-  const branch = "main";
-  const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
-
   try {
-    const resp = await fetch(
-      `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
-      { cache: "force-cache" }
-    );
+    const resp = await fetch(`${WORKER_ORIGIN}/api/articles`);
     if (!resp.ok) throw new Error("Erreur chargement liste articles");
-
-    const files = await resp.json();
-    const mdFiles = files.filter((f) => /\.md$/i.test(f.name));
-
-    async function fetchAllWithLimit(urls, limit) {
-      const results = [];
-      let i = 0;
-      async function next() {
-        if (i >= urls.length) return;
-        const idx = i++;
-        try {
-          const r = await fetch(urls[idx], { cache: "force-cache" });
-          results[idx] = await r.json();
-        } catch {
-          results[idx] = null;
-        }
-        return next();
-      }
-      const workers = [];
-      for (let k = 0; k < limit; k++) workers.push(next());
-      await Promise.all(workers);
-      return results;
-    }
-
-    const urls = mdFiles.map(
-      (file) =>
-        `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}`
-    );
-    const apiDatas = await fetchAllWithLimit(urls, 6);
-
+    const feed = await resp.json();
     const all = [];
-    for (let i = 0; i < mdFiles.length; i++) {
-      const file = mdFiles[i];
-      const apiData = apiDatas[i];
-      if (!apiData || !apiData.content) continue;
-      const text = base64ToUtf8(apiData.content);
 
-      const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
-      let meta = {},
-        body = text;
-      if (match) {
-        const yaml = match[1].trim();
-        body = match[2].trim();
-        yaml.split("\n").forEach((line) => {
-          const parts = line.split(":");
-          const k = parts.shift().trim();
-          const rest = parts.join(":").trim().replace(/^"|"$/g, "");
-          meta[k] = rest;
-        });
-      }
-
+    for (const entry of feed.articles || []) {
+      if (!entry || typeof entry.filename !== "string" || typeof entry.content !== "string") continue;
+      const { meta, body } = parseFrontMatter(entry.content);
       const dateObj = parseDate(meta.date || "");
-      const slug = file.name.replace(/\.md$/i, "");
-      let cover = meta.thumbnail || "img/article-placeholder.jpg";
+      const slug = entry.filename.replace(/\.md$/i, "");
+      let cover = meta.thumbnail || PLACEHOLDER_IMAGE;
       const firstImg = body.match(/!\[.*?\]\((.*?)\)/);
       if (!meta.thumbnail && firstImg) cover = firstImg[1];
 
       all.push({
-        filename: file.name,
+        filename: entry.filename,
         slug,
         title: meta.title || "Sans titre",
         date: dateObj,
@@ -240,11 +217,9 @@ async function loadArticles() {
       : `calc(${pageXMobile} - 20px)`;
 
     // création de la pseudo-carte
-    const fakeCard = document.createElement("a");
+    const fakeCard = document.createElement("div");
     fakeCard.className = "card hottest-spacer";
-    fakeCard.href = "javascript:void(0)";
     fakeCard.setAttribute("aria-hidden", "true");
-    fakeCard.tabIndex = -1;
 
     fakeCard.style.flex = `0 0 ${adjustedWidth}`;
     fakeCard.style.maxWidth = adjustedWidth;
@@ -290,10 +265,10 @@ async function loadArticles() {
       const loadingAttr = j === 0 ? "eager" : "lazy";
 
       link.innerHTML = `
-   <div class="card-inner"> <img src="${optimizedThumb}" alt="" decoding="async" loading="${loadingAttr}">
+   <div class="card-inner"> <img src="${escapeHtml(optimizedThumb)}" alt="" decoding="async" loading="${loadingAttr}">
        <div class="card-content">
-         <p class="card-meta">Par ${article.author}, ${dateDisplay}</p>
-         <h3>${article.title}</h3>
+         <p class="card-meta">Par ${escapeHtml(article.author)}, ${escapeHtml(dateDisplay)}</p>
+         <h3>${escapeHtml(article.title)}</h3>
        </div>
     </div>`;
 
@@ -341,13 +316,13 @@ async function loadArticles() {
               )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
                   <div class="thumb"></div>
                   <div class="day-article-info">
-                    <p class="day-meta">Par ${article.author}, à ${time}</p>
-                    <h4>${article.title}</h4>
-                    <p class="day-desc">${article.description}</p>
+                    <p class="day-meta">Par ${escapeHtml(article.author)}, à ${escapeHtml(time)}</p>
+                    <h4>${escapeHtml(article.title)}</h4>
+                    <p class="day-desc">${escapeHtml(article.description)}</p>
                   </div>
                 </a>`;
               const t = el.querySelector(".thumb");
-              prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
+              prepareThumb(t, article.thumbnail);
               frag.appendChild(el);
             });
             block.appendChild(frag);
@@ -411,13 +386,13 @@ async function loadArticles() {
                 )}&file=${encodeURIComponent(article.filename)}" class="day-article-link">
                     <div class="thumb"></div>
                     <div class="day-article-info">
-                      <p class="day-meta">Par ${article.author}, à ${time}</p>
-                      <h4>${article.title}</h4>
-                      <p class="day-desc">${article.description}</p>
+                      <p class="day-meta">Par ${escapeHtml(article.author)}, à ${escapeHtml(time)}</p>
+                      <h4>${escapeHtml(article.title)}</h4>
+                      <p class="day-desc">${escapeHtml(article.description)}</p>
                     </div>
                   </a>`;
                 const t = el.querySelector(".thumb");
-                prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
+                prepareThumb(t, article.thumbnail);
                 frag.appendChild(el);
               });
               dayBlock.appendChild(frag);
@@ -468,8 +443,8 @@ async function loadArticles() {
         cats
           .map(
             (c) =>
-              `<li><a href="#" data-category="${c}" class="${active === c ? "active" : ""
-              }">${c}</a></li>`
+              `<li><a href="#" data-category="${escapeHtml(c)}" class="${active === c ? "active" : ""
+              }">${escapeHtml(c)}</a></li>`
           )
           .join("");
       categoriesContainer.innerHTML = html;
@@ -483,8 +458,8 @@ async function loadArticles() {
           clearInnerStroke(a);
 
         });
-        const link = categoriesContainer.querySelector(
-          `a[data-category="${cat}"]`
+        const link = Array.from(categoriesContainer.querySelectorAll("a")).find(
+          (element) => element.dataset.category === cat,
         );
         if (!link) return;
         if (cat === "Tous") {

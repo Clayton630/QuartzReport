@@ -9,12 +9,19 @@ const MIN_IMAGE_WIDTH = 160;
 const MIN_IMAGE_QUALITY = 40;
 const MAX_IMAGE_QUALITY = 95;
 
+function isAllowedOrigin(origin) {
+  return (
+    origin === SITE_ORIGIN ||
+    /^https:\/\/[a-z0-9-]+\.quartzreport\.pages\.dev$/u.test(origin || "")
+  );
+}
+
 function corsHeaders(request) {
   const origin = request.headers.get("Origin");
-  if (origin !== SITE_ORIGIN) return { Vary: "Origin" };
+  if (!isAllowedOrigin(origin)) return { Vary: "Origin" };
 
   return {
-    "Access-Control-Allow-Origin": SITE_ORIGIN,
+    "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     Vary: "Origin",
