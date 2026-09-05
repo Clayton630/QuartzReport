@@ -44,6 +44,33 @@ function optimizedImageUrl(value, width) {
   return `${WORKER_ORIGIN}/img?src=${encodeURIComponent(safeUrl)}&w=${width}&q=88`;
 }
 
+function optimizeInlineImages(safeHtml) {
+  const template = document.createElement("template");
+  template.innerHTML = safeHtml;
+
+  for (const image of template.content.querySelectorAll("img")) {
+    const source = image.getAttribute("src");
+    try {
+      const candidate = new URL(source || "", window.location.origin);
+      if (
+        candidate.origin === window.location.origin &&
+        candidate.pathname.startsWith("/img/uploads/")
+      ) {
+        image.setAttribute(
+          "src",
+          optimizedImageUrl(`${candidate.pathname}${candidate.search}`, 2560),
+        );
+      }
+    } catch {
+      // DOMPurify already removed unsafe URLs; leave malformed URLs untouched.
+    }
+    image.setAttribute("loading", "lazy");
+    image.setAttribute("decoding", "async");
+  }
+
+  return template.innerHTML;
+}
+
 function setMeta(selector, value) {
   const element = document.querySelector(selector);
   if (element) element.setAttribute("content", value);
@@ -63,6 +90,7 @@ function renderArticle(meta, body) {
   const safeBody = DOMPurify.sanitize(marked.parse(body), {
     USE_PROFILES: { html: true },
   });
+  const optimizedBody = optimizeInlineImages(safeBody);
 
   document.title = `${title} – Quartz Report`;
   setMeta('meta[name="description"]', description);
@@ -76,7 +104,7 @@ function renderArticle(meta, body) {
         <h1>${escapeHtml(title)}</h1>
         <p class="article-meta">Par ${escapeHtml(author)}, le ${escapeHtml(dateDisplay)}</p>
       </header>
-      <section class="article-body">${safeBody}</section>
+      <section class="article-body">${optimizedBody}</section>
     </article>`;
 }
 

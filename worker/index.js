@@ -2,7 +2,8 @@ const SITE_ORIGIN = "https://quartzreport.pages.dev";
 const REPOSITORY = "Clayton630/QuartzReport";
 const BRANCH = "main";
 const FEED_CACHE_SECONDS = 120;
-const FEED_CACHE_VERSION = "1";
+const FEED_STALE_CACHE_SECONDS = 24 * 60 * 60;
+const FEED_CACHE_VERSION = "2";
 const MAX_ARTICLE_BYTES = 256 * 1024;
 const MAX_IMAGE_WIDTH = 2560;
 const MIN_IMAGE_WIDTH = 160;
@@ -10,6 +11,7 @@ const MIN_IMAGE_QUALITY = 40;
 const MAX_IMAGE_QUALITY = 95;
 const OAUTH_STATE_COOKIE = "__Host-quartzreport_oauth_state";
 const OAUTH_ORIGIN_COOKIE = "__Host-quartzreport_oauth_origin";
+const GITHUB_ADMIN_SCOPE = "public_repo";
 
 function isAllowedOrigin(origin) {
   return (
@@ -122,6 +124,10 @@ function clearOAuthCookies(headers) {
   return headers;
 }
 
+function hasOnlyPublicRepoScope(scope) {
+  return scope === GITHUB_ADMIN_SCOPE;
+}
+
 async function readTextLimited(response, maxBytes) {
   const declaredSize = Number(response.headers.get("content-length"));
   if (Number.isFinite(declaredSize) && declaredSize > maxBytes) {
@@ -152,18 +158,36 @@ async function readTextLimited(response, maxBytes) {
   return new TextDecoder().decode(result);
 }
 
-async function githubFetch(path) {
-  const response = await fetch(`https://api.github.com${path}`, {
-    headers: {
-      Accept: "application/vnd.github+json",
-      "User-Agent": "QuartzReport-PublicFeed",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-  });
-  if (!response.ok) {
-    throw new Error(`GitHub returned ${response.status}`);
+async function fetchWithRetry(url, init, label) {
+  let lastError;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    let response;
+    try {
+      response = await fetch(url, init);
+    } catch (error) {
+      lastError = error;
+      continue;
+    }
+
+    if (response.ok) return response;
+    lastError = new Error(`${label} returned ${response.status}`);
+    if (response.status < 500 && response.status !== 429) break;
   }
-  return response;
+  throw lastError || new Error(`${label} is unavailable`);
+}
+
+async function githubFetch(path) {
+  return fetchWithRetry(
+    `https://api.github.com${path}`,
+    {
+      headers: {
+        Accept: "application/vnd.github+json",
+        "User-Agent": "QuartzReport-PublicFeed",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+    },
+    "GitHub",
+  );
 }
 
 async function fetchArticlesFeed() {
@@ -177,12 +201,11 @@ async function fetchArticlesFeed() {
 
   const articles = await Promise.all(
     files.map(async (entry) => {
-      const response = await fetch(entry.download_url, {
-        headers: { "User-Agent": "QuartzReport-PublicFeed" },
-      });
-      if (!response.ok) {
-        throw new Error(`Unable to fetch ${entry.name}`);
-      }
+      const response = await fetchWithRetry(
+        entry.download_url,
+        { headers: { "User-Agent": "QuartzReport-PublicFeed" } },
+        entry.name,
+      );
       return { filename: entry.name, content: await readTextLimited(response, MAX_ARTICLE_BYTES) };
     }),
   );
@@ -190,23 +213,46 @@ async function fetchArticlesFeed() {
   return { articles, generatedAt: new Date().toISOString() };
 }
 
-async function cachedFeed(request, ctx) {
-  const cache = caches.default;
+function feedCacheKey(request, state) {
   const cacheUrl = new URL("/api/articles", request.url);
   cacheUrl.searchParams.set("version", FEED_CACHE_VERSION);
-  const cacheKey = new Request(cacheUrl, { method: "GET" });
-  const cached = await cache.match(cacheKey);
-  if (cached) return cached;
+  cacheUrl.searchParams.set("state", state);
+  return new Request(cacheUrl, { method: "GET" });
+}
 
-  const feed = await fetchArticlesFeed();
-  const response = new Response(JSON.stringify(feed), {
+function feedResponse(feed, maxAge, cacheState) {
+  return new Response(JSON.stringify(feed), {
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "cache-control": `public, max-age=${FEED_CACHE_SECONDS}`,
+      "cache-control": `public, max-age=${maxAge}`,
+      "X-QuartzReport-Cache": cacheState,
     },
   });
-  ctx.waitUntil(cache.put(cacheKey, response.clone()));
-  return response;
+}
+
+async function cachedFeed(request, ctx) {
+  const cache = caches.default;
+  const freshKey = feedCacheKey(request, "fresh");
+  const staleKey = feedCacheKey(request, "stale");
+  const fresh = await cache.match(freshKey);
+  if (fresh) return fresh;
+
+  try {
+    const feed = await fetchArticlesFeed();
+    const freshResponse = feedResponse(feed, FEED_CACHE_SECONDS, "fresh");
+    const staleResponse = feedResponse(feed, FEED_STALE_CACHE_SECONDS, "stale");
+    ctx.waitUntil(
+      Promise.all([
+        cache.put(freshKey, freshResponse.clone()),
+        cache.put(staleKey, staleResponse.clone()),
+      ]),
+    );
+    return freshResponse;
+  } catch (error) {
+    const stale = await cache.match(staleKey);
+    if (stale) return stale;
+    throw error;
+  }
 }
 
 async function legacyArticleRead(url, request, ctx) {
@@ -316,7 +362,7 @@ export default {
       const targetOrigin = oauthTargetOrigin(request);
       const redirect = new URL("https://github.com/login/oauth/authorize");
       redirect.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
-      redirect.searchParams.set("scope", "repo user");
+      redirect.searchParams.set("scope", GITHUB_ADMIN_SCOPE);
       redirect.searchParams.set("redirect_uri", `${url.origin}/callback?provider=github`);
       redirect.searchParams.set("state", state);
       const headers = new Headers({
@@ -355,9 +401,9 @@ export default {
       });
       const tokenData = await tokenResp.json();
       const token = tokenData.access_token;
-      if (!token) {
+      if (!token || !hasOnlyPublicRepoScope(tokenData.scope)) {
         return new Response("GitHub authorization failed", {
-          status: 502,
+          status: 403,
           headers: clearOAuthCookies(new Headers({ "Cache-Control": "no-store" })),
         });
       }
@@ -416,5 +462,6 @@ export const __test = {
   imageSource,
   isAllowedOrigin,
   isArticleFile,
+  hasOnlyPublicRepoScope,
   oauthTargetOrigin,
 };

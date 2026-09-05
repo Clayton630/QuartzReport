@@ -4,6 +4,7 @@ backend:
   branch: main
   base_url: https://quartzreport-oauth.claytonelhorga.workers.dev
   auth_endpoint: auth
+  auth_scope: public_repo
 
 media_folder: "img/uploads"
 public_folder: "/img/uploads"
