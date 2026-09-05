@@ -27,15 +27,5 @@ const shortDate = (date) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", m
   </div></div></section>
   <h2 class="all-articles-title">Tous les articles</h2>
   <div id="articles"><ArticleList articles={articles} /></div>
-  <script>
-    document.querySelectorAll(".category-filter").forEach((link) => link.addEventListener("click", (event) => {
-      event.preventDefault();
-      const selected = link.dataset.category;
-      document.querySelectorAll(".category-filter").forEach((item) => item.classList.toggle("active", item === link));
-      document.querySelectorAll("[data-category]").forEach((item) => {
-        if (item.classList.contains("category-filter")) return;
-        item.hidden = selected !== "Tous" && item.dataset.category !== selected;
-      });
-    }));
-  </script>
+  <script src="/js/category-filter.js" defer></script>
 </BaseLayout>
