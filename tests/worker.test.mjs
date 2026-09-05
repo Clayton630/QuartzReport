@@ -16,6 +16,13 @@ test("OAuth state comparisons reject missing and altered values", () => {
   assert.equal(__test.constantTimeEqual("same-state", null), false);
 });
 
+test("admin OAuth only accepts the public-repository permission", () => {
+  assert.equal(__test.hasOnlyPublicRepoScope("public_repo"), true);
+  assert.equal(__test.hasOnlyPublicRepoScope("repo"), false);
+  assert.equal(__test.hasOnlyPublicRepoScope("public_repo,user"), false);
+  assert.equal(__test.hasOnlyPublicRepoScope(undefined), false);
+});
+
 test("OAuth callback only targets QuartzReport Pages", () => {
   const previewRequest = new Request(
     "https://quartzreport-oauth.claytonelhorga.workers.dev/auth?site_id=2e42426c.quartzreport.pages.dev",
