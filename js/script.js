@@ -30,15 +30,6 @@ function base64ToUtf8(base64) {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
 /* =========================
    Couleurs catégories (dynamiques)
    ========================= */
@@ -99,10 +90,8 @@ function clearInnerStroke(linkEl) {
    ========================= */
 function getOptimizedImageUrl(url, maxWidth) {
   try {
-    if (!url || url.includes("quartzreport-oauth.claytonelhorga.workers.dev/img?")) return url;
-    const source = url.startsWith("/") ? `https://quartzreport.pages.dev${url}` : url;
-    if (!source.startsWith("http")) return url;
-    const clean = encodeURIComponent(source.split("?")[0]);
+    if (!url || !url.startsWith("http")) return url;
+    const clean = encodeURIComponent(url.split("?")[0]);
     return `https://quartzreport-oauth.claytonelhorga.workers.dev/img?src=${clean}&w=${maxWidth}&q=85`;
   } catch (e) {
     console.error("getOptimizedImageUrl failed:", e);
@@ -157,12 +146,39 @@ async function loadArticles() {
 
   try {
     const resp = await fetch(
-      `${workerBase}/articles?ref=${branch}`,
+      `${workerBase}/repos/${repo}/contents/articles?ref=${branch}&_=${Date.now()}`,
       { cache: "force-cache" }
     );
     if (!resp.ok) throw new Error("Erreur chargement liste articles");
-    const { articles: apiDatas = [] } = await resp.json();
-    const mdFiles = apiDatas.map((article) => ({ name: article.name }));
+
+    const files = await resp.json();
+    const mdFiles = files.filter((f) => /\.md$/i.test(f.name));
+
+    async function fetchAllWithLimit(urls, limit) {
+      const results = [];
+      let i = 0;
+      async function next() {
+        if (i >= urls.length) return;
+        const idx = i++;
+        try {
+          const r = await fetch(urls[idx], { cache: "force-cache" });
+          results[idx] = await r.json();
+        } catch {
+          results[idx] = null;
+        }
+        return next();
+      }
+      const workers = [];
+      for (let k = 0; k < limit; k++) workers.push(next());
+      await Promise.all(workers);
+      return results;
+    }
+
+    const urls = mdFiles.map(
+      (file) =>
+        `${workerBase}/repos/${repo}/contents/articles/${file.name}?ref=${branch}`
+    );
+    const apiDatas = await fetchAllWithLimit(urls, 6);
 
     const all = [];
     for (let i = 0; i < mdFiles.length; i++) {
@@ -331,7 +347,7 @@ async function loadArticles() {
                   </div>
                 </a>`;
               const t = el.querySelector(".thumb");
-              prepareThumb(t, article.thumbnail);
+              prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
               frag.appendChild(el);
             });
             block.appendChild(frag);
@@ -401,7 +417,7 @@ async function loadArticles() {
                     </div>
                   </a>`;
                 const t = el.querySelector(".thumb");
-                prepareThumb(t, article.thumbnail);
+                prepareThumb(t, getOptimizedImageUrl(article.thumbnail, 800));
                 frag.appendChild(el);
               });
               dayBlock.appendChild(frag);
