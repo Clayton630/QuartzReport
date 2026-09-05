@@ -44,6 +44,11 @@ function optimizedImageUrl(value, width) {
   return `${WORKER_ORIGIN}/img?src=${encodeURIComponent(safeUrl)}&w=${width}&q=88`;
 }
 
+function setMeta(selector, value) {
+  const element = document.querySelector(selector);
+  if (element) element.setAttribute("content", value);
+}
+
 function renderArticle(meta, body) {
   const title = meta.title || "Sans titre";
   const author = meta.author || "Inconnu";
@@ -54,11 +59,16 @@ function renderArticle(meta, body) {
     year: "numeric",
   });
   const cover = meta.thumbnail ? optimizedImageUrl(meta.thumbnail, 2560) : "";
+  const description = meta.description || body.replace(/\s+/g, " ").slice(0, 160);
   const safeBody = DOMPurify.sanitize(marked.parse(body), {
     USE_PROFILES: { html: true },
   });
 
   document.title = `${title} – Quartz Report`;
+  setMeta('meta[name="description"]', description);
+  setMeta('meta[property="og:title"]', title);
+  setMeta('meta[property="og:description"]', description);
+  if (cover) setMeta('meta[property="og:image"]', new URL(cover, window.location.origin).toString());
   document.getElementById("article-full").innerHTML = `
     <article class="article-full">
       ${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt="Illustration de l'article"></div>` : ""}

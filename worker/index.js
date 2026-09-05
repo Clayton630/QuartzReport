@@ -316,3 +316,5 @@ export default {
     return new Response("Not found", { status: 404 });
   },
 };
+
+export const __test = { isAllowedOrigin, isArticleFile, imageSource };
