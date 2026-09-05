@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/wrangler/config-schema.json",
+  "name": "quartzreport-oauth",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-05",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}
