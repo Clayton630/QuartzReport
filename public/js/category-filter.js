@@ -7,8 +7,9 @@ document.querySelectorAll(".category-filter").forEach((link) => {
       item.classList.toggle("active", item === link);
     });
 
-    document.querySelectorAll("[data-category]").forEach((item) => {
-      if (item.classList.contains("category-filter")) return;
+    // À la une ne change pas : comme sur le site d'origine, seules les listes
+    // d'articles sont filtrées.
+    document.querySelectorAll(".day-article[data-category]").forEach((item) => {
       item.hidden = selected !== "Tous" && item.dataset.category !== selected;
     });
   });

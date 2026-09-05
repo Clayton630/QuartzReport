@@ -574,6 +574,17 @@ select {
   display: none !important;
 }
 
+/* On enlève les jours et les semaines devenus vides après un filtre. */
+.day-block:not(:has(.day-article:not([hidden]))),
+.week-block:not(:has(.day-article:not([hidden]))) {
+  display: none;
+}
+
+/* La catégorie choisie garde sa couleur, mais retrouve sa taille normale. */
+.main-nav a.category-filter.active {
+  transform: scale(1);
+}
+
 /* Couleur de la catégorie actuellement sélectionnée. */
 .main-nav a.category-filter.active[data-category="Apple"] {
   background: #4B73FACC;
