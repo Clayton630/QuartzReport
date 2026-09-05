@@ -1,0 +1,254 @@
+/* =========================
+   Article — Page complète
+   ========================= */
+.article-cover {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  top: 0;
+  overflow: hidden;
+  max-height: 55vh;
+  border-radius: 0;
+}
+
+.article-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.article-header {
+  text-align: center;
+  padding: 0 var(--page-x);
+}
+
+.article-header h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0.2rem 0 0.6rem;
+  color: #111;
+}
+
+.article-meta {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 1.8rem;
+}
+
+.article-body {
+  font-size: 1rem;
+  color: #111;
+  line-height: 1.6;
+  padding: 0 var(--page-x) 2.5rem;
+}
+
+.article-body img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  margin: 1.2rem 0;
+  object-fit: contain;
+}
+
+/* =========================
+   Titre "Tous les articles"
+   ========================= */
+.all-articles-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111;
+  margin: 32px var(--page-x) 14px var(--page-x);
+  line-height: 1.3;
+  text-align: left;
+}
+
+/* =========================
+   Responsive — correction du 16/9 sur mobile
+   ========================= */
+@media (max-width: 768px) {
+  .hottest-wrapper {
+    margin-top: 10px;
+  }
+
+  .hottest-grid .card {
+    flex: 0 0 65%;
+    max-width: 260px;
+  }
+
+  .hottest-grid .card>img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+    height: auto;
+  }
+
+  .card-content {
+    padding: 12px 14px 14px;
+  }
+
+  .card-content h3 {
+    font-size: 1rem;
+  }
+}
+
+/* ===== Nav: extended breathing space for shadows (desktop + mobile) ===== */
+.main-nav {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+
+  /* ⬇️ ABAISSEMENT DES CATÉGORIES (Desktop) :
+     On a ajouté +12px au padding-top pour descendre le texte.
+     On a retiré 12px au margin-bottom pour que la suite ne bouge pas.
+  */
+  padding-top: 44px;
+  /* Était 32px */
+  padding-bottom: 42px;
+
+  margin-top: -32px;
+  margin-bottom: -54px;
+  /* Était -42px */
+
+  position: relative;
+  z-index: 2;
+}
+
+/* 📱 Variante mobile : ombres encore plus respirantes */
+@media (max-width: 768px) {
+  .main-nav {
+    /* ⬇️ ABAISSEMENT MOBILE :
+       Même logique : +12px en haut, -12px en bas.
+    */
+    padding-top: 48px;
+    /* Était 36px */
+    padding-bottom: 52px;
+
+    margin-top: -36px;
+    margin-bottom: -64px;
+    /* Était -52px */
+  }
+}
+
+/* 📱 Catégories légèrement plus petites mais toujours confortables */
+@media (max-width: 480px) {
+  .main-nav a {
+    padding: 9px 18px;
+    font-size: 1.0rem;
+    border-radius: 36px;
+  }
+}
+
+/* === HOTTEST : Calage Mobile & Desktop === */
+
+/* 1. On nettoie la marge sur le premier élément (Spacer ou Carte) */
+.hottest-grid .card:first-child {
+  margin-left: 0 !important;
+  /* ✅ Fini les 20px en trop sur mobile */
+}
+
+/* 2. Sur Mobile : On cache le spacer */
+/* Le padding du conteneur (20px) suffit à créer l'alignement parfait avec les catégories */
+@media (max-width: 768px) {
+  .hottest-spacer {
+    display: none !important;
+  }
+}
+
+/* 3. Sur Desktop : On garde la marge à 0 (le spacer JS fait le travail) */
+@media (min-width: 769px) {
+  .hottest-grid .card:first-child {
+    margin-left: 0 !important;
+  }
+}
+
+/* =========================
+   💎 Liseré "TITANIUM LUMINOUS" (Appliqué sur .card-inner)
+   ========================= */
+
+@keyframes stealthFlow {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 1;
+  }
+
+  35% {
+    opacity: 1;
+  }
+
+  50% {
+    background-position: 100% 50%;
+    opacity: 0;
+  }
+
+  65% {
+    opacity: 1;
+  }
+
+  85% {
+    opacity: 1;
+  }
+
+  100% {
+    background-position: 0% 50%;
+    opacity: 0;
+  }
+}
+
+/* Attention : On cible maintenant .card-inner et plus .card */
+.hottest-grid .card:not(.hottest-spacer) .card-inner::after {
+  content: "";
+  position: absolute;
+
+  /* Calage sub-pixel parfait */
+  inset: -0.5px;
+  border-radius: 28.5px;
+  padding: 2px;
+
+  /* Gradient Titane Frost */
+  background: linear-gradient(125deg,
+      #a7b7cc 0%,
+      #f1f5f9 15%,
+      #ffffff 25%,
+      #bae6fd 30%,
+      #ffffff 35%,
+      #a7b7cc 50%,
+      #ffffff 65%,
+      #e9d5ff 70%,
+      #ffffff 75%,
+      #f1f5f9 85%,
+      #a7b7cc 100%);
+
+  background-size: 300% 300%;
+  will-change: background-position, opacity;
+  animation: stealthFlow 8s ease-in-out infinite;
+
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* =========================
+   ✨ Restauration du Hover (Souris Uniquement & Sans Bug)
+   ========================= */
+@media (hover: hover) {
+  .hottest-grid .card:not(.hottest-spacer):hover {
+    /* Mouvement fluide */
+    transform: translate3d(0, -4px, 0);
+    /* Ombre renforcée */
+    box-shadow: 0 18px 40px -5px rgba(0, 0, 0, 0.2);
+  }
+}

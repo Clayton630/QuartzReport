@@ -1,0 +1,227 @@
+/* =========================
+   Articles du feed
+   ========================= */
+.articles {
+  padding: 20px var(--page-x);
+  overflow: visible;
+}
+
+.day-block {
+  background: #fff;
+  border-radius: 23px;
+  padding: 14px 14px 8px 14px;
+  margin-bottom: 26px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.day-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111;
+  margin: 0 0 12px 4px;
+  text-transform: capitalize;
+}
+
+.day-article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 0;
+}
+
+/* Les catégories masquent réellement les articles qui ne correspondent pas. */
+.day-article[hidden],
+.hottest-grid .card[hidden] {
+  display: none !important;
+}
+
+/* On enlève les jours et les semaines devenus vides après un filtre. */
+.day-block:not(:has(.day-article:not([hidden]))),
+.week-block:not(:has(.day-article:not([hidden]))) {
+  display: none;
+}
+
+/* La catégorie choisie garde sa couleur, mais retrouve sa taille normale. */
+.main-nav a.category-filter.active {
+  transform: scale(1);
+}
+
+/* Couleur de la catégorie actuellement sélectionnée. */
+.main-nav a.category-filter.active[data-category="Apple"] {
+  background: #4B73FACC;
+  color: #fff;
+}
+
+.main-nav a.category-filter.active[data-category="Analyse"] {
+  background: #FF6F61CC;
+  color: #fff;
+}
+
+.main-nav a.category-filter.active[data-category="Comparatif"] {
+  background: #2ECC71CC;
+  color: #fff;
+}
+
+.main-nav a.category-filter.active[data-category="Review"] {
+  background: #D7A900CC;
+  color: #FFFFD1;
+}
+
+.main-nav a.category-filter.active[data-category="Autre"] {
+  background: #555;
+  color: #fff;
+}
+
+.day-article-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  text-decoration: none;
+  color: inherit;
+}
+
+.thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex-shrink: 0;
+}
+
+.day-article-info {
+  flex: 1;
+}
+
+.day-meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.day-article-info h4 {
+  margin: 4px 0 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+  line-height: 1.3;
+}
+
+/* =========================
+   Résumé (description)
+   ========================= */
+.day-desc {
+  margin: 4px 0 0;
+  font-size: 0.9rem;
+  color: rgba(0, 0, 0, 0.65);
+  line-height: 1.45;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* =========================
+   Responsive global
+   ========================= */
+@media (max-width: 480px) {
+  .logo-img {
+    height: 27px;
+  }
+
+  /* catégories : taille/padding plus compact */
+  .main-nav a {
+    font-size: 0.97rem;
+    padding: 8px 16px;
+    border-radius: 34px;
+  }
+
+  .hottest-grid .card {
+    flex: 0 0 65%;
+    max-width: 260px;
+  }
+
+  .card-content h3 {
+    font-size: 1.05rem;
+  }
+
+  .article-header h3 {
+    font-size: 1.3rem;
+  }
+
+  .article-body {
+    font-size: 0.95rem;
+  }
+
+  .thumb {
+    width: 64px;
+    height: 64px;
+  }
+
+  .day-title {
+    font-size: 1rem;
+    margin-bottom: 8px;
+  }
+
+  .day-article-info h4 {
+    font-size: 0.95rem;
+  }
+
+  /* ❗ Correction : NE PAS mettre de padding sur hottest-wrapper */
+  .hottest-wrapper {
+    padding: 0;
+    /* essential */
+  }
+
+  /* ❗ Le padding doit aller sur hottest-grid */
+  .hottest-grid {
+    padding-left: var(--page-x-mobile);
+    padding-right: var(--page-x-mobile);
+  }
+
+  /* articles */
+  .articles {
+    padding: 20px var(--page-x-mobile);
+  }
+}
+
+/* =========================
+   Feed regroupé par jour / semaine (desktop)
+   ========================= */
+@media (min-width: 769px) {
+  .week-block {
+    margin-bottom: 36px;
+  }
+
+  .week-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #111;
+    margin: 0 0 16px 4px;
+    text-transform: capitalize;
+  }
+
+  .week-carousel {
+    --day-card-w: 320px;
+    display: flex;
+    gap: 18px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0 4px;
+    align-items: flex-start;
+  }
+
+  .week-carousel .day-block {
+    flex: 0 0 var(--day-card-w);
+    width: var(--day-card-w);
+    max-width: var(--day-card-w);
+    height: auto;
+    scroll-snap-align: start;
+  }
+}
+
