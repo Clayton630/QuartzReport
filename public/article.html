@@ -8,13 +8,6 @@
   </head>
   <body>
     <p>Redirection vers l’article…</p>
-    <script>
-      const file = new URLSearchParams(window.location.search).get("file");
-      if (file && /^[^/\\]+\.md$/i.test(file)) {
-        window.location.replace(`/articles/${encodeURIComponent(file.replace(/\.md$/i, ""))}/`);
-      } else {
-        window.location.replace("/");
-      }
-    </script>
+    <script src="/js/legacy-article-redirect.js"></script>
   </body>
 </html>

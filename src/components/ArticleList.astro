@@ -4,26 +4,52 @@ import { optimizedImageUrl } from "../lib/articles.js";
 const { articles } = Astro.props;
 const formatDate = (date) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(date);
 const formatTime = (date) => new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(date);
-const byDay = Object.groupBy(articles, (article) => article.date.toISOString().slice(0, 10));
-const days = Object.entries(byDay).sort(([a], [b]) => b.localeCompare(a));
+const dayKey = (date) => [date.getFullYear(), String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+const monday = (date) => {
+  const result = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12);
+  result.setDate(result.getDate() - ((result.getDay() || 7) - 1));
+  return result;
+};
+const byWeek = new Map();
+for (const article of articles) {
+  const week = monday(article.date);
+  const key = dayKey(week);
+  if (!byWeek.has(key)) byWeek.set(key, { start: week, articles: [] });
+  byWeek.get(key).articles.push(article);
+}
+const weeks = [...byWeek.values()].sort((a, b) => b.start - a.start);
+const weekTitle = (start) => {
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  return `Semaine du ${formatDate(start)} au ${formatDate(end)}`;
+};
 ---
 
 <section class="articles" aria-label="Tous les articles">
-  {days.map(([, dayArticles]) => (
-    <div class="day-block">
-      <h3 class="day-title">{formatDate(dayArticles[0].date)}</h3>
-      {dayArticles.map((article) => (
-        <div class="day-article" data-category={article.category}>
-          <a href={`/articles/${encodeURIComponent(article.slug)}/`} class="day-article-link">
-            <div class="thumb" style={`background-image:url('${optimizedImageUrl(article.thumbnail, 800)}')`}></div>
-            <div class="day-article-info">
-              <p class="day-meta">Par {article.author}, à {formatTime(article.date)}</p>
-              <h4>{article.title}</h4>
-              <p class="day-desc">{article.description}</p>
+  {weeks.map((week) => (
+    <div class="week-block">
+      <h3 class="week-title">{weekTitle(week.start)}</h3>
+      <div class="week-carousel">
+        {Object.values(Object.groupBy(week.articles, (article) => dayKey(article.date)))
+          .sort((a, b) => b[0].date - a[0].date)
+          .map((dayArticles) => (
+            <div class="day-block">
+              <h3 class="day-title">{formatDate(dayArticles[0].date)}</h3>
+              {dayArticles.map((article) => (
+                <div class="day-article" data-category={article.category}>
+                  <a href={`/articles/${encodeURIComponent(article.slug)}/`} class="day-article-link">
+                    <div class="thumb" style={`background-image:url('${optimizedImageUrl(article.thumbnail, 800)}')`}></div>
+                    <div class="day-article-info">
+                      <p class="day-meta">Par {article.author}, à {formatTime(article.date)}</p>
+                      <h4>{article.title}</h4>
+                      <p class="day-desc">{article.description}</p>
+                    </div>
+                  </a>
+                </div>
+              ))}
             </div>
-          </a>
-        </div>
-      ))}
+          ))}
+      </div>
     </div>
   ))}
 </section>
