@@ -5,7 +5,8 @@ const CACHE_SECONDS = 60;
 
 function corsHeaders(request) {
   const origin = request.headers.get("Origin");
-  return origin === SITE_ORIGIN
+  const allowed = origin === SITE_ORIGIN || /^https:\/\/[a-f0-9-]+\.quartzreport\.pages\.dev$/.test(origin || "");
+  return allowed
     ? {
         "Access-Control-Allow-Origin": SITE_ORIGIN,
         Vary: "Origin",
