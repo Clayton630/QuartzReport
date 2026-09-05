@@ -603,7 +603,7 @@ select {
 
 .main-nav a.category-filter.active[data-category="Review"] {
   background: #D7A900CC;
-  color: #111;
+  color: #FFFFD1;
 }
 
 .main-nav a.category-filter.active[data-category="Autre"] {
