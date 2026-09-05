@@ -8,7 +8,7 @@ function corsHeaders(request) {
   const allowed = origin === SITE_ORIGIN || /^https:\/\/[a-f0-9-]+\.quartzreport\.pages\.dev$/.test(origin || "");
   return allowed
     ? {
-        "Access-Control-Allow-Origin": SITE_ORIGIN,
+        "Access-Control-Allow-Origin": origin,
         Vary: "Origin",
         "Access-Control-Allow-Methods": "GET, OPTIONS",
       }
