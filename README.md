@@ -36,7 +36,7 @@ npm test
 wrangler deploy --dry-run --keep-vars --config worker/wrangler.jsonc
 ```
 
-La vérification automatique GitHub exécute `npm test` sur chaque pull request. Toute évolution doit passer par une branche et une préproduction Cloudflare Pages avant fusion sur `main`.
+Les vérifications sont exécutées avant chaque mise en ligne. Toute évolution doit passer par une branche et une préproduction Cloudflare Pages avant fusion sur `main`.
 
 ## Déployer le Worker
 

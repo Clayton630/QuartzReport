@@ -9,6 +9,7 @@ const MIN_IMAGE_WIDTH = 160;
 const MIN_IMAGE_QUALITY = 40;
 const MAX_IMAGE_QUALITY = 95;
 const OAUTH_STATE_COOKIE = "__Host-quartzreport_oauth_state";
+const OAUTH_ORIGIN_COOKIE = "__Host-quartzreport_oauth_origin";
 
 function isAllowedOrigin(origin) {
   return (
@@ -89,6 +90,36 @@ function constantTimeEqual(left, right) {
 
 function oauthStateCookie(value, maxAge = 600) {
   return `${OAUTH_STATE_COOKIE}=${value}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`;
+}
+
+function oauthOriginCookie(value, maxAge = 600) {
+  return `${OAUTH_ORIGIN_COOKIE}=${value}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`;
+}
+
+function oauthTargetOrigin(request) {
+  const url = new URL(request.url);
+  const siteId = url.searchParams.get("site_id");
+  if (siteId) {
+    try {
+      const origin = new URL(`https://${siteId}`).origin;
+      if (isAllowedOrigin(origin)) return origin;
+    } catch {
+      // Fall through to the referrer, then to the production site.
+    }
+  }
+
+  try {
+    const origin = new URL(request.headers.get("Referer") || "").origin;
+    return isAllowedOrigin(origin) ? origin : SITE_ORIGIN;
+  } catch {
+    return SITE_ORIGIN;
+  }
+}
+
+function clearOAuthCookies(headers) {
+  headers.append("Set-Cookie", oauthStateCookie("", 0));
+  headers.append("Set-Cookie", oauthOriginCookie("", 0));
+  return headers;
 }
 
 async function readTextLimited(response, maxBytes) {
@@ -282,18 +313,21 @@ export default {
 
     if (url.pathname === "/auth") {
       const state = randomState();
+      const targetOrigin = oauthTargetOrigin(request);
       const redirect = new URL("https://github.com/login/oauth/authorize");
       redirect.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
       redirect.searchParams.set("scope", "repo user");
       redirect.searchParams.set("redirect_uri", `${url.origin}/callback?provider=github`);
       redirect.searchParams.set("state", state);
+      const headers = new Headers({
+        Location: redirect.toString(),
+        "Cache-Control": "no-store",
+      });
+      headers.append("Set-Cookie", oauthStateCookie(state));
+      headers.append("Set-Cookie", oauthOriginCookie(targetOrigin));
       return new Response(null, {
         status: 302,
-        headers: {
-          Location: redirect.toString(),
-          "Set-Cookie": oauthStateCookie(state),
-          "Cache-Control": "no-store",
-        },
+        headers,
       });
     }
 
@@ -301,11 +335,12 @@ export default {
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state");
       const expectedState = cookieValue(request, OAUTH_STATE_COOKIE);
-      const clearState = oauthStateCookie("", 0);
+      const targetOrigin = cookieValue(request, OAUTH_ORIGIN_COOKIE);
+      const callbackOrigin = isAllowedOrigin(targetOrigin) ? targetOrigin : SITE_ORIGIN;
       if (!code || !state || !constantTimeEqual(state, expectedState)) {
         return new Response("Invalid OAuth callback", {
           status: 400,
-          headers: { "Set-Cookie": clearState, "Cache-Control": "no-store" },
+          headers: clearOAuthCookies(new Headers({ "Cache-Control": "no-store" })),
         });
       }
 
@@ -323,7 +358,7 @@ export default {
       if (!token) {
         return new Response("GitHub authorization failed", {
           status: 502,
-          headers: { "Set-Cookie": clearState, "Cache-Control": "no-store" },
+          headers: clearOAuthCookies(new Headers({ "Cache-Control": "no-store" })),
         });
       }
       const authorizationMessage = `authorization:github:success:${JSON.stringify({ token, provider: "github" })}`;
@@ -333,7 +368,7 @@ export default {
         <script>
           (function() {
             if (!window.opener) return;
-            var targetOrigin = ${JSON.stringify(SITE_ORIGIN)};
+            var targetOrigin = ${JSON.stringify(callbackOrigin)};
             window.opener.postMessage("authorizing:github", targetOrigin);
             var msg = ${JSON.stringify(authorizationMessage)};
             window.opener.postMessage(msg, targetOrigin);
@@ -342,11 +377,10 @@ export default {
         </script>
       `,
         {
-          headers: {
+          headers: clearOAuthCookies(new Headers({
             "content-type": "text/html; charset=utf-8",
-            "Set-Cookie": clearState,
             "Cache-Control": "no-store",
-          },
+          })),
         },
       );
     }
@@ -377,4 +411,10 @@ export default {
   },
 };
 
-export const __test = { constantTimeEqual, imageSource, isAllowedOrigin, isArticleFile };
+export const __test = {
+  constantTimeEqual,
+  imageSource,
+  isAllowedOrigin,
+  isArticleFile,
+  oauthTargetOrigin,
+};

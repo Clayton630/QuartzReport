@@ -16,6 +16,22 @@ test("OAuth state comparisons reject missing and altered values", () => {
   assert.equal(__test.constantTimeEqual("same-state", null), false);
 });
 
+test("OAuth callback only targets QuartzReport Pages", () => {
+  const previewRequest = new Request(
+    "https://quartzreport-oauth.claytonelhorga.workers.dev/auth?site_id=2e42426c.quartzreport.pages.dev",
+  );
+  const externalRequest = new Request(
+    "https://quartzreport-oauth.claytonelhorga.workers.dev/auth?site_id=example.com",
+  );
+  const malformedRequest = new Request(
+    "https://quartzreport-oauth.claytonelhorga.workers.dev/auth?site_id=quartzreport.pages.dev%2F%40example.com",
+  );
+
+  assert.equal(__test.oauthTargetOrigin(previewRequest), "https://2e42426c.quartzreport.pages.dev");
+  assert.equal(__test.oauthTargetOrigin(externalRequest), "https://quartzreport.pages.dev");
+  assert.equal(__test.oauthTargetOrigin(malformedRequest), "https://quartzreport.pages.dev");
+});
+
 test("only QuartzReport Pages origins receive API CORS access", () => {
   assert.equal(__test.isAllowedOrigin("https://quartzreport.pages.dev"), true);
   assert.equal(__test.isAllowedOrigin("https://20859af1.quartzreport.pages.dev"), true);
