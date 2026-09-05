@@ -1,0 +1,39 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Header from "../components/Header.astro";
+import ArticleList from "../components/ArticleList.astro";
+import { getArticles, optimizedImageUrl } from "../lib/articles.js";
+
+const articles = await getArticles();
+const featured = articles.filter((article) => article.important);
+const categories = ["Tous", ...new Set(articles.map((article) => article.category))];
+const shortDate = (date) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(date);
+---
+
+<BaseLayout>
+  <Header />
+  <nav class="main-nav" aria-label="Catégories"><ul id="categories">
+    {categories.map((category, index) => <li><button class:list={["category-filter", { active: index === 0 }]} data-category={category}>{category}</button></li>)}
+  </ul></nav>
+  <section class="hottest"><div class="hottest-wrapper"><div class="hottest-grid" id="hottest">
+    {featured.map((article, index) => (
+      <a href={`/articles/${encodeURIComponent(article.slug)}/`} class="card" data-category={article.category}>
+        <div class="card-inner"><img src={optimizedImageUrl(article.thumbnail, 1280)} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" />
+          <div class="card-content"><p class="card-meta">Par {article.author}, {shortDate(article.date)}</p><h3>{article.title}</h3></div>
+        </div>
+      </a>
+    ))}
+  </div></div></section>
+  <h2 class="all-articles-title">Tous les articles</h2>
+  <ArticleList articles={articles} />
+  <script>
+    document.querySelectorAll(".category-filter").forEach((button) => button.addEventListener("click", () => {
+      const selected = button.dataset.category;
+      document.querySelectorAll(".category-filter").forEach((item) => item.classList.toggle("active", item === button));
+      document.querySelectorAll("[data-category]").forEach((item) => {
+        if (item.classList.contains("category-filter")) return;
+        item.hidden = selected !== "Tous" && item.dataset.category !== selected;
+      });
+    }));
+  </script>
+</BaseLayout>

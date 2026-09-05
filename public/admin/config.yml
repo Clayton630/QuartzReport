@@ -6,7 +6,7 @@ backend:
   auth_endpoint: auth
   auth_scope: public_repo
 
-media_folder: "img/uploads"
+media_folder: "public/img/uploads"
 public_folder: "/img/uploads"
 
 collections:

@@ -1,0 +1,29 @@
+---
+import { optimizedImageUrl } from "../lib/articles.js";
+
+const { articles } = Astro.props;
+const formatDate = (date) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(date);
+const formatTime = (date) => new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(date);
+const byDay = Object.groupBy(articles, (article) => article.date.toISOString().slice(0, 10));
+const days = Object.entries(byDay).sort(([a], [b]) => b.localeCompare(a));
+---
+
+<section class="articles" aria-label="Tous les articles">
+  {days.map(([, dayArticles]) => (
+    <div class="day-block">
+      <h3 class="day-title">{formatDate(dayArticles[0].date)}</h3>
+      {dayArticles.map((article) => (
+        <div class="day-article" data-category={article.category}>
+          <a href={`/articles/${encodeURIComponent(article.slug)}/`} class="day-article-link">
+            <div class="thumb" style={`background-image:url('${optimizedImageUrl(article.thumbnail, 800)}')`}></div>
+            <div class="day-article-info">
+              <p class="day-meta">Par {article.author}, à {formatTime(article.date)}</p>
+              <h4>{article.title}</h4>
+              <p class="day-desc">{article.description}</p>
+            </div>
+          </a>
+        </div>
+      ))}
+    </div>
+  ))}
+</section>

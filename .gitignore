@@ -3,3 +3,5 @@ worker/.wrangler/
 .dev.vars
 worker/.dev.vars
 node_modules/
+dist/
+.astro/
