@@ -648,12 +648,6 @@ select {
   line-height: 1.3;
 }
 
-.day-separator {
-  height: 1px;
-  background: rgba(0, 0, 0, 0.06);
-  margin: 6px 0;
-}
-
 /* =========================
    Résumé (description)
    ========================= */
@@ -912,57 +906,6 @@ select {
     font-size: 1.0rem;
     border-radius: 36px;
   }
-
-  /* 💫 Effet "press & release" fluide et élégant */
-  @keyframes bounceTap {
-    0% {
-      transform: scale(1);
-    }
-
-    40% {
-      transform: scale(0.90);
-    }
-
-    100% {
-      transform: scale(1);
-    }
-  }
-
-  .main-nav a.tap-anim {
-    animation: bounceTap 850ms cubic-bezier(0.25, 0.8, 0.4, 1);
-    animation-fill-mode: none;
-  }
-}
-
-/* =========================
-   ANIMATION TACTILE (V2 : Snappy & Smooth)
-   ========================= */
-
-/* 1. Pression : EXPLOSIVE (200ms) */
-/* 1. Pression : Grande Amplitude & Mouvement Posé */
-.main-nav a.pressed {
-  transform: scale(1.25);
-  /* ✅ On grossit franchement (+25%) */
-
-  background: #ffffff !important;
-  color: #111 !important;
-
-  box-shadow:
-    inset 0.8px 0.8px 0 rgba(255, 255, 255, 0.85),
-    inset -0.8px -0.8px 0 rgba(255, 255, 255, 0.75),
-    0 15px 35px rgba(0, 0, 0, 0.15);
-
-  /* ⏳ 400ms : C'est plus lent qu'avant (200ms), donc moins "électrique".
-     La courbe reste fluide pour éviter l'effet linéaire robotique. */
-  transition: all 400ms cubic-bezier(0.1, 0.9, 0.2, 1.0);
-}
-
-/* 2. Relâchement : Retour en douceur */
-.main-nav a.pressed-release {
-  transform: scale(1);
-
-  /* On garde une durée longue pour l'atterrissage */
-  transition: all 600ms cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 /* === HOTTEST : Calage Mobile & Desktop === */
