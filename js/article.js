@@ -1,73 +1,104 @@
-// ========= Décodage GitHub =========
-function base64ToUtf8(base64) {
-  const binary = atob(base64.replace(/\n/g, ""));
-  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-  return new TextDecoder("utf-8").decode(bytes);
+const WORKER_ORIGIN = "https://quartzreport-oauth.claytonelhorga.workers.dev";
+const PLACEHOLDER_IMAGE = "img/article-placeholder.jpg";
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
-// ========= Chargement d’un article unique =========
+function parseFrontMatter(text) {
+  const match = text.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
+  if (!match) return { meta: {}, body: text.trim() };
+
+  const meta = {};
+  for (const line of match[1].split("\n")) {
+    const separator = line.indexOf(":");
+    if (separator < 1) continue;
+    const key = line.slice(0, separator).trim();
+    const value = line.slice(separator + 1).trim().replace(/^"|"$/g, "");
+    meta[key] = value;
+  }
+  return { meta, body: match[2].trim() };
+}
+
+function safeImageUrl(value) {
+  if (typeof value !== "string" || !value.trim()) return PLACEHOLDER_IMAGE;
+  try {
+    const candidate = new URL(value, window.location.origin);
+    if (candidate.protocol !== "https:" && candidate.protocol !== "http:") return PLACEHOLDER_IMAGE;
+    return candidate.origin === window.location.origin
+      ? `${candidate.pathname}${candidate.search}`
+      : candidate.toString();
+  } catch {
+    return PLACEHOLDER_IMAGE;
+  }
+}
+
+function optimizedImageUrl(value, width) {
+  const safeUrl = safeImageUrl(value);
+  if (!safeUrl.startsWith("/img/uploads/")) return safeUrl;
+  return `${WORKER_ORIGIN}/img?src=${encodeURIComponent(safeUrl)}&w=${width}&q=88`;
+}
+
+function setMeta(selector, value) {
+  const element = document.querySelector(selector);
+  if (element) element.setAttribute("content", value);
+}
+
+function renderArticle(meta, body) {
+  const title = meta.title || "Sans titre";
+  const author = meta.author || "Inconnu";
+  const date = new Date(meta.date || Date.now());
+  const dateDisplay = date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const cover = meta.thumbnail ? optimizedImageUrl(meta.thumbnail, 2560) : "";
+  const description = meta.description || body.replace(/\s+/g, " ").slice(0, 160);
+  const safeBody = DOMPurify.sanitize(marked.parse(body), {
+    USE_PROFILES: { html: true },
+  });
+
+  document.title = `${title} – Quartz Report`;
+  setMeta('meta[name="description"]', description);
+  setMeta('meta[property="og:title"]', title);
+  setMeta('meta[property="og:description"]', description);
+  if (cover) setMeta('meta[property="og:image"]', new URL(cover, window.location.origin).toString());
+  document.getElementById("article-full").innerHTML = `
+    <article class="article-full">
+      ${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt="Illustration de l'article"></div>` : ""}
+      <header class="article-header">
+        <h1>${escapeHtml(title)}</h1>
+        <p class="article-meta">Par ${escapeHtml(author)}, le ${escapeHtml(dateDisplay)}</p>
+      </header>
+      <section class="article-body">${safeBody}</section>
+    </article>`;
+}
+
 async function loadSingleArticle() {
-  const params = new URLSearchParams(window.location.search);
-  const file = params.get("file");
-
-  const repo = "Clayton630/QuartzReport";
-  const branch = "main";
-  const workerBase = "https://quartzreport-oauth.claytonelhorga.workers.dev/api";
-
+  const file = new URLSearchParams(window.location.search).get("file");
   const container = document.getElementById("article-full");
-
   if (!file) {
-    container.innerHTML = "<p>Article introuvable.</p>";
+    container.textContent = "Article introuvable.";
     return;
   }
 
   try {
-    const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file}?ref=${branch}`);
-    if (!apiResp.ok) throw new Error("Erreur chargement contenu article");
-
-    const apiData = await apiResp.json();
-    const text = base64ToUtf8(apiData.content);
-
-    const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
-    let meta = {}, body = text;
-    if (match) {
-      const yaml = match[1].trim();
-      body = match[2].trim();
-      yaml.split("\n").forEach(line => {
-        const [k, ...rest] = line.split(":");
-        meta[k.trim()] = rest.join(":").trim().replace(/^"|"$/g, "");
-      });
-    }
-
-    const date = new Date(meta.date || Date.now());
-    const dateDisplay = date.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-
-    // ✅ Construction de l'article avec image de couverture plein écran
-    container.innerHTML = `
-      <article class="article-full">
-        ${
-          meta.thumbnail
-            ? `<div class="article-cover">
-                 <img src="${meta.thumbnail}" alt="Illustration de l'article">
-               </div>`
-            : ""
-        }
-        <header class="article-header">
-          <h1>${meta.title || "Sans titre"}</h1>
-          <p class="article-meta">Par ${meta.author || "Inconnu"}, le ${dateDisplay}</p>
-        </header>
-        <section class="article-body">
-          ${marked.parse(body)}
-        </section>
-      </article>
-    `;
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = "<p>Erreur lors du chargement de l'article.</p>";
+    const response = await fetch(`${WORKER_ORIGIN}/api/articles`);
+    if (!response.ok) throw new Error("Article feed unavailable");
+    const feed = await response.json();
+    const entry = feed.articles?.find((article) => article.filename === file);
+    if (!entry) throw new Error("Article not found");
+    const { meta, body } = parseFrontMatter(entry.content);
+    renderArticle(meta, body);
+  } catch (error) {
+    console.error(error);
+    container.textContent = "Erreur lors du chargement de l'article.";
   }
 }
 
