@@ -10,6 +10,12 @@ test("only legitimate article filenames are accepted", () => {
   assert.equal(__test.isArticleFile("article.txt"), false);
 });
 
+test("OAuth state comparisons reject missing and altered values", () => {
+  assert.equal(__test.constantTimeEqual("same-state", "same-state"), true);
+  assert.equal(__test.constantTimeEqual("same-state", "other-state"), false);
+  assert.equal(__test.constantTimeEqual("same-state", null), false);
+});
+
 test("only QuartzReport Pages origins receive API CORS access", () => {
   assert.equal(__test.isAllowedOrigin("https://quartzreport.pages.dev"), true);
   assert.equal(__test.isAllowedOrigin("https://20859af1.quartzreport.pages.dev"), true);

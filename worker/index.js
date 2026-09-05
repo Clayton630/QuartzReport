@@ -8,6 +8,7 @@ const MAX_IMAGE_WIDTH = 2560;
 const MIN_IMAGE_WIDTH = 160;
 const MIN_IMAGE_QUALITY = 40;
 const MAX_IMAGE_QUALITY = 95;
+const OAUTH_STATE_COOKIE = "__Host-quartzreport_oauth_state";
 
 function isAllowedOrigin(origin) {
   return (
@@ -56,6 +57,38 @@ function isArticleFile(value) {
     !value.includes("..") &&
     !/[\\/\0\r\n]/u.test(value)
   );
+}
+
+function cookieValue(request, name) {
+  const prefix = `${name}=`;
+  for (const item of (request.headers.get("Cookie") || "").split(";")) {
+    const value = item.trim();
+    if (value.startsWith(prefix)) return value.slice(prefix.length);
+  }
+  return null;
+}
+
+function randomState() {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replaceAll("+", "-").replaceAll("/", "_").replaceAll("=", "");
+}
+
+function constantTimeEqual(left, right) {
+  if (typeof left !== "string" || typeof right !== "string" || left.length !== right.length) {
+    return false;
+  }
+  let difference = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+  return difference === 0;
+}
+
+function oauthStateCookie(value, maxAge = 600) {
+  return `${OAUTH_STATE_COOKIE}=${value}; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=${maxAge}`;
 }
 
 async function readTextLimited(response, maxBytes) {
@@ -247,19 +280,34 @@ export default {
 
     if (url.pathname === "/img") return resizeImage(url);
 
-    // This OAuth behaviour is intentionally unchanged in this first deployment.
-    // The Decap login flow is hardened separately, after an end-to-end test.
     if (url.pathname === "/auth") {
+      const state = randomState();
       const redirect = new URL("https://github.com/login/oauth/authorize");
       redirect.searchParams.set("client_id", env.GITHUB_CLIENT_ID);
       redirect.searchParams.set("scope", "repo user");
       redirect.searchParams.set("redirect_uri", `${url.origin}/callback?provider=github`);
-      return Response.redirect(redirect.toString(), 302);
+      redirect.searchParams.set("state", state);
+      return new Response(null, {
+        status: 302,
+        headers: {
+          Location: redirect.toString(),
+          "Set-Cookie": oauthStateCookie(state),
+          "Cache-Control": "no-store",
+        },
+      });
     }
 
     if (url.pathname === "/callback") {
       const code = url.searchParams.get("code");
-      if (!code) return new Response("Missing code", { status: 400 });
+      const state = url.searchParams.get("state");
+      const expectedState = cookieValue(request, OAUTH_STATE_COOKIE);
+      const clearState = oauthStateCookie("", 0);
+      if (!code || !state || !constantTimeEqual(state, expectedState)) {
+        return new Response("Invalid OAuth callback", {
+          status: 400,
+          headers: { "Set-Cookie": clearState, "Cache-Control": "no-store" },
+        });
+      }
 
       const tokenResp = await fetch("https://github.com/login/oauth/access_token", {
         method: "POST",
@@ -272,22 +320,34 @@ export default {
       });
       const tokenData = await tokenResp.json();
       const token = tokenData.access_token;
+      if (!token) {
+        return new Response("GitHub authorization failed", {
+          status: 502,
+          headers: { "Set-Cookie": clearState, "Cache-Control": "no-store" },
+        });
+      }
+      const authorizationMessage = `authorization:github:success:${JSON.stringify({ token, provider: "github" })}`;
 
       return new Response(
         `
         <script>
           (function() {
-            window.opener.postMessage("authorizing:github", "*");
-            var msg = 'authorization:github:success:' + JSON.stringify({
-              token: "${token}",
-              provider: "github"
-            });
-            window.opener.postMessage(msg, "*");
+            if (!window.opener) return;
+            var targetOrigin = ${JSON.stringify(SITE_ORIGIN)};
+            window.opener.postMessage("authorizing:github", targetOrigin);
+            var msg = ${JSON.stringify(authorizationMessage)};
+            window.opener.postMessage(msg, targetOrigin);
             window.close();
           })();
         </script>
       `,
-        { headers: { "content-type": "text/html" } },
+        {
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+            "Set-Cookie": clearState,
+            "Cache-Control": "no-store",
+          },
+        },
       );
     }
 
@@ -317,4 +377,4 @@ export default {
   },
 };
 
-export const __test = { isAllowedOrigin, isArticleFile, imageSource };
+export const __test = { constantTimeEqual, imageSource, isAllowedOrigin, isArticleFile };
