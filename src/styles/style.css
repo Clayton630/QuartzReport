@@ -568,6 +568,38 @@ select {
   padding: 6px 0;
 }
 
+/* Les catégories masquent réellement les articles qui ne correspondent pas. */
+.day-article[hidden],
+.hottest-grid .card[hidden] {
+  display: none !important;
+}
+
+/* Couleur de la catégorie actuellement sélectionnée. */
+.main-nav a.category-filter.active[data-category="Apple"] {
+  background: #4B73FACC;
+  color: #fff;
+}
+
+.main-nav a.category-filter.active[data-category="Analyse"] {
+  background: #FF6F61CC;
+  color: #fff;
+}
+
+.main-nav a.category-filter.active[data-category="Comparatif"] {
+  background: #2ECC71CC;
+  color: #fff;
+}
+
+.main-nav a.category-filter.active[data-category="Review"] {
+  background: #D7A900CC;
+  color: #111;
+}
+
+.main-nav a.category-filter.active[data-category="Autre"] {
+  background: #555;
+  color: #fff;
+}
+
 .day-article-link {
   display: flex;
   align-items: center;
