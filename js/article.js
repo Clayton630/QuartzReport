@@ -5,22 +5,6 @@ function base64ToUtf8(base64) {
   return new TextDecoder("utf-8").decode(bytes);
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
-function optimizedImageUrl(url, width = 1600) {
-  if (!url) return "";
-  const source = url.startsWith("/") ? `https://quartzreport.pages.dev${url}` : url;
-  if (!/^https?:\/\//i.test(source)) return "";
-  return `https://quartzreport-oauth.claytonelhorga.workers.dev/img?src=${encodeURIComponent(source)}&w=${width}&q=85`;
-}
-
 // ========= Chargement d’un article unique =========
 async function loadSingleArticle() {
   const params = new URLSearchParams(window.location.search);
@@ -38,12 +22,10 @@ async function loadSingleArticle() {
   }
 
   try {
-    const apiResp = await fetch(`${workerBase}/articles?ref=${branch}`);
+    const apiResp = await fetch(`${workerBase}/repos/${repo}/contents/articles/${file}?ref=${branch}`);
     if (!apiResp.ok) throw new Error("Erreur chargement contenu article");
 
-    const { articles = [] } = await apiResp.json();
-    const apiData = articles.find((article) => article.name === file);
-    if (!apiData) throw new Error("Article introuvable");
+    const apiData = await apiResp.json();
     const text = base64ToUtf8(apiData.content);
 
     const match = text.match(/^---([\s\S]*?)---([\s\S]*)$/);
@@ -65,28 +47,21 @@ async function loadSingleArticle() {
     });
 
     // ✅ Construction de l'article avec image de couverture plein écran
-    const safeTitle = escapeHtml(meta.title || "Sans titre");
-    const safeAuthor = escapeHtml(meta.author || "Inconnu");
-    const cover = optimizedImageUrl(meta.thumbnail);
-    const renderedBody = window.DOMPurify
-      ? window.DOMPurify.sanitize(marked.parse(body))
-      : escapeHtml(body);
-
     container.innerHTML = `
       <article class="article-full">
         ${
-          cover
+          meta.thumbnail
             ? `<div class="article-cover">
-                 <img src="${cover}" alt="Illustration de l'article" loading="eager" decoding="async">
+                 <img src="${meta.thumbnail}" alt="Illustration de l'article">
                </div>`
             : ""
         }
         <header class="article-header">
-          <h1>${safeTitle}</h1>
-          <p class="article-meta">Par ${safeAuthor}, le ${dateDisplay}</p>
+          <h1>${meta.title || "Sans titre"}</h1>
+          <p class="article-meta">Par ${meta.author || "Inconnu"}, le ${dateDisplay}</p>
         </header>
         <section class="article-body">
-          ${renderedBody}
+          ${marked.parse(body)}
         </section>
       </article>
     `;
