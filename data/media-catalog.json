@@ -157,6 +157,7 @@
       "path": "/img/uploads/1788728841969-img-9850.jpg",
       "transformable": false,
       "sha256": "663a520993a110fe53fb68b17d166a5a682d319f7d2e9d2c8026571b41297723",
+      "sourceSha256": "663a520993a110fe53fb68b17d166a5a682d319f7d2e9d2c8026571b41297723",
       "width": 2755,
       "height": 3673,
       "bytes": 2265939,
@@ -165,6 +166,7 @@
     {
       "path": "/img/uploads/1788729323308-img-9850.jpg",
       "sha256": "178e7288d97db84c378816a87f616387f0bf508f43c12013d1a9aca4ce07c3df",
+      "sourceSha256": "663a520993a110fe53fb68b17d166a5a682d319f7d2e9d2c8026571b41297723",
       "width": 2755,
       "height": 3673,
       "bytes": 2515348,

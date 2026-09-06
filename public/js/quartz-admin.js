@@ -331,6 +331,9 @@
   async function inspectImage(file) {
     if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
     if (file.size > 12 * 1024 * 1024) throw new Error("Cette image dépasse 12 Mo.");
+    const sourceBytes = new Uint8Array(await file.arrayBuffer());
+    const sourceDigest = await crypto.subtle.digest("SHA-256", sourceBytes);
+    const sourceSha256 = [...new Uint8Array(sourceDigest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
     const sourceUrl = URL.createObjectURL(file);
     const image = new Image();
     await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = sourceUrl; });
@@ -357,7 +360,7 @@
       }
       hash += value.toString(16).padStart(2, "0");
     }
-    return { bytes, previewUrl, mimeType: outputType, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), width: image.naturalWidth, height: image.naturalHeight, bytes: normalized.size, dhash: hash } };
+    return { bytes, previewUrl, mimeType: outputType, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), sourceSha256, width: image.naturalWidth, height: image.naturalHeight, bytes: normalized.size, dhash: hash } };
   }
 
   function hammingDistance(left, right) {
@@ -380,11 +383,12 @@
   }
 
   function findSimilarImage(meta, catalog) {
-    const exact = catalog.images.filter((image) => image.sha256 === meta.sha256);
-    if (exact.length) return exact.sort((left, right) => imageQuality(right) - imageQuality(left))[0];
-    return catalog.images
+    const exact = catalog.images.filter((image) => image.sha256 === meta.sha256 || image.sha256 === meta.sourceSha256 || image.sourceSha256 === meta.sourceSha256);
+    if (exact.length) return { image: exact.sort((left, right) => Number(left.transformable === false) - Number(right.transformable === false) || imageQuality(right) - imageQuality(left))[0], exact: true };
+    const similar = catalog.images
       .filter((image) => Math.abs((image.width / image.height) - (meta.width / meta.height)) < 0.08 && hammingDistance(image.dhash, meta.dhash) <= 6)
-      .sort((left, right) => hammingDistance(left.dhash, meta.dhash) - hammingDistance(right.dhash, meta.dhash) || imageQuality(right) - imageQuality(left))[0] || null;
+      .sort((left, right) => hammingDistance(left.dhash, meta.dhash) - hammingDistance(right.dhash, meta.dhash) || imageQuality(right) - imageQuality(left))[0];
+    return similar ? { image: similar, exact: false } : null;
   }
 
   function askAboutSimilarImage(staged, existing) {
@@ -415,12 +419,15 @@
         loadMediaCatalog(),
       ]);
       staged.blobSha = blob.sha;
-      const existing = findSimilarImage(staged.meta, catalog);
-      if (existing) {
+      const match = findSimilarImage(staged.meta, catalog);
+      if (match?.exact) {
+        staged.path = match.image.path; staged.isNew = false;
+        notice("Image déjà enregistrée : réutilisation automatique.");
+      } else if (match) {
         staged.status = "choice"; updatePublishState();
-        const choice = await askAboutSimilarImage(staged, existing);
-        if (choice === "existing") { staged.path = existing.path; staged.isNew = false; }
-        else if (imageQuality(staged.meta) > imageQuality(existing)) { staged.path = existing.path; staged.replaceExisting = true; }
+        const choice = await askAboutSimilarImage(staged, match.image);
+        if (choice === "existing") { staged.path = match.image.path; staged.isNew = false; }
+        else if (imageQuality(staged.meta) > imageQuality(match.image)) { staged.path = match.image.path; staged.replaceExisting = true; }
       }
       staged.status = "ready";
       return staged;
