@@ -12,6 +12,7 @@
   let token = null;
   let profile = null;
   let articles = [];
+  let publicProfiles = {};
   let currentArticle = null;
   let pendingCover = null;
   let pendingPhoto = null;
@@ -163,7 +164,7 @@
     let result = String(value).replace(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+["']([^"']*)["'])?\)/g, (_, alt, src, title = "") => {
       const safeSrc = /^(https?:\/\/|\/img\/uploads\/)/.test(src) ? src : "";
       if (!safeSrc) return "";
-      const token = `@@QR_IMAGE_${images.length}@@`;
+      const token = `ZZIMAGEPLACEHOLDER${images.length}ZZ`;
       images.push({ token, html: `<img src="${escapeHtml(safeSrc)}" alt="${escapeHtml(alt)}" title="${escapeHtml(title)}">` });
       return token;
     });
@@ -318,6 +319,13 @@
         date: meta.date || new Date(0).toISOString(), author: meta.author || "Inconnu", authorGithubId: meta.author_github_id || "",
       };
     }));
+    const ids = [...new Set(entries.map((article) => article.authorGithubId).filter((id) => /^\d{1,20}$/.test(id)))];
+    try {
+      publicProfiles = ids.length ? (await profileRequest(`/api/profiles?ids=${encodeURIComponent(ids.join(","))}`)).profiles || {} : {};
+    } catch {
+      publicProfiles = {};
+    }
+    for (const article of entries) article.authorDisplayName = publicProfiles[article.authorGithubId]?.name || article.author;
     articles = entries.sort((left, right) => new Date(right.date) - new Date(left.date));
   }
 
@@ -343,7 +351,7 @@
         <p class="qr-admin-card__meta">${escapeHtml(article.category)} · ${escapeHtml(friendlyDate(article.date))}</p>
         <h2>${escapeHtml(article.title)}</h2>
         <p>${escapeHtml(article.description)}</p>
-        <p class="qr-admin-card__author">Par ${escapeHtml(article.author)}</p>
+        <p class="qr-admin-card__author">Par ${escapeHtml(article.authorDisplayName || article.author)}</p>
       </div>
       <span class="qr-admin-card__action" aria-hidden="true">›</span>
     </article>`;
@@ -406,9 +414,10 @@
 
   function editorTemplate(article) {
     const current = article || { title: "", description: "", category: "Autre", date: new Date().toISOString(), thumbnail: "", important: false, body: "" };
+    const publishLabel = article ? "Publier la modification" : "Publier l’article";
     return `${renderHeader()}
       <section class="qr-admin-editor">
-        <div class="qr-admin-editor__topbar"><button class="qr-admin-back" type="button" data-back>‹ <span>Retour</span></button><div class="qr-admin-editor__actions"><button class="qr-admin-icon-button" type="button" data-preview aria-label="Prévisualiser l’article">◉</button><button class="qr-admin-primary" type="button" data-publish>Publier maintenant</button></div></div>
+        <div class="qr-admin-editor__topbar"><button class="qr-admin-back" type="button" data-back>‹ <span>Retour</span></button><div class="qr-admin-editor__actions"><button class="qr-admin-icon-button" type="button" data-preview aria-label="Prévisualiser l’article">◉</button><button class="qr-admin-primary" type="button" data-publish>${publishLabel}</button></div></div>
         <div class="qr-admin-editor__heading"><p class="qr-admin-eyebrow">${article ? "Modifier l’article" : "Nouvel article"}</p><h1>${article ? escapeHtml(article.title) : "Rédiger un article"}</h1></div>
         <form class="qr-admin-form" data-article-form>
           <label>Titre <input name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article"></label>
@@ -469,7 +478,8 @@
     const modal = document.createElement("section");
     modal.className = "qr-admin-preview";
     const publicationDate = currentArticle?.date || new Date().toISOString();
-    modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt=""></div>` : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(profile.name)}, le ${escapeHtml(friendlyDate(publicationDate))}</p></header><section class="article-body">${root.querySelector("[data-editor-body]").innerHTML}</section></article></main>`;
+    const displayAuthor = currentArticle?.authorDisplayName || currentArticle?.author || profile.name;
+    modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt=""></div>` : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(displayAuthor)}, le ${escapeHtml(friendlyDate(publicationDate))}</p></header><section class="article-body">${root.querySelector("[data-editor-body]").innerHTML}</section></article></main>`;
     document.body.append(modal);
     modal.querySelector("[data-close-preview]").addEventListener("click", () => modal.remove());
   }
@@ -488,7 +498,8 @@
     const form = root.querySelector("[data-article-form]");
     if (!form.reportValidity()) return;
     const publish = root.querySelector("[data-publish]");
-    publish.disabled = true; publish.textContent = "Publication…";
+    const publishLabel = currentArticle ? "Publier la modification" : "Publier l’article";
+    publish.disabled = true; publish.textContent = currentArticle ? "Publication de la modification…" : "Publication de l’article…";
     try {
       const title = form.elements.title.value.trim();
       const cover = pendingCover ? await uploadImage(pendingCover) : currentArticle?.thumbnail || "";
@@ -505,7 +516,7 @@
       await loadArticles(); setHistory("dashboard", {}, true); renderDashboard();
     } catch (error) {
       notice(error.message || "La publication a échoué.", "error");
-      publish.disabled = false; publish.textContent = "Publier maintenant";
+      publish.disabled = false; publish.textContent = publishLabel;
     }
   }
 
