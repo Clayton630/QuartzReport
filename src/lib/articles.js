@@ -72,7 +72,13 @@ function isLocalUpload(value) {
 function optimizedImageUrl(value, width = 1280) {
   if (typeof value !== "string" || !value.trim()) return placeholderImage;
   if (!isLocalUpload(value)) return value;
-  return `/cdn-cgi/image/width=${width},quality=${imageQuality},format=webp${encodeURI(value)}`;
+  let encodedPath;
+  try {
+    encodedPath = encodeURI(decodeURI(value));
+  } catch {
+    encodedPath = encodeURI(value);
+  }
+  return `/cdn-cgi/image/width=${width},quality=${imageQuality},format=webp${encodedPath}`;
 }
 
 function optimizedImageSrcset(value, widths) {
