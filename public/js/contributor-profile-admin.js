@@ -64,7 +64,7 @@
     style.textContent = `
       .qr-profile-backdrop{position:fixed;z-index:10000;inset:0;background:rgba(10,10,12,.68);display:grid;place-items:center;padding:20px;font-family:system-ui,sans-serif}
       .qr-profile-panel{width:min(560px,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;color:#18181b;border-radius:18px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.35)}
-      .qr-profile-panel h1{font-size:24px;margin:0 0 8px}.qr-profile-panel p{line-height:1.5;color:#555}.qr-profile-grid{display:grid;gap:16px}.qr-profile-panel label{display:grid;gap:6px;font-weight:650}.qr-profile-panel input{box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid #b8b8bf;border-radius:8px;font:inherit}.qr-profile-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}.qr-profile-button{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;background:#18181b;color:#fff}.qr-profile-button--secondary{background:#eee;color:#18181b}.qr-profile-error{color:#b42318;font-weight:600;min-height:1.4em}.qr-profile-avatar-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#eee;border:1px solid #ddd}.qr-profile-links{display:grid;gap:8px}.qr-profile-menu{position:fixed;z-index:10001;min-width:180px;padding:6px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2)}.qr-profile-menu button{display:block;width:100%;padding:10px;text-align:left;border:0;background:transparent;font:inherit;cursor:pointer}.qr-profile-menu button:hover{background:#f2f2f2}
+      .qr-profile-panel h1{font-size:24px;margin:0 0 8px}.qr-profile-panel p{line-height:1.5;color:#555}.qr-profile-grid{display:grid;gap:16px}.qr-profile-panel label{display:grid;gap:6px;font-weight:650}.qr-profile-panel input{box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid #b8b8bf;border-radius:8px;font:inherit}.qr-profile-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:22px}.qr-profile-button{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer;background:#18181b;color:#fff}.qr-profile-button--secondary{background:#eee;color:#18181b}.qr-profile-error{color:#b42318;font-weight:600;min-height:1.4em}.qr-profile-avatar-preview{width:72px;height:72px;border-radius:50%;object-fit:cover;background:#eee;border:1px solid #ddd}.qr-profile-links{display:grid;gap:8px}.qr-profile-menu{position:fixed;z-index:10001;min-width:180px;padding:6px;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.2)}.qr-profile-menu button{display:block;width:100%;padding:10px;text-align:left;border:0;background:transparent;font:inherit;cursor:pointer}.qr-profile-menu button:hover{background:#f2f2f2}.qr-profile-cropper{display:grid;gap:8px;padding:12px;background:#f4f4f5;border-radius:10px}.qr-profile-cropper canvas{width:min(280px,100%);aspect-ratio:1;border-radius:8px;cursor:grab;touch-action:none;background:#ddd}.qr-profile-cropper canvas:active{cursor:grabbing}.qr-account-avatar{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important;object-fit:cover!important;border-radius:50%!important;pointer-events:none!important}
     `;
     document.head.append(style);
   }
@@ -74,8 +74,8 @@
     editor = null;
   }
 
-  async function compressPhoto(file) {
-    if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisis une image JPG, PNG ou WebP.");
+  async function loadPhotoSource(file) {
+    if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
     if (file.size > 8 * 1024 * 1024) throw new Error("La photo est trop lourde (8 Mo maximum avant compression).");
     let source;
     let objectUrl;
@@ -90,20 +90,53 @@
         image.src = objectUrl;
       });
     }
-    const side = Math.min(256, source.width, source.height);
-    const canvas = document.createElement("canvas");
-    canvas.width = side;
-    canvas.height = side;
+    return { source, objectUrl };
+  }
+
+  async function cropPhoto(file, cropper) {
+    const { source, objectUrl } = await loadPhotoSource(file);
+    const canvas = cropper.querySelector("canvas");
+    const zoom = cropper.querySelector("input[type=range]");
+    const confirm = cropper.querySelector("[data-confirm-crop]");
+    const cancel = cropper.querySelector("[data-cancel-crop]");
     const context = canvas.getContext("2d");
-    const scale = Math.max(side / source.width, side / source.height);
-    const width = source.width * scale;
-    const height = source.height * scale;
-    context.drawImage(source, (side - width) / 2, (side - height) / 2, width, height);
-    source.close?.();
-    if (objectUrl) URL.revokeObjectURL(objectUrl);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
-    const [, base64] = dataUrl.split(",");
-    return { type: "image/jpeg", base64, preview: dataUrl };
+    const side = canvas.width;
+    let scale = Math.max(side / source.width, side / source.height);
+    let x = (side - source.width * scale) / 2;
+    let y = (side - source.height * scale) / 2;
+    let dragging = null;
+    const clamp = () => {
+      x = Math.min(0, Math.max(side - source.width * scale, x));
+      y = Math.min(0, Math.max(side - source.height * scale, y));
+    };
+    const draw = () => {
+      context.clearRect(0, 0, side, side);
+      context.drawImage(source, x, y, source.width * scale, source.height * scale);
+    };
+    const setZoom = () => {
+      const nextScale = Math.max(side / source.width, side / source.height) * Number(zoom.value);
+      const centerX = (side / 2 - x) / scale;
+      const centerY = (side / 2 - y) / scale;
+      scale = nextScale;
+      x = side / 2 - centerX * scale;
+      y = side / 2 - centerY * scale;
+      clamp(); draw();
+    };
+    clamp(); draw(); cropper.hidden = false;
+    zoom.oninput = setZoom;
+    canvas.onpointerdown = (event) => { dragging = { x: event.clientX, y: event.clientY, left: x, top: y }; canvas.setPointerCapture(event.pointerId); };
+    canvas.onpointermove = (event) => { if (!dragging) return; x = dragging.left + event.clientX - dragging.x; y = dragging.top + event.clientY - dragging.y; clamp(); draw(); };
+    canvas.onpointerup = () => { dragging = null; };
+    return new Promise((resolve, reject) => {
+      confirm.onclick = () => {
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+        const [, base64] = dataUrl.split(",");
+        source.close?.(); if (objectUrl) URL.revokeObjectURL(objectUrl);
+        cropper.hidden = true;
+        resolve({ type: "image/jpeg", base64, preview: dataUrl });
+      };
+      cancel.onclick = () => { source.close?.(); if (objectUrl) URL.revokeObjectURL(objectUrl); cropper.hidden = true; reject(new Error("Recadrage annulé.")); };
+    });
   }
 
   function openProfile(required) {
@@ -116,11 +149,12 @@
     const panel = document.createElement("section");
     panel.className = "qr-profile-panel";
     panel.innerHTML = `
-      <h1>${required ? "Crée ton profil contributeur" : "Mon profil"}</h1>
-      <p>${required ? "Ton nom public est nécessaire avant de pouvoir rédiger ou publier un article." : "Tes coordonnées restent privées. Seuls ton nom et ta photo éventuelle sont visibles sur le site."}</p>
+      <h1>${required ? "Créez votre profil contributeur" : "Mon profil"}</h1>
+      <p>${required ? "Votre nom public est nécessaire avant de pouvoir rédiger ou publier un article." : "Vos coordonnées restent privées. Seuls votre nom et votre photo éventuelle sont visibles sur le site."}</p>
       <form class="qr-profile-grid">
         <label>Nom public <input name="name" maxlength="80" required></label>
         <label>Photo de profil <input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label>
+        <div class="qr-profile-cropper" hidden><strong>Recadrez votre photo</strong><canvas width="280" height="280"></canvas><small>Déplacez l’image avec votre doigt ou votre souris, puis utilisez le zoom.</small><input type="range" min="1" max="3" step="0.01" value="1" aria-label="Zoom de la photo"><div><button class="qr-profile-button qr-profile-button--secondary" type="button" data-cancel-crop>Annuler</button> <button class="qr-profile-button" type="button" data-confirm-crop>Valider le cadrage</button></div></div>
         <img class="qr-profile-avatar-preview" alt="Aperçu de la photo de profil" hidden>
         <button class="qr-profile-button qr-profile-button--secondary" type="button" data-remove-photo hidden>Retirer la photo</button>
         <label>E-mail <input name="email" type="email" maxlength="254"></label>
@@ -164,7 +198,7 @@
     }
     file.addEventListener("change", async () => {
       try {
-        pendingPhoto = await compressPhoto(file.files[0]);
+        pendingPhoto = await cropPhoto(file.files[0], panel.querySelector(".qr-profile-cropper"));
         removePhoto = false;
         preview.src = pendingPhoto.preview;
         preview.hidden = false;
@@ -172,7 +206,7 @@
         error.textContent = "";
       } catch (cause) {
         file.value = "";
-        error.textContent = cause.message;
+        if (cause.message !== "Recadrage annulé.") error.textContent = cause.message;
       }
     });
     removeButton.addEventListener("click", () => {
@@ -244,10 +278,18 @@
     button.dataset.quartzProfileButton = "ready";
     button.title = "Mon profil";
     if (profile?.hasPhoto) {
-      button.style.backgroundImage = `url("${API}/api/profile/avatar/${encodeURIComponent(profile.githubId)}?v=${Date.now()}")`;
-      button.style.backgroundPosition = "center";
-      button.style.backgroundSize = "cover";
-      button.querySelector("svg")?.style.setProperty("display", "none");
+      button.style.setProperty("position", "relative", "important");
+      button.style.setProperty("overflow", "hidden", "important");
+      button.style.setProperty("border-radius", "50%", "important");
+      button.style.setProperty("background", "none", "important");
+      button.style.setProperty("-webkit-mask-image", "none", "important");
+      button.style.setProperty("mask-image", "none", "important");
+      button.querySelectorAll("svg, i, path").forEach((icon) => icon.style.setProperty("display", "none", "important"));
+      const avatar = document.createElement("img");
+      avatar.className = "qr-account-avatar";
+      avatar.src = `${API}/api/profile/avatar/${encodeURIComponent(profile.githubId)}?v=${Date.now()}`;
+      avatar.alt = "";
+      button.append(avatar);
     }
     button.addEventListener("click", (event) => {
       event.preventDefault();
