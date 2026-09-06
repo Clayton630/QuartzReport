@@ -54,6 +54,12 @@
   object-fit: contain;
 }
 
+@media (max-width: 480px) {
+  .article-body {
+    font-size: 0.95rem;
+  }
+}
+
 /* =========================
    Titre "Tous les articles"
    ========================= */
@@ -66,37 +72,12 @@
   text-align: left;
 }
 
-/* =========================
-   Responsive — correction du 16/9 sur mobile
-   ========================= */
-@media (max-width: 768px) {
-  .hottest-wrapper {
-    margin-top: 10px;
-  }
-
-  .card-content {
-    padding: 12px 14px 14px;
-  }
-
-  .card-content h3 {
-    font-size: 1rem;
-  }
-}
-
 /* === HOTTEST : Calage Mobile & Desktop === */
 
 /* 1. On nettoie la marge sur le premier élément (Spacer ou Carte) */
 .hottest-grid .card:first-child {
   margin-left: 0 !important;
   /* ✅ Fini les 20px en trop sur mobile */
-}
-
-/* 2. Sur Mobile : On cache le spacer */
-/* Le padding du conteneur (20px) suffit à créer l'alignement parfait avec les catégories */
-@media (max-width: 768px) {
-  .hottest-spacer {
-    display: none !important;
-  }
 }
 
 /* =========================

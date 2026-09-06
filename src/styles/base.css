@@ -110,12 +110,6 @@ body::before {
 }
 
 
-/* 🔵 Supprime le highlight bleu iOS/Android sur les liens */
-.main-nav a {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-}
-
 /* =========================
    Police globale QuartzSans (rendu SF Pro universel)
    ========================= */
@@ -198,6 +192,12 @@ select {
   }
 }
 
+@media (max-width: 480px) {
+  .logo-img {
+    height: 27px;
+  }
+}
+
 /* =========================
    💧 Bouton combiné (recherche + menu)
    ========================= */
@@ -260,11 +260,3 @@ select {
     font-size: 1.55rem;
   }
 }
-
-@media (max-width: 768px) {
-  .main-nav a.lock-transform {
-    transform: scale(1) !important;
-    transition: transform 120ms ease-out !important;
-  }
-}
-

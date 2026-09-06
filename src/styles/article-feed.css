@@ -130,25 +130,6 @@
    Responsive global
    ========================= */
 @media (max-width: 480px) {
-  .logo-img {
-    height: 27px;
-  }
-
-  /* catégories : taille/padding plus compact */
-  .main-nav a {
-    font-size: 0.97rem;
-    padding: 8px 16px;
-    border-radius: 34px;
-  }
-
-  .card-content h3 {
-    font-size: 1.05rem;
-  }
-
-  .article-body {
-    font-size: 0.95rem;
-  }
-
   .thumb {
     width: 64px;
     height: 64px;
@@ -161,12 +142,6 @@
 
   .day-article-info h4 {
     font-size: 0.95rem;
-  }
-
-  /* ❗ Le padding doit aller sur hottest-grid */
-  .hottest-grid {
-    padding-left: var(--page-x-mobile);
-    padding-right: var(--page-x-mobile);
   }
 
   /* articles */
