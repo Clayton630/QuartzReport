@@ -253,7 +253,12 @@
   }
 
   function openMenu(button) {
-    document.querySelector(".qr-profile-menu")?.remove();
+    const existing = document.querySelector(".qr-profile-menu");
+    if (existing) {
+      existing.quartzCleanup?.();
+      existing.remove();
+      return;
+    }
     const menu = document.createElement("div");
     menu.className = "qr-profile-menu";
     const rect = button.getBoundingClientRect();
@@ -269,6 +274,18 @@
     logoutButton.addEventListener("click", logout);
     menu.append(profileButton, logoutButton);
     document.body.append(menu);
+    const close = (event) => {
+      if (event.type === "keydown" && event.key !== "Escape") return;
+      if (event.type === "click" && (menu.contains(event.target) || button.contains(event.target))) return;
+      menu.quartzCleanup();
+      menu.remove();
+    };
+    menu.quartzCleanup = () => {
+      document.removeEventListener("click", close, true);
+      document.removeEventListener("keydown", close, true);
+    };
+    document.addEventListener("click", close, true);
+    document.addEventListener("keydown", close, true);
   }
 
   function enhanceProfileButton() {
