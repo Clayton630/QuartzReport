@@ -493,8 +493,10 @@
       const title = form.elements.title.value.trim();
       const cover = pendingCover ? await uploadImage(pendingCover) : currentArticle?.thumbnail || "";
       const date = currentArticle?.date || new Date().toISOString();
+      const author = currentArticle ? currentArticle.author : profile.name;
+      const authorGithubId = currentArticle ? currentArticle.authorGithubId : profile.githubId;
       const markdown = editorMarkdown();
-      const source = `---\ntitle: ${escapeYaml(title)}\ndate: ${date}\nauthor: ${escapeYaml(profile.name)}\nauthor_github_id: ${escapeYaml(profile.githubId)}\ndescription: ${escapeYaml(form.elements.description.value.trim())}\n${cover ? `thumbnail: ${escapeYaml(cover)}\n` : ""}important: ${form.elements.important.checked}\ncategory: ${escapeYaml(form.elements.category.value)}\n---\n${markdown}\n`;
+      const source = `---\ntitle: ${escapeYaml(title)}\ndate: ${date}\nauthor: ${escapeYaml(author)}\n${authorGithubId ? `author_github_id: ${escapeYaml(authorGithubId)}\n` : ""}description: ${escapeYaml(form.elements.description.value.trim())}\n${cover ? `thumbnail: ${escapeYaml(cover)}\n` : ""}important: ${form.elements.important.checked}\ncategory: ${escapeYaml(form.elements.category.value)}\n---\n${markdown}\n`;
       const path = currentArticle?.path || `articles/${slugify(title)}.md`;
       const body = { message: `${currentArticle ? "Mettre à jour" : "Créer"} l’article « ${title} »`, content: btoa(unescape(encodeURIComponent(source))), branch: BRANCH };
       if (currentArticle?.sha) body.sha = currentArticle.sha;
@@ -509,11 +511,21 @@
 
   async function deleteArticle() {
     if (!currentArticle || !window.confirm(`Supprimer définitivement « ${currentArticle.title} » ?`)) return;
+    const deletedArticle = currentArticle;
+    const deletedIndex = articles.findIndex((article) => article.path === deletedArticle.path);
+    articles = articles.filter((article) => article.path !== deletedArticle.path);
+    currentArticle = null;
+    renderDashboard();
+    notice("Suppression en cours…");
     try {
-      await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(currentArticle.path).replaceAll("%2F", "/")}`, { method: "DELETE", body: JSON.stringify({ message: `Supprimer l’article « ${currentArticle.title} »`, sha: currentArticle.sha, branch: BRANCH }) });
+      await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(deletedArticle.path).replaceAll("%2F", "/")}`, { method: "DELETE", body: JSON.stringify({ message: `Supprimer l’article « ${deletedArticle.title} »`, sha: deletedArticle.sha, branch: BRANCH }) });
       notice("Article supprimé. La mise à jour sera visible dans environ une minute.");
-      await loadArticles(); setHistory("dashboard", {}, true); renderDashboard();
-    } catch (error) { notice(error.message || "La suppression a échoué.", "error"); }
+    } catch (error) {
+      articles.splice(Math.max(0, deletedIndex), 0, deletedArticle);
+      articles.sort((left, right) => new Date(right.date) - new Date(left.date));
+      renderDashboard();
+      notice(error.message || "La suppression a échoué : l’article a été rétabli.", "error");
+    }
   }
 
   async function loadProfilePhoto(file) {
