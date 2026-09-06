@@ -347,6 +347,19 @@
     </header>`;
   }
 
+  function bindAdminHeader() {
+    root.querySelector("[data-account]")?.addEventListener("click", openAccountMenu);
+    root.querySelector(".qr-admin-brand")?.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (editorDirty && root.querySelector("[data-article-form]") && !window.confirm("Quitter sans publier vos modifications ?")) return;
+      currentArticle = null;
+      pendingCover = null;
+      editorDirty = false;
+      setHistory("dashboard", {}, true);
+      renderDashboard();
+    });
+  }
+
   function articleCard(article) {
     const image = article.thumbnail ? `<img src="${escapeHtml(article.thumbnail)}" alt="" loading="lazy">` : "<span class=\"qr-admin-card__placeholder\">Article</span>";
     return `<article class="qr-admin-card" data-edit="${escapeHtml(article.path)}">
@@ -373,7 +386,7 @@
         <div class="qr-admin-article-list" data-list>${articles.map(articleCard).join("") || "<p class=\"qr-admin-empty\">Aucun article pour le moment.</p>"}</div>
       </section>`;
     root.querySelector("[data-new]").addEventListener("click", () => openEditor());
-    root.querySelector("[data-account]").addEventListener("click", openAccountMenu);
+    bindAdminHeader();
     root.querySelector("[data-search]").addEventListener("input", (event) => {
       const needle = event.target.value.trim().toLocaleLowerCase();
       root.querySelector("[data-list]").innerHTML = articles.filter((article) => `${article.title} ${article.description} ${article.category}`.toLocaleLowerCase().includes(needle)).map(articleCard).join("") || "<p class=\"qr-admin-empty\">Aucun résultat.</p>";
@@ -444,7 +457,7 @@
     pendingCover = null;
     editorDirty = false;
     root.innerHTML = editorTemplate(article);
-    root.querySelector("[data-account]").addEventListener("click", openAccountMenu);
+    bindAdminHeader();
     root.querySelector("[data-back]").addEventListener("click", () => {
       if (root.querySelector("[data-editor-status]").textContent === "Modifications non publiées" && !window.confirm("Quitter sans publier vos modifications ?")) return;
       goBackToDashboard();
@@ -571,7 +584,7 @@
     root.querySelector(".qr-admin-account-menu")?.remove();
     pendingPhoto = null;
     root.innerHTML = `${renderHeader()}<section class="qr-admin-profile-page"><h1>Mon profil</h1><p>${required ? "Votre nom public est nécessaire avant de rédiger un article." : "Seuls votre nom et votre photo sont visibles publiquement."}</p><form data-profile-form><label>Nom public <input name="name" maxlength="80" required value="${escapeHtml(profile?.name || "")}"></label><label>Photo de profil <input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="qr-admin-profile-crop" data-profile-crop hidden><img class="qr-admin-profile-preview" data-profile-preview alt="Aperçu recadré de la photo"><label>Zoom <input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom></label><label>Position horizontale <input type="range" min="0" max="100" value="50" data-crop-x></label><label>Position verticale <input type="range" min="0" max="100" value="50" data-crop-y></label></div><img class="qr-admin-profile-preview" data-current-profile-preview ${profile?.hasPhoto ? `src="${profileAvatar()}"` : "hidden"} alt="Photo de profil actuelle"><label>E-mail <input name="email" type="email" maxlength="254" value="${escapeHtml(profile?.email || "")}"></label><label>Téléphone <input name="phone" maxlength="40" value="${escapeHtml(profile?.phone || "")}"></label><div class="qr-admin-profile-links"><strong>Liens personnels ou réseaux</strong></div><p class="qr-admin-form-error" data-profile-error></p><div class="qr-admin-profile-actions">${required ? '<button type="button" class="qr-admin-secondary" data-profile-logout>Se déconnecter</button>' : '<button type="button" class="qr-admin-secondary" data-close-profile>Annuler</button>'}<button type="submit" class="qr-admin-primary">Enregistrer</button></div></form></section>`;
-    root.querySelector("[data-account]").addEventListener("click", openAccountMenu);
+    bindAdminHeader();
     const form = root.querySelector("[data-profile-form]");
     const links = root.querySelector(".qr-admin-profile-links");
     for (let index = 0; index < 4; index += 1) links.insertAdjacentHTML("beforeend", `<input type="url" name="link-${index}" placeholder="https://…" value="${escapeHtml(profile?.links?.[index] || "")}">`);
