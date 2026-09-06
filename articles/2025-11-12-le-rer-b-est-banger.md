@@ -17,5 +17,3 @@ Il a des trains *banger* aussi
 ![MI79](/img/uploads/mi79_renové_bourg_la_reine.jpg "MI79 Rénové")
 
 Regardez moi ces trains **magnifiques**
-
-wtf ????
