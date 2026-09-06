@@ -289,7 +289,7 @@ function publicProfileResponse(profile) {
   return {
     githubId: data.githubId,
     name: data.name,
-    avatarUrl: data.hasPhoto ? `/api/profile/avatar/${encodeURIComponent(data.githubId)}` : null,
+    avatarUrl: data.hasPhoto ? `/api/profile/avatar/${encodeURIComponent(data.githubId)}?v=${encodeURIComponent(profile.updated_at)}` : null,
   };
 }
 
@@ -407,13 +407,13 @@ async function handlePublicProfiles(request, env) {
   const ids = [...new Set((new URL(request.url).searchParams.get("ids") || "").split(","))]
     .filter((id) => /^\d{1,20}$/u.test(id))
     .slice(0, 50);
-  if (ids.length === 0) return jsonResponse({ profiles: {} }, request, { headers: { "Cache-Control": "public, max-age=60" } });
+  if (ids.length === 0) return jsonResponse({ profiles: {} }, request, { headers: { "Cache-Control": "no-store" } });
   const placeholders = ids.map(() => "?").join(", ");
   const { results } = await env.PROFILES_DB.prepare(
-    `SELECT github_id, github_login, display_name, links_json, photo_type, photo_base64 FROM contributor_profiles WHERE github_id IN (${placeholders})`,
+    `SELECT github_id, github_login, display_name, links_json, photo_type, photo_base64, updated_at FROM contributor_profiles WHERE github_id IN (${placeholders})`,
   ).bind(...ids).all();
   const profiles = Object.fromEntries(results.map((profile) => [profile.github_id, publicProfileResponse(profile)]));
-  return jsonResponse({ profiles }, request, { headers: { "Cache-Control": "public, max-age=60" } });
+  return jsonResponse({ profiles }, request, { headers: { "Cache-Control": "no-store" } });
 }
 
 async function handleProfileAvatar(request, env, githubId) {
@@ -426,7 +426,7 @@ async function handleProfileAvatar(request, env, githubId) {
   return new Response(binary, {
     headers: {
       "content-type": profile.photo_type,
-      "cache-control": "public, max-age=300",
+      "cache-control": "public, max-age=86400",
       "X-Content-Type-Options": "nosniff",
     },
   });
