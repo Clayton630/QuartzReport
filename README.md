@@ -13,7 +13,7 @@ Visiteur
 Worker Cloudflare
   ├─ OAuth GitHub pour Decap CMS
   ├─ flux public d’articles mis en cache deux minutes
-  └─ versions WebP des images locales via Weserv
+  └─ aucune image : Cloudflare les transforme directement
 ```
 
 Le Worker n’est **pas** un proxy GitHub général : seules les lectures publiques des articles sont autorisées. Aucun jeton GitHub serveur n’est nécessaire pour afficher le site.
@@ -25,7 +25,7 @@ Le Worker n’est **pas** un proxy GitHub général : seules les lectures publiq
 3. Créer ou modifier un article, puis publier.
 4. Cloudflare Pages déploie automatiquement la branche `main`.
 
-Les articles sont des fichiers Markdown dans `articles/`. Les images originales restent dans `img/uploads/`; le site demande des versions WebP adaptées aux cartes et aux couvertures sans modifier les fichiers originaux.
+Les articles sont des fichiers Markdown dans `articles/`. Les images originales restent dans `img/uploads/`; Cloudflare en sert automatiquement des versions adaptées à l’écran, sans modifier les fichiers originaux. Le site utilise un nombre limité de tailles pour rester dans le quota gratuit de transformations.
 
 ## Développement et vérification
 
@@ -58,7 +58,7 @@ Après le déploiement : vérifier `/api/articles`, la page d’accueil et `/adm
 
 - Le Markdown est nettoyé avant son affichage dans un article.
 - Les métadonnées des articles acceptent les descriptions sur plusieurs lignes, les guillemets et un repli fiable de date si une date est invalide.
-- Seules les images de `/img/uploads/` peuvent être redimensionnées par le Worker.
+- Les images locales de `/img/uploads/` sont transformées par Cloudflare, sans dépendance à un service d’images externe.
 - Les articles de test déjà publiés sont conservés pour l’instant : les retirer de la page d’accueil est une décision éditoriale, pas une suppression automatique.
 
 ## Sauvegarde du 5 septembre 2026

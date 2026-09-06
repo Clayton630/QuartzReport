@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Header from "../../components/Header.astro";
-import { getArticles, optimizedImageUrl } from "../../lib/articles.js";
+import { coverImageWidths, getArticles, imageDimensionAttributes, optimizedImageSrcset, optimizedImageUrl } from "../../lib/articles.js";
 
 export async function getStaticPaths() {
   const articles = await getArticles();
@@ -10,14 +10,14 @@ export async function getStaticPaths() {
 
 const { article } = Astro.props;
 const date = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(article.date);
-const cover = optimizedImageUrl(article.thumbnail, 2560);
+const cover = optimizedImageUrl(article.thumbnail, 1280);
 ---
 
 <BaseLayout title={`${article.title} – Quartz Report`} description={article.description} image={cover} article>
   <Header />
   <main class="articles">
     <article class="article-full">
-      <div class="article-cover"><img src={cover} alt="Illustration de l'article" loading="eager" decoding="async" /></div>
+      <div class="article-cover"><img src={cover} srcset={optimizedImageSrcset(article.thumbnail, coverImageWidths)} sizes="100vw" {...imageDimensionAttributes(article.thumbnailDimensions)} alt="Illustration de l'article" loading="eager" decoding="async" /></div>
       <header class="article-header"><h1>{article.title}</h1><p class="article-meta">Par {article.author}, le {date}</p></header>
       <section class="article-body" set:html={article.bodyHtml}></section>
     </article>

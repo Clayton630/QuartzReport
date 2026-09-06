@@ -9,7 +9,6 @@ Cette liste rassemble les améliorations volontairement reportées. Elles ne son
 ## Base technique
 
 - [ ] Créer un sitemap XML réel des pages et articles, puis le déclarer dans Google Search Console pour lancer le référencement de `quartzreport.fr`.
-- [ ] Remplacer Weserv par les transformations gratuites de Cloudflare, avec des tailles d’images responsives et des dimensions HTML, sans supprimer les originaux ni changer le rendu.
 - [ ] Terminer le rangement CSS restant : réduire les règles de surcharge et remettre les styles dans les bons fichiers, sans modification visuelle.
 
 ## À traiter plus tard, avec précaution

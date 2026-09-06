@@ -6,10 +6,6 @@ const FEED_CACHE_SECONDS = 120;
 const FEED_STALE_CACHE_SECONDS = 24 * 60 * 60;
 const FEED_CACHE_VERSION = "2";
 const MAX_ARTICLE_BYTES = 256 * 1024;
-const MAX_IMAGE_WIDTH = 2560;
-const MIN_IMAGE_WIDTH = 160;
-const MIN_IMAGE_QUALITY = 40;
-const MAX_IMAGE_QUALITY = 95;
 const OAUTH_STATE_COOKIE = "__Host-quartzreport_oauth_state";
 const OAUTH_ORIGIN_COOKIE = "__Host-quartzreport_oauth_origin";
 const GITHUB_ADMIN_SCOPE = "public_repo";
@@ -258,63 +254,9 @@ async function cachedFeed(request, ctx) {
   }
 }
 
-function imageSource(url) {
-  const src = url.searchParams.get("src");
-  if (!src) return null;
-  try {
-    const candidate = new URL(src, PAGES_ASSET_ORIGIN);
-    const filename = candidate.pathname.slice("/img/uploads/".length);
-    if (
-      candidate.origin !== PAGES_ASSET_ORIGIN ||
-      !candidate.pathname.startsWith("/img/uploads/") ||
-      !filename ||
-      filename.includes("/") ||
-      filename.includes("\\") ||
-      filename.includes("..") ||
-      /[\0\r\n]/u.test(filename)
-    ) {
-      return null;
-    }
-    return candidate.toString();
-  } catch {
-    return null;
-  }
-}
-
-async function resizeImage(url) {
-  const src = imageSource(url);
-  const requestedWidth = Number.parseInt(url.searchParams.get("w") || "", 10);
-  const requestedQuality = Number.parseInt(url.searchParams.get("q") || "85", 10);
-  if (!src || !Number.isFinite(requestedWidth)) {
-    return new Response("Invalid image request", { status: 400 });
-  }
-
-  const width = Math.min(MAX_IMAGE_WIDTH, Math.max(MIN_IMAGE_WIDTH, requestedWidth));
-  const quality = Math.min(MAX_IMAGE_QUALITY, Math.max(MIN_IMAGE_QUALITY, requestedQuality));
-  const resizeUrl = new URL("https://images.weserv.nl/");
-  resizeUrl.searchParams.set("url", src);
-  resizeUrl.searchParams.set("w", String(width));
-  resizeUrl.searchParams.set("q", String(quality));
-  resizeUrl.searchParams.set("output", "webp");
-
-  const upstream = await fetch(resizeUrl, {
-    headers: { "User-Agent": "QuartzReport-ImageProxy" },
-  });
-  return new Response(upstream.body, {
-    status: upstream.status,
-    headers: {
-      "content-type": upstream.headers.get("content-type") || "image/webp",
-      "cache-control": "public, max-age=86400, immutable",
-      Vary: "Accept-Encoding",
-    },
-  });
-}
-
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-
-    if (url.pathname === "/img") return resizeImage(url);
 
     if (url.pathname === "/auth") {
       const state = randomState();
@@ -412,7 +354,6 @@ export default {
 
 export const __test = {
   constantTimeEqual,
-  imageSource,
   isAllowedOrigin,
   isArticleFile,
   hasOnlyPublicRepoScope,
