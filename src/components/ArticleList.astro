@@ -1,5 +1,5 @@
 ---
-import { optimizedImageUrl, thumbnailImageWidths } from "../lib/articles.js";
+import { optimizedImageUrl } from "../lib/articles.js";
 
 const { articles } = Astro.props;
 const formatDate = (date) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long" }).format(date);
@@ -23,12 +23,6 @@ const weekTitle = (start) => {
   end.setDate(end.getDate() + 6);
   return `Semaine du ${formatDate(start)} au ${formatDate(end)}`;
 };
-const thumbnailBackground = (value) => {
-  const [normalWidth, retinaWidth] = thumbnailImageWidths;
-  const normal = optimizedImageUrl(value, normalWidth);
-  const retina = optimizedImageUrl(value, retinaWidth);
-  return `background-image:url('${normal}');background-image:image-set(url('${normal}') 1x, url('${retina}') 2x)`;
-};
 ---
 
 <section class="articles" aria-label="Tous les articles">
@@ -44,7 +38,7 @@ const thumbnailBackground = (value) => {
               {dayArticles.map((article) => (
                 <div class="day-article" data-category={article.category}>
                   <a href={`/articles/${encodeURIComponent(article.slug)}/`} class="day-article-link">
-                    <div class="thumb" style={thumbnailBackground(article.thumbnail)}></div>
+                    <div class="thumb" style={`background-image:url('${optimizedImageUrl(article.thumbnail, 800)}')`}></div>
                     <div class="day-article-info">
                       <p class="day-meta">Par {article.author}, à {formatTime(article.date)}</p>
                       <h4>{article.title}</h4>

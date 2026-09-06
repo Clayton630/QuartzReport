@@ -2,7 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import ArticleList from "../components/ArticleList.astro";
-import { cardImageWidths, getArticles, imageDimensionAttributes, optimizedImageSrcset, optimizedImageUrl } from "../lib/articles.js";
+import { getArticles, optimizedImageUrl } from "../lib/articles.js";
 
 const articles = await getArticles();
 const featured = articles.filter((article) => article.important);
@@ -19,7 +19,7 @@ const shortDate = (date) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", m
     <div class="card hottest-spacer" aria-hidden="true"></div>
     {featured.map((article, index) => (
       <a href={`/articles/${encodeURIComponent(article.slug)}/`} class="card" data-category={article.category}>
-        <div class="card-inner"><img src={optimizedImageUrl(article.thumbnail, 768)} srcset={optimizedImageSrcset(article.thumbnail, cardImageWidths)} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" {...imageDimensionAttributes(article.thumbnailDimensions)} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" />
+        <div class="card-inner"><img src={optimizedImageUrl(article.thumbnail, 1280)} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" />
           <div class="card-content"><p class="card-meta">Par {article.author}, {shortDate(article.date)}</p><h3>{article.title}</h3></div>
         </div>
       </a>
