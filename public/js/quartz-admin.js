@@ -184,6 +184,18 @@
     return { meta, body: match[2].trim() };
   }
 
+  function uploadPathsInSource(source) {
+    const paths = new Set();
+    for (const match of String(source || "").matchAll(/\/img\/uploads\/[^\s"'<>)]*/g)) {
+      const raw = match[0].split(/[?#]/, 1)[0].replace(/[.,;:!?]+$/g, "");
+      try {
+        const path = decodeURIComponent(raw);
+        if (path.startsWith("/img/uploads/") && !path.includes("..")) paths.add(path);
+      } catch { /* Une URL mal encodée ne doit jamais déclencher une suppression. */ }
+    }
+    return paths;
+  }
+
   function inlineMarkdown(value) {
     const images = [];
     let result = String(value).replace(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+["']([^"']*)["'])?\)/g, (_, alt, src, title = "") => {
@@ -394,13 +406,15 @@
 
   function imageQuality(image) { return Number(image.width) * Number(image.height); }
 
-  async function loadMediaCatalog() {
-    const file = await request(`https://api.github.com/repos/${REPOSITORY}/contents/${MEDIA_CATALOG_PATH}?ref=${encodeURIComponent(BRANCH)}`);
+  async function loadMediaCatalogAtRef(ref = BRANCH) {
+    const file = await request(`https://api.github.com/repos/${REPOSITORY}/contents/${MEDIA_CATALOG_PATH}?ref=${encodeURIComponent(ref)}`);
     const source = decodeURIComponent(escape(atob(file.content.replace(/\n/g, ""))));
     const catalog = JSON.parse(source);
     if (!Array.isArray(catalog.images)) throw new Error("Le catalogue d’images est invalide.");
     return { ...catalog, sha: file.sha };
   }
+
+  const loadMediaCatalog = () => loadMediaCatalogAtRef(BRANCH);
 
   function findSimilarImage(meta, catalog) {
     const exact = catalog.images.filter((image) => image.sha256 === meta.sha256 || image.sha256 === meta.sourceSha256 || image.sourceSha256 === meta.sourceSha256);
@@ -739,10 +753,46 @@
     staged.commitSha = commit.sha;
   }
 
-  async function commitArticle({ path, source, title }) {
-    const body = { message: `${currentArticle ? "Mettre à jour" : "Créer"} l’article « ${title} »`, content: textToBase64(source), branch: BRANCH };
-    if (currentArticle?.sha) body.sha = currentArticle.sha;
-    await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(path).replaceAll("%2F", "/")}`, { method: "PUT", body: JSON.stringify(body) });
+  async function loadArticleSources(ref) {
+    const listing = await request(`https://api.github.com/repos/${REPOSITORY}/contents/articles?ref=${encodeURIComponent(ref)}`);
+    return Promise.all(listing
+      .filter((entry) => entry.type === "file" && entry.name.endsWith(".md"))
+      .map(async (entry) => {
+        const file = await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(entry.path).replaceAll("%2F", "/")}?ref=${encodeURIComponent(ref)}`);
+        return { path: entry.path, source: decodeURIComponent(escape(atob(file.content.replace(/\n/g, "")))) };
+      }));
+  }
+
+  async function commitArticleWithCleanup({ path, source = "", title, previousSource, deleting = false }) {
+    const currentRef = await request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encodeURIComponent(BRANCH)}`);
+    const ref = currentRef.object.sha;
+    const [parent, catalog, articleSources] = await Promise.all([
+      request(`https://api.github.com/repos/${REPOSITORY}/git/commits/${ref}`),
+      loadMediaCatalogAtRef(ref),
+      loadArticleSources(ref),
+    ]);
+    const nextSources = articleSources.filter((article) => article.path !== path).map((article) => article.source);
+    if (!deleting) nextSources.push(source);
+    const referenced = new Set(nextSources.flatMap((articleSource) => [...uploadPathsInSource(articleSource)]));
+    const unusedPaths = [...uploadPathsInSource(previousSource)].filter((imagePath) => !referenced.has(imagePath));
+    const nextImages = catalog.images.filter((image) => !unusedPaths.includes(image.path));
+    const treeEntries = [];
+
+    if (deleting) {
+      treeEntries.push({ path, mode: "100644", type: "blob", sha: null });
+    } else {
+      treeEntries.push({ path, mode: "100644", type: "blob", sha: await createGitBlob(source) });
+    }
+    for (const imagePath of unusedPaths) treeEntries.push({ path: `public${imagePath}`, mode: "100644", type: "blob", sha: null });
+    if (nextImages.length !== catalog.images.length) {
+      treeEntries.push({ path: MEDIA_CATALOG_PATH, mode: "100644", type: "blob", sha: await createGitBlob(`${JSON.stringify({ version: 1, images: nextImages }, null, 2)}\n`) });
+    }
+
+    const tree = await request(`https://api.github.com/repos/${REPOSITORY}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: parent.tree.sha, tree: treeEntries }) });
+    const message = deleting ? `Supprimer l’article « ${title} »` : `${currentArticle ? "Mettre à jour" : "Créer"} l’article « ${title} »`;
+    const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: tree.sha, parents: [ref] }) });
+    await request(`https://api.github.com/repos/${REPOSITORY}/git/refs/heads/${encodeURIComponent(BRANCH)}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) });
+    return unusedPaths.length;
   }
 
   async function publishArticle() {
@@ -762,9 +812,9 @@
       const markdown = editorMarkdown();
       const source = `---\ntitle: ${escapeYaml(title)}\ndate: ${date}\nauthor: ${escapeYaml(author)}\n${authorGithubId ? `author_github_id: ${escapeYaml(authorGithubId)}\n` : ""}description: ${escapeYaml(form.elements.description.value.trim())}\n${cover ? `thumbnail: ${escapeYaml(cover)}\n` : ""}important: ${form.elements.important.checked}\ncategory: ${escapeYaml(form.elements.category.value)}\n---\n${markdown}\n`;
       const path = currentArticle?.path || `articles/${slugify(title)}.md`;
-      await commitArticle({ path, source, title });
+      const removedImageCount = await commitArticleWithCleanup({ path, source, title, previousSource: currentArticle?.source || "" });
       if (cover && localCover) localCoverPreviews.set(path, localCover);
-      notice("Article publié. Il sera visible sur Quartz Report dans environ une minute.");
+      notice(`Article publié${removedImageCount ? ` ; ${removedImageCount} image${removedImageCount > 1 ? "s" : ""} inutilisée${removedImageCount > 1 ? "s" : ""} supprimée${removedImageCount > 1 ? "s" : ""}.` : "."} Il sera visible sur Quartz Report dans environ une minute.`);
       await loadArticles(); setHistory("dashboard", {}, true); renderDashboard();
     } catch (error) {
       notice(error.message || "La publication a échoué.", "error");
@@ -782,8 +832,8 @@
     renderDashboard();
     notice("Suppression en cours…");
     try {
-      await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(deletedArticle.path).replaceAll("%2F", "/")}`, { method: "DELETE", body: JSON.stringify({ message: `Supprimer l’article « ${deletedArticle.title} »`, sha: deletedArticle.sha, branch: BRANCH }) });
-      notice("Article supprimé. La mise à jour sera visible dans environ une minute.");
+      const removedImageCount = await commitArticleWithCleanup({ path: deletedArticle.path, title: deletedArticle.title, previousSource: deletedArticle.source, deleting: true });
+      notice(`Article supprimé${removedImageCount ? ` ; ${removedImageCount} image${removedImageCount > 1 ? "s" : ""} inutilisée${removedImageCount > 1 ? "s" : ""} supprimée${removedImageCount > 1 ? "s" : ""}.` : "."} La mise à jour sera visible dans environ une minute.`);
     } catch (error) {
       articles.splice(Math.max(0, deletedIndex), 0, deletedArticle);
       articles.sort((left, right) => new Date(right.date) - new Date(left.date));
