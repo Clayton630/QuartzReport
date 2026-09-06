@@ -36,7 +36,8 @@
   const adminImageUrl = (value = "", revision = "") => {
     try {
       const url = new URL(String(value), window.location.origin);
-      if (revision) url.searchParams.set("v", revision);
+      url.searchParams.set("v", revision || "admin");
+      url.searchParams.set("admin", String(Date.now()));
       return url.href;
     }
     catch { return ""; }
@@ -517,8 +518,21 @@
     });
   }
 
+  function bindAdminImages() {
+    root.querySelectorAll("img[data-admin-image]").forEach((image) => {
+      let attempts = 0;
+      image.addEventListener("error", () => {
+        if (attempts >= 16) return;
+        attempts += 1;
+        window.setTimeout(() => {
+          image.src = adminImageUrl(image.dataset.adminImage, `${image.dataset.adminRevision || "article"}-${attempts}`);
+        }, 3000);
+      });
+    });
+  }
+
   function articleCard(article) {
-    const image = article.thumbnail ? `<img src="${escapeHtml(adminImageUrl(article.thumbnail, article.sha))}" alt="" loading="lazy">` : "<span class=\"qr-admin-card__placeholder\">Article</span>";
+    const image = article.thumbnail ? `<img src="${escapeHtml(adminImageUrl(article.thumbnail, article.sha))}" data-admin-image="${escapeHtml(article.thumbnail)}" data-admin-image-revision="${escapeHtml(article.sha)}" alt="" loading="lazy">` : "<span class=\"qr-admin-card__placeholder\">Article</span>";
     return `<article class="qr-admin-card" data-edit="${escapeHtml(article.path)}">
       <div class="qr-admin-card__image">${image}</div>
       <div class="qr-admin-card__content">
@@ -548,8 +562,10 @@
       const needle = event.target.value.trim().toLocaleLowerCase();
       root.querySelector("[data-list]").innerHTML = articles.filter((article) => `${article.title} ${article.description} ${article.category}`.toLocaleLowerCase().includes(needle)).map(articleCard).join("") || "<p class=\"qr-admin-empty\">Aucun résultat.</p>";
       bindArticleCards();
+      bindAdminImages();
     });
     bindArticleCards();
+    bindAdminImages();
   }
 
   function bindArticleCards() {
@@ -597,7 +613,7 @@
           <label>Titre <input name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article"></label>
           <label>Résumé <small>Il apparaît sur la page d’accueil et dans les aperçus partagés.</small><textarea name="description" maxlength="300" required placeholder="Expliquez brièvement le sujet de l’article.">${escapeHtml(current.description)}</textarea></label>
           <div class="qr-admin-field-row"><label>Catégorie <select name="category">${CATEGORIES.map((category) => `<option ${category === current.category ? "selected" : ""}>${category}</option>`).join("")}</select></label><label class="qr-admin-feature-toggle"><input name="important" type="checkbox" ${current.important ? "checked" : ""}><span><strong>Mettre en avant</strong><small>Affiche l’article dans la sélection principale de l’accueil.</small></span></label></div>
-          <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? `<img src="${escapeHtml(adminImageUrl(current.thumbnail, article?.sha))}" alt="">` : "Aucune image sélectionnée"}</span></label>
+          <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? `<img src="${escapeHtml(adminImageUrl(current.thumbnail, article?.sha))}" data-admin-image="${escapeHtml(current.thumbnail)}" data-admin-image-revision="${escapeHtml(article?.sha || "article")}" alt="">` : "Aucune image sélectionnée"}</span></label>
           <label class="qr-admin-content-label">Contenu <small>Écrivez directement votre article tel qu’il sera lu.</small></label>
           ${editorToolbar()}
           <div class="qr-admin-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-editor-body>${markdownToHtml(current.body)}</div>
@@ -618,6 +634,7 @@
     editorDirty = false;
     root.innerHTML = editorTemplate(article);
     bindAdminHeader();
+    bindAdminImages();
     root.querySelector("[data-back]").addEventListener("click", () => {
       if (root.querySelector("[data-editor-status]").textContent === "Modifications non publiées" && !window.confirm("Quitter sans publier vos modifications ?")) return;
       goBackToDashboard();
