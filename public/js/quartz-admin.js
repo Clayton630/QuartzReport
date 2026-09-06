@@ -340,7 +340,7 @@
   function renderHeader() {
     const avatar = profileAvatar();
     return `<header class="qr-admin-header">
-      <a class="qr-admin-brand" href="/" aria-label="Retour à Quartz Report"><img src="/img/logo.svg" alt="Quartz Report"></a>
+      <a class="qr-admin-brand" href="/admin/" aria-label="Accueil de l’administration"><img src="/img/logo.svg" alt="Quartz Report"></a>
       <button class="qr-admin-account" type="button" data-account aria-label="Options du compte">
         ${avatar ? `<img src="${avatar}" alt="">` : "<span aria-hidden=\"true\">◉</span>"}
       </button>
