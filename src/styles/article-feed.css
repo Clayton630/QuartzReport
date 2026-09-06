@@ -141,17 +141,8 @@
     border-radius: 34px;
   }
 
-  .hottest-grid .card {
-    flex: 0 0 65%;
-    max-width: 260px;
-  }
-
   .card-content h3 {
     font-size: 1.05rem;
-  }
-
-  .article-header h3 {
-    font-size: 1.3rem;
   }
 
   .article-body {
@@ -170,12 +161,6 @@
 
   .day-article-info h4 {
     font-size: 0.95rem;
-  }
-
-  /* ❗ Correction : NE PAS mettre de padding sur hottest-wrapper */
-  .hottest-wrapper {
-    padding: 0;
-    /* essential */
   }
 
   /* ❗ Le padding doit aller sur hottest-grid */
@@ -224,4 +209,3 @@
     scroll-snap-align: start;
   }
 }
-

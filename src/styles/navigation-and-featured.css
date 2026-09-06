@@ -92,21 +92,6 @@
   transform: scale(1.12);
 }
 
-/* Mobile — hauteur réellement réduite (sans changer la taille police trop) */
-@media (max-width: 480px) {
-  .main-nav ul {
-    padding-left: var(--page-x-mobile);
-    padding-right: var(--page-x-mobile);
-  }
-
-  .main-nav a {
-    padding: 9px 18px;
-    font-size: 1rem;
-    line-height: 1;
-    border-radius: 36px;
-  }
-}
-
 @media (max-width: 768px) {
   .main-nav {
     padding-top: 48px;
@@ -266,11 +251,5 @@
     padding-top: 30px;
     padding-bottom: 40px;
     /* Plus d'espace pour l'ombre mobile */
-  }
-}
-
-@media (min-width: 769px) {
-  .hottest-grid .card:first-child {
-    margin-left: 0 !important;
   }
 }

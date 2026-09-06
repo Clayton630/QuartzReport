@@ -74,19 +74,6 @@
     margin-top: 10px;
   }
 
-  .hottest-grid .card {
-    flex: 0 0 65%;
-    max-width: 260px;
-  }
-
-  .hottest-grid .card>img {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    object-fit: cover;
-    display: block;
-    height: auto;
-  }
-
   .card-content {
     padding: 12px 14px 14px;
   }
