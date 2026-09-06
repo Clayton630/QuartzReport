@@ -25,7 +25,7 @@ Le Worker n’est **pas** un proxy GitHub général : seules les lectures publiq
 3. Créer ou modifier un article, puis publier.
 4. Cloudflare Pages déploie automatiquement la branche `main`.
 
-Les articles sont des fichiers Markdown dans `articles/`. Les images originales restent dans `img/uploads/`; Cloudflare en sert automatiquement des versions adaptées à l’écran, sans modifier les fichiers originaux. Le site utilise un nombre limité de tailles pour rester dans le quota gratuit de transformations.
+Les articles sont des fichiers Markdown dans `articles/`. Les images originales restent dans `img/uploads/`; Cloudflare en sert automatiquement des versions WebP adaptées à l’écran, sans modifier les fichiers originaux. Le site utilise un nombre limité de tailles pour rester dans le quota gratuit de transformations.
 
 ## Développement et vérification
 
