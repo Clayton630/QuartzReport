@@ -441,6 +441,7 @@
         if (choice === "existing") { staged.path = match.image.path; staged.isNew = false; }
         else if (imageQuality(staged.meta) > imageQuality(match.image)) { staged.path = match.image.path; staged.replaceExisting = true; }
       }
+      if (staged.isNew) await persistStagedImage(staged, catalog);
       staged.status = "ready";
       return staged;
     } catch (error) {
@@ -714,25 +715,29 @@
     return blob.sha;
   }
 
-  async function commitArticleAndImages({ path, source, title, usedImagePaths }) {
-    const catalog = await loadMediaCatalog();
+  async function persistStagedImage(staged, catalog) {
     const currentRef = await request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encodeURIComponent(BRANCH)}`);
     const parent = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits/${currentRef.object.sha}`);
     const nextCatalog = { version: 1, images: [...catalog.images] };
-    const entries = [];
-    for (const staged of stagedImages.values()) {
-      if (!staged.isNew || !usedImagePaths.has(staged.path)) continue;
-      const catalogEntry = { path: staged.path, ...staged.meta };
-      const previousIndex = nextCatalog.images.findIndex((image) => image.path === staged.path);
-      if (previousIndex >= 0) nextCatalog.images.splice(previousIndex, 1, catalogEntry);
-      else nextCatalog.images.push(catalogEntry);
-      entries.push({ path: `public${staged.path}`, mode: "100644", type: "blob", sha: staged.blobSha });
-    }
-    const [articleBlob, catalogBlob] = await Promise.all([createGitBlob(source), createGitBlob(`${JSON.stringify(nextCatalog, null, 2)}\n`)]);
-    entries.push({ path, mode: "100644", type: "blob", sha: articleBlob }, { path: MEDIA_CATALOG_PATH, mode: "100644", type: "blob", sha: catalogBlob });
+    const catalogEntry = { path: staged.path, ...staged.meta };
+    const previousIndex = nextCatalog.images.findIndex((image) => image.path === staged.path);
+    if (previousIndex >= 0) nextCatalog.images.splice(previousIndex, 1, catalogEntry);
+    else nextCatalog.images.push(catalogEntry);
+    const catalogBlob = await createGitBlob(`${JSON.stringify(nextCatalog, null, 2)}\n`);
+    const entries = [
+      { path: `public${staged.path}`, mode: "100644", type: "blob", sha: staged.blobSha },
+      { path: MEDIA_CATALOG_PATH, mode: "100644", type: "blob", sha: catalogBlob },
+    ];
     const tree = await request(`https://api.github.com/repos/${REPOSITORY}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: parent.tree.sha, tree: entries }) });
-    const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message: `${currentArticle ? "Mettre à jour" : "Créer"} l’article « ${title} »`, tree: tree.sha, parents: [currentRef.object.sha] }) });
+    const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message: `Ajouter l’image ${staged.fileName}`, tree: tree.sha, parents: [currentRef.object.sha] }) });
     await request(`https://api.github.com/repos/${REPOSITORY}/git/refs/heads/${encodeURIComponent(BRANCH)}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) });
+    staged.commitSha = commit.sha;
+  }
+
+  async function commitArticle({ path, source, title }) {
+    const body = { message: `${currentArticle ? "Mettre à jour" : "Créer"} l’article « ${title} »`, content: textToBase64(source), branch: BRANCH };
+    if (currentArticle?.sha) body.sha = currentArticle.sha;
+    await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(path).replaceAll("%2F", "/")}`, { method: "PUT", body: JSON.stringify(body) });
   }
 
   async function publishArticle() {
@@ -752,9 +757,7 @@
       const markdown = editorMarkdown();
       const source = `---\ntitle: ${escapeYaml(title)}\ndate: ${date}\nauthor: ${escapeYaml(author)}\n${authorGithubId ? `author_github_id: ${escapeYaml(authorGithubId)}\n` : ""}description: ${escapeYaml(form.elements.description.value.trim())}\n${cover ? `thumbnail: ${escapeYaml(cover)}\n` : ""}important: ${form.elements.important.checked}\ncategory: ${escapeYaml(form.elements.category.value)}\n---\n${markdown}\n`;
       const path = currentArticle?.path || `articles/${slugify(title)}.md`;
-      const usedImagePaths = new Set([...markdown.matchAll(/!\[[^\]]*\]\((\/img\/uploads\/[^\s)]+)/g)].map((match) => match[1]));
-      if (cover) usedImagePaths.add(cover);
-      await commitArticleAndImages({ path, source, title, usedImagePaths });
+      await commitArticle({ path, source, title });
       if (cover && localCover) localCoverPreviews.set(path, localCover);
       notice("Article publié. Il sera visible sur Quartz Report dans environ une minute.");
       await loadArticles(); setHistory("dashboard", {}, true); renderDashboard();
