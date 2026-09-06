@@ -493,7 +493,11 @@
     root.innerHTML = '<section class="qr-admin-loading"><img src="/img/logo.svg" alt="Quartz Report"><p>Connexion sécurisée…</p></section>';
     try {
       profile = (await profileRequest("/api/profile/me")).profile;
-      if (!profile) { renderDashboard(); openProfile(true); return; }
+      if (!profile) {
+        root.innerHTML = '<section class="qr-admin-loading"><img src="/img/logo.svg" alt="Quartz Report"><p>Création de votre profil contributeur…</p></section>';
+        openProfile(true);
+        return;
+      }
       await loadArticles(); renderDashboard();
     } catch (error) {
       if (/Connexion GitHub requise|401/.test(error.message)) { logout(); return; }
