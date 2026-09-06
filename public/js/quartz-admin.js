@@ -33,6 +33,10 @@
   const slugify = (value) => String(value || "article")
     .normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
     .replace(/[’']/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "article";
+  const adminImageUrl = (value = "") => {
+    try { return new URL(String(value), window.location.origin).href; }
+    catch { return ""; }
+  };
 
   function getStoredToken() {
     try {
@@ -69,6 +73,7 @@
   async function request(url, options = {}) {
     const response = await fetch(url, {
       ...options,
+      cache: "no-store",
       headers: {
         Accept: "application/vnd.github+json",
         Authorization: `Bearer ${token}`,
@@ -398,7 +403,7 @@
       const newIsBetter = incomingQuality > existingQuality;
       const dialog = document.createElement("section");
       dialog.className = "qr-admin-image-match";
-      dialog.innerHTML = `<div class="qr-admin-image-match__panel" role="dialog" aria-modal="true" aria-labelledby="qr-image-match-title"><p class="qr-admin-eyebrow">Image déjà disponible</p><h2 id="qr-image-match-title">Une image très proche existe déjà.</h2><div class="qr-admin-image-match__images"><figure><img src="${escapeHtml(existing.path)}" alt="Version déjà enregistrée"><figcaption>Déjà enregistrée<br>${existing.width} × ${existing.height}</figcaption></figure><figure><img src="${escapeHtml(staged.previewUrl)}" alt="Nouvelle image"><figcaption>Nouvelle image<br>${staged.meta.width} × ${staged.meta.height}</figcaption></figure></div><p>${newIsBetter ? "La nouvelle version est plus définie. Elle peut remplacer celle déjà enregistrée." : "La version déjà enregistrée est au moins aussi définie. Sa réutilisation évite un doublon."}</p><div class="qr-admin-image-match__actions"><button type="button" class="qr-admin-secondary" data-use-existing>Utiliser l’existante</button><button type="button" class="qr-admin-primary" data-use-new>${newIsBetter ? "Remplacer par la nouvelle" : "Conserver quand même la nouvelle"}</button></div></div>`;
+      dialog.innerHTML = `<div class="qr-admin-image-match__panel" role="dialog" aria-modal="true" aria-labelledby="qr-image-match-title"><p class="qr-admin-eyebrow">Image déjà disponible</p><h2 id="qr-image-match-title">Une image très proche existe déjà.</h2><div class="qr-admin-image-match__images"><figure><img src="${escapeHtml(adminImageUrl(existing.path))}" alt="Version déjà enregistrée"><figcaption>Déjà enregistrée<br>${existing.width} × ${existing.height}</figcaption></figure><figure><img src="${escapeHtml(staged.previewUrl)}" alt="Nouvelle image"><figcaption>Nouvelle image<br>${staged.meta.width} × ${staged.meta.height}</figcaption></figure></div><p>${newIsBetter ? "La nouvelle version est plus définie. Elle peut remplacer celle déjà enregistrée." : "La version déjà enregistrée est au moins aussi définie. Sa réutilisation évite un doublon."}</p><div class="qr-admin-image-match__actions"><button type="button" class="qr-admin-secondary" data-use-existing>Utiliser l’existante</button><button type="button" class="qr-admin-primary" data-use-new>${newIsBetter ? "Remplacer par la nouvelle" : "Conserver quand même la nouvelle"}</button></div></div>`;
       document.body.append(dialog);
       dialog.querySelector("[data-use-existing]").addEventListener("click", () => { dialog.remove(); resolve("existing"); });
       dialog.querySelector("[data-use-new]").addEventListener("click", () => { dialog.remove(); resolve("new"); });
@@ -509,7 +514,7 @@
   }
 
   function articleCard(article) {
-    const image = article.thumbnail ? `<img src="${escapeHtml(article.thumbnail)}" alt="" loading="lazy">` : "<span class=\"qr-admin-card__placeholder\">Article</span>";
+    const image = article.thumbnail ? `<img src="${escapeHtml(adminImageUrl(article.thumbnail))}" alt="" loading="lazy">` : "<span class=\"qr-admin-card__placeholder\">Article</span>";
     return `<article class="qr-admin-card" data-edit="${escapeHtml(article.path)}">
       <div class="qr-admin-card__image">${image}</div>
       <div class="qr-admin-card__content">
@@ -588,7 +593,7 @@
           <label>Titre <input name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article"></label>
           <label>Résumé <small>Il apparaît sur la page d’accueil et dans les aperçus partagés.</small><textarea name="description" maxlength="300" required placeholder="Expliquez brièvement le sujet de l’article.">${escapeHtml(current.description)}</textarea></label>
           <div class="qr-admin-field-row"><label>Catégorie <select name="category">${CATEGORIES.map((category) => `<option ${category === current.category ? "selected" : ""}>${category}</option>`).join("")}</select></label><label class="qr-admin-feature-toggle"><input name="important" type="checkbox" ${current.important ? "checked" : ""}><span><strong>Mettre en avant</strong><small>Affiche l’article dans la sélection principale de l’accueil.</small></span></label></div>
-          <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? `<img src="${escapeHtml(current.thumbnail)}" alt="">` : "Aucune image sélectionnée"}</span></label>
+          <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? `<img src="${escapeHtml(adminImageUrl(current.thumbnail))}" alt="">` : "Aucune image sélectionnée"}</span></label>
           <label class="qr-admin-content-label">Contenu <small>Écrivez directement votre article tel qu’il sera lu.</small></label>
           ${editorToolbar()}
           <div class="qr-admin-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-editor-body>${markdownToHtml(current.body)}</div>
