@@ -20,6 +20,14 @@ test("invalid article dates fall back to the date in the filename", () => {
   );
 });
 
+test("article URLs use only a clean version of their title", () => {
+  assert.equal(
+    articleTest.articleSlug("Le jailbreak de l’iPhone en 2025 : toujours possible ?", "2025-10-10-legacy.md"),
+    "le-jailbreak-de-liphone-en-2025-toujours-possible",
+  );
+  assert.equal(articleTest.articleSlug("Test catégorie", "2025-10-07-test-catégorie.md"), "test-categorie");
+});
+
 test("local image paths are encoded exactly once", () => {
   assert.equal(
     optimizedImageUrl("/img/uploads/mi79_renove%CC%81_bourg_la_reine.jpg", 1280),

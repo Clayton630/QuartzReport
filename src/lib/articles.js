@@ -59,6 +59,23 @@ function articleDate(value, filename) {
   return Number.isNaN(fallback.valueOf()) ? new Date(0) : fallback;
 }
 
+function articleSlug(title, filename) {
+  const normalizedTitle = String(title || "")
+    .normalize("NFKD")
+    .replace(/\p{Mark}/gu, "")
+    .toLowerCase()
+    .replace(/[’']/gu, "")
+    .replace(/[^a-z0-9]+/gu, "-")
+    .replace(/^-+|-+$/gu, "");
+  if (normalizedTitle) return normalizedTitle;
+
+  return filename
+    .replace(/\.md$/iu, "")
+    .replace(/^\d{4}-\d{2}-\d{2}-/u, "")
+    .replace(/[^a-z0-9-]+/giu, "-")
+    .replace(/^-+|-+$/gu, "") || "article";
+}
+
 function escapeHtmlAttribute(value) {
   return String(value).replaceAll("&", "&amp;").replaceAll('"', "&quot;");
 }
@@ -95,7 +112,8 @@ async function articleFromSource(filename, source) {
     htmlForArticle(body),
   ]);
   return {
-    slug: filename.replace(/\.md$/i, ""),
+    slug: articleSlug(meta.title, filename),
+    legacySlug: filename.replace(/\.md$/i, ""),
     filename,
     title: meta.title || "Sans titre",
     author: meta.author || "Inconnu",
@@ -110,13 +128,21 @@ async function articleFromSource(filename, source) {
 }
 
 export async function getArticles() {
-  const filenames = (await readdir(articlesDirectory)).filter((name) => name.endsWith(".md"));
+  const filenames = (await readdir(articlesDirectory)).filter((name) => name.endsWith(".md")).sort();
   const articles = await Promise.all(
     filenames.map(async (filename) => articleFromSource(filename, await readFile(join(articlesDirectory, filename), "utf8"))),
   );
-  return articles.sort((a, b) => b.date - a.date);
+  const usedSlugs = new Set();
+  const uniqueArticles = articles.map((article) => {
+    let slug = article.slug;
+    let suffix = 2;
+    while (usedSlugs.has(slug)) slug = `${article.slug}-${suffix++}`;
+    usedSlugs.add(slug);
+    return { ...article, slug };
+  });
+  return uniqueArticles.sort((a, b) => b.date - a.date);
 }
 
 export { coverImageWidths, imageDimensionAttributes, optimizedImageSrcset, optimizedImageUrl } from "./images.js";
 
-export const __test = { articleDate, parseFrontMatter };
+export const __test = { articleDate, articleSlug, parseFrontMatter };
