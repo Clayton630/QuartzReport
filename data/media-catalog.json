@@ -155,6 +155,7 @@
     },
     {
       "path": "/img/uploads/1788728841969-img-9850.jpg",
+      "transformable": false,
       "sha256": "663a520993a110fe53fb68b17d166a5a682d319f7d2e9d2c8026571b41297723",
       "width": 2755,
       "height": 3673,

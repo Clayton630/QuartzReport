@@ -331,11 +331,18 @@
   async function inspectImage(file) {
     if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
     if (file.size > 12 * 1024 * 1024) throw new Error("Cette image dépasse 12 Mo.");
-    const bytes = new Uint8Array(await file.arrayBuffer());
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-    const previewUrl = URL.createObjectURL(file);
+    const sourceUrl = URL.createObjectURL(file);
     const image = new Image();
-    await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = previewUrl; });
+    await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = sourceUrl; });
+    const outputType = file.type === "image/png" ? "image/png" : file.type;
+    const normalizedCanvas = document.createElement("canvas"); normalizedCanvas.width = image.naturalWidth; normalizedCanvas.height = image.naturalHeight;
+    normalizedCanvas.getContext("2d").drawImage(image, 0, 0);
+    const normalized = await new Promise((resolve) => normalizedCanvas.toBlob(resolve, outputType, outputType === "image/png" ? undefined : 0.96));
+    URL.revokeObjectURL(sourceUrl);
+    if (!normalized) throw new Error("Impossible de préparer cette image.");
+    const bytes = new Uint8Array(await normalized.arrayBuffer());
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    const previewUrl = URL.createObjectURL(normalized);
     const canvas = document.createElement("canvas"); canvas.width = 9; canvas.height = 8;
     const context = canvas.getContext("2d", { willReadFrequently: true });
     context.drawImage(image, 0, 0, 9, 8);
@@ -350,7 +357,7 @@
       }
       hash += value.toString(16).padStart(2, "0");
     }
-    return { bytes, previewUrl, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), width: image.naturalWidth, height: image.naturalHeight, bytes: file.size, dhash: hash } };
+    return { bytes, previewUrl, mimeType: outputType, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), width: image.naturalWidth, height: image.naturalHeight, bytes: normalized.size, dhash: hash } };
   }
 
   function hammingDistance(left, right) {
@@ -399,7 +406,7 @@
     stagedImages.set(staged.id, staged); updatePublishState();
     try {
       const inspected = await inspectImage(file);
-      const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[file.type];
+      const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[inspected.mimeType];
       staged.previewUrl = inspected.previewUrl;
       staged.meta = inspected.meta;
       staged.path = `/img/uploads/${Date.now()}-${slugify(file.name.replace(/\.[^.]+$/, ""))}.${extension}`;
