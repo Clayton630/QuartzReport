@@ -10,12 +10,16 @@ category: "Autre"
 ---
 Le RER B est tout simplement banger
 
-![RER B](/img/uploads/djerwkba_400x400.png "Logo RER B")
+@@QR*IMAGE*0@@
 
 Il a des trains *banger* aussi
 
-modif de la part de clayton
-
-![MI79](/img/uploads/mi79_renové_bourg_la_reine.jpg "MI79 Rénové")
+@@QR*IMAGE*0@@
 
 Regardez moi ces trains **magnifiques**
+
+**
+**
+
+modif de la part de clayton**
+**
