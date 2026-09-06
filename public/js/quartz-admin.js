@@ -24,6 +24,8 @@
     .replaceAll("'", "&#39;");
   const escapeYaml = (value = "") => JSON.stringify(String(value));
   const dateInputValue = (value) => new Date(value || Date.now()).toISOString().slice(0, 16);
+  const dateInputDay = (value) => dateInputValue(value).slice(0, 10);
+  const dateInputTime = (value) => dateInputValue(value).slice(11, 16);
   const friendlyDate = (value) => new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
   const slugify = (value) => String(value || "article")
     .normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
@@ -49,6 +51,16 @@
     token = null;
     profile = null;
     renderLogin();
+  }
+
+  function setHistory(view, data = {}, replace = false) {
+    const state = { quartzAdmin: true, view, ...data };
+    history[replace ? "replaceState" : "pushState"](state, "", window.location.href);
+  }
+
+  function goBackToDashboard() {
+    if (history.state?.quartzAdmin && history.state.view !== "dashboard") history.back();
+    else renderDashboard();
   }
 
   async function request(url, options = {}) {
@@ -124,6 +136,14 @@
     if (!auth?.token) return;
     rememberToken(auth.token);
     await boot();
+  });
+
+  window.addEventListener("popstate", () => {
+    if (!token || !profile) return;
+    const state = history.state;
+    if (!state?.quartzAdmin || state.view === "dashboard") { renderDashboard(); return; }
+    if (state.view === "profile") { openProfile(Boolean(state.required), { push: false }); return; }
+    if (state.view === "editor") openEditor(articles.find((article) => article.path === state.path) || null, { push: false });
   });
 
   function parseFrontMatter(source) {
@@ -233,6 +253,50 @@
     editor.focus();
     document.execCommand(commandName, false, value);
     updateEditorState();
+  }
+
+  function insertInlineImage(path) {
+    const editor = root.querySelector("[data-editor-body]");
+    const image = document.createElement("img");
+    image.src = path;
+    image.alt = "";
+    const selection = window.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+    if (range && editor.contains(range.commonAncestorContainer)) {
+      range.deleteContents();
+      range.insertNode(image);
+      range.setStartAfter(image);
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } else {
+      const paragraph = document.createElement("p");
+      paragraph.append(image);
+      editor.append(paragraph);
+    }
+    editor.focus();
+    updateEditorState();
+  }
+
+  async function openMediaLibrary() {
+    const picker = document.createElement("section");
+    picker.className = "qr-admin-media";
+    picker.innerHTML = `<header class="qr-admin-media__bar"><button type="button" class="qr-admin-back" data-close-media>‹ Retour</button><strong>Insérer une image</strong><button type="button" class="qr-admin-secondary" data-upload-media>Importer</button></header><main class="qr-admin-media__content"><p>Choisissez une image déjà enregistrée, ou importez-en une nouvelle.</p><div class="qr-admin-media__grid" data-media-list><span>Chargement des images…</span></div></main>`;
+    document.body.append(picker);
+    picker.querySelector("[data-close-media]").addEventListener("click", () => picker.remove());
+    picker.querySelector("[data-upload-media]").addEventListener("click", () => root.querySelector("[data-inline-image]").click());
+    try {
+      const listing = await request(`https://api.github.com/repos/${REPOSITORY}/contents/public/img/uploads?ref=${BRANCH}`);
+      const images = listing.filter((entry) => entry.type === "file" && /\.(jpe?g|png|webp)$/i.test(entry.name));
+      const list = picker.querySelector("[data-media-list]");
+      list.innerHTML = images.length ? images.map((entry) => `<button type="button" data-media-path="/img/uploads/${encodeURIComponent(entry.name)}"><img src="/img/uploads/${encodeURIComponent(entry.name)}" alt=""><span>${escapeHtml(entry.name)}</span></button>`).join("") : "<span>Aucune image enregistrée.</span>";
+      list.querySelectorAll("[data-media-path]").forEach((button) => button.addEventListener("click", () => {
+        insertInlineImage(button.dataset.mediaPath);
+        picker.remove();
+      }));
+    } catch (error) {
+      picker.querySelector("[data-media-list]").textContent = error.message || "Impossible de charger les images.";
+    }
   }
 
   function updateEditorState() {
@@ -346,7 +410,7 @@
         <div class="qr-admin-editor__heading"><p class="qr-admin-eyebrow">${article ? "Modifier l’article" : "Nouvel article"}</p><h1>${article ? escapeHtml(article.title) : "Rédiger un article"}</h1></div>
         <form class="qr-admin-form" data-article-form>
           <label>Titre <input name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article"></label>
-          <label>Date de publication <input name="date" type="datetime-local" required value="${dateInputValue(current.date)}"></label>
+          <div class="qr-admin-date-fields"><label>Date de publication <input name="date-day" type="date" required value="${dateInputDay(current.date)}"></label><label>Heure <input name="date-time" type="time" required value="${dateInputTime(current.date)}"></label></div>
           <label>Résumé <small>Il apparaît sur la page d’accueil et dans les aperçus partagés.</small><textarea name="description" maxlength="300" required placeholder="Expliquez brièvement le sujet de l’article.">${escapeHtml(current.description)}</textarea></label>
           <div class="qr-admin-field-row"><label>Catégorie <select name="category">${CATEGORIES.map((category) => `<option ${category === current.category ? "selected" : ""}>${category}</option>`).join("")}</select></label><label class="qr-admin-feature-toggle"><input name="important" type="checkbox" ${current.important ? "checked" : ""}><span><strong>Mettre en avant</strong><small>Affiche l’article dans la sélection principale de l’accueil.</small></span></label></div>
           <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? `<img src="${escapeHtml(current.thumbnail)}" alt="">` : "Aucune image sélectionnée"}</span></label>
@@ -360,14 +424,15 @@
       </section>`;
   }
 
-  function openEditor(article = null) {
+  function openEditor(article = null, { push = true } = {}) {
+    if (push) setHistory("editor", { path: article?.path || null });
     currentArticle = article;
     pendingCover = null;
     root.innerHTML = editorTemplate(article);
     root.querySelector("[data-account]").addEventListener("click", openAccountMenu);
     root.querySelector("[data-back]").addEventListener("click", () => {
       if (root.querySelector("[data-editor-status]").textContent === "Modifications non publiées" && !window.confirm("Quitter sans publier vos modifications ?")) return;
-      renderDashboard();
+      goBackToDashboard();
     });
     root.querySelector("[data-editor-body]").addEventListener("input", updateEditorState);
     root.querySelectorAll("[data-command]").forEach((button) => button.addEventListener("click", () => command(button.dataset.command, button.dataset.value || null)));
@@ -378,10 +443,10 @@
       if (href && /^https?:\/\//i.test(href)) command("createLink", href);
       else if (href) notice("Le lien doit commencer par https://", "error");
     });
-    root.querySelector("[data-image]").addEventListener("click", () => root.querySelector("[data-inline-image]").click());
+    root.querySelector("[data-image]").addEventListener("click", openMediaLibrary);
     root.querySelector("[data-inline-image]").addEventListener("change", async (event) => {
       const file = event.target.files[0]; if (!file) return;
-      try { const path = await uploadImage(file); command("insertImage", path); updateEditorState(); }
+      try { insertInlineImage(await uploadImage(file)); document.querySelector(".qr-admin-media")?.remove(); }
       catch (error) { notice(error.message, "error"); }
       event.target.value = "";
     });
@@ -402,7 +467,8 @@
     const cover = pendingCover ? URL.createObjectURL(pendingCover) : currentArticle?.thumbnail;
     const modal = document.createElement("section");
     modal.className = "qr-admin-preview";
-    modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt=""></div>` : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(profile.name)}, le ${escapeHtml(friendlyDate(form.elements.date.value))}</p></header><section class="article-body">${root.querySelector("[data-editor-body]").innerHTML}</section></article></main>`;
+    const publicationDate = `${form.elements["date-day"].value}T${form.elements["date-time"].value}`;
+    modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt=""></div>` : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(profile.name)}, le ${escapeHtml(friendlyDate(publicationDate))}</p></header><section class="article-body">${root.querySelector("[data-editor-body]").innerHTML}</section></article></main>`;
     document.body.append(modal);
     modal.querySelector("[data-close-preview]").addEventListener("click", () => modal.remove());
   }
@@ -425,7 +491,7 @@
     try {
       const title = form.elements.title.value.trim();
       const cover = pendingCover ? await uploadImage(pendingCover) : currentArticle?.thumbnail || "";
-      const date = new Date(form.elements.date.value).toISOString();
+      const date = new Date(`${form.elements["date-day"].value}T${form.elements["date-time"].value}`).toISOString();
       const markdown = editorMarkdown();
       const source = `---\ntitle: ${escapeYaml(title)}\ndate: ${date}\nauthor: ${escapeYaml(profile.name)}\nauthor_github_id: ${escapeYaml(profile.githubId)}\ndescription: ${escapeYaml(form.elements.description.value.trim())}\n${cover ? `thumbnail: ${escapeYaml(cover)}\n` : ""}important: ${form.elements.important.checked}\ncategory: ${escapeYaml(form.elements.category.value)}\n---\n${markdown}\n`;
       const path = currentArticle?.path || `articles/${slugify(title)}.md`;
@@ -433,7 +499,7 @@
       if (currentArticle?.sha) body.sha = currentArticle.sha;
       await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(path).replaceAll("%2F", "/")}`, { method: "PUT", body: JSON.stringify(body) });
       notice("Article publié. Il sera visible sur Quartz Report dans environ une minute.");
-      await loadArticles(); renderDashboard();
+      await loadArticles(); setHistory("dashboard", {}, true); renderDashboard();
     } catch (error) {
       notice(error.message || "La publication a échoué.", "error");
       publish.disabled = false; publish.textContent = "Publier maintenant";
@@ -445,46 +511,69 @@
     try {
       await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(currentArticle.path).replaceAll("%2F", "/")}`, { method: "DELETE", body: JSON.stringify({ message: `Supprimer l’article « ${currentArticle.title} »`, sha: currentArticle.sha, branch: BRANCH }) });
       notice("Article supprimé. La mise à jour sera visible dans environ une minute.");
-      await loadArticles(); renderDashboard();
+      await loadArticles(); setHistory("dashboard", {}, true); renderDashboard();
     } catch (error) { notice(error.message || "La suppression a échoué.", "error"); }
   }
 
-  async function cropProfilePhoto(file) {
+  async function loadProfilePhoto(file) {
     if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
     if (file.size > 8 * 1024 * 1024) throw new Error("La photo dépasse 8 Mo.");
-    const bitmap = await createImageBitmap(file);
+    const source = URL.createObjectURL(file);
+    const image = new Image();
+    await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = source; });
+    URL.revokeObjectURL(source);
+    return { image, zoom: 1, x: 50, y: 50 };
+  }
+
+  function cropProfilePhoto(source) {
     const canvas = document.createElement("canvas"); canvas.width = canvas.height = 512;
-    const scale = Math.max(512 / bitmap.width, 512 / bitmap.height);
-    const width = bitmap.width * scale; const height = bitmap.height * scale;
-    canvas.getContext("2d").drawImage(bitmap, (512 - width) / 2, (512 - height) / 2, width, height);
-    bitmap.close();
+    const scale = Math.max(512 / source.image.naturalWidth, 512 / source.image.naturalHeight) * source.zoom;
+    const width = source.image.naturalWidth * scale; const height = source.image.naturalHeight * scale;
+    const left = (512 - width) * (source.x / 100); const top = (512 - height) * (source.y / 100);
+    canvas.getContext("2d").drawImage(source.image, left, top, width, height);
     const dataUrl = canvas.toDataURL("image/jpeg", 0.86);
     return { type: "image/jpeg", base64: dataUrl.split(",")[1], preview: dataUrl };
   }
 
-  function openProfile(required) {
+  function openProfile(required, { push = true } = {}) {
+    if (push) setHistory("profile", { required: Boolean(required) });
     root.querySelector(".qr-admin-account-menu")?.remove();
     pendingPhoto = null;
-    const modal = document.createElement("section");
-    modal.className = "qr-admin-modal";
-    modal.innerHTML = `<div class="qr-admin-modal__panel"><h1>${required ? "Créez votre profil" : "Mon profil"}</h1><p>${required ? "Votre nom public est nécessaire avant de rédiger un article." : "Seuls votre nom et votre photo sont visibles publiquement."}</p><form data-profile-form><label>Nom public <input name="name" maxlength="80" required value="${escapeHtml(profile?.name || "")}"></label><label>Photo de profil <input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><img class="qr-admin-profile-preview" data-profile-preview ${profile?.hasPhoto ? `src="${profileAvatar()}"` : "hidden"} alt="Aperçu de la photo"><label>E-mail <input name="email" type="email" maxlength="254" value="${escapeHtml(profile?.email || "")}"></label><label>Téléphone <input name="phone" maxlength="40" value="${escapeHtml(profile?.phone || "")}"></label><div class="qr-admin-profile-links"><strong>Liens personnels ou réseaux</strong></div><p class="qr-admin-form-error" data-profile-error></p><div class="qr-admin-modal__actions">${required ? '<button type="button" class="qr-admin-secondary" data-profile-logout>Se déconnecter</button>' : '<button type="button" class="qr-admin-secondary" data-close-profile>Annuler</button>'}<button type="submit" class="qr-admin-primary">Enregistrer</button></div></form></div>`;
-    document.body.append(modal);
-    const form = modal.querySelector("[data-profile-form]");
-    const links = modal.querySelector(".qr-admin-profile-links");
+    root.innerHTML = `${renderHeader()}<section class="qr-admin-profile-page"><div class="qr-admin-editor__topbar">${required ? "<span></span>" : '<button class="qr-admin-back" type="button" data-close-profile>‹ <span>Retour</span></button>'}<h1>Mon profil</h1></div><p>${required ? "Votre nom public est nécessaire avant de rédiger un article." : "Seuls votre nom et votre photo sont visibles publiquement."}</p><form data-profile-form><label>Nom public <input name="name" maxlength="80" required value="${escapeHtml(profile?.name || "")}"></label><label>Photo de profil <input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="qr-admin-profile-crop" data-profile-crop hidden><img class="qr-admin-profile-preview" data-profile-preview alt="Aperçu recadré de la photo"><label>Zoom <input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom></label><label>Position horizontale <input type="range" min="0" max="100" value="50" data-crop-x></label><label>Position verticale <input type="range" min="0" max="100" value="50" data-crop-y></label></div><img class="qr-admin-profile-preview" data-current-profile-preview ${profile?.hasPhoto ? `src="${profileAvatar()}"` : "hidden"} alt="Photo de profil actuelle"><label>E-mail <input name="email" type="email" maxlength="254" value="${escapeHtml(profile?.email || "")}"></label><label>Téléphone <input name="phone" maxlength="40" value="${escapeHtml(profile?.phone || "")}"></label><div class="qr-admin-profile-links"><strong>Liens personnels ou réseaux</strong></div><p class="qr-admin-form-error" data-profile-error></p><div class="qr-admin-profile-actions">${required ? '<button type="button" class="qr-admin-secondary" data-profile-logout>Se déconnecter</button>' : '<button type="button" class="qr-admin-secondary" data-close-profile>Annuler</button>'}<button type="submit" class="qr-admin-primary">Enregistrer</button></div></form></section>`;
+    root.querySelector("[data-account]").addEventListener("click", openAccountMenu);
+    const form = root.querySelector("[data-profile-form]");
+    const links = root.querySelector(".qr-admin-profile-links");
     for (let index = 0; index < 4; index += 1) links.insertAdjacentHTML("beforeend", `<input type="url" name="link-${index}" placeholder="https://…" value="${escapeHtml(profile?.links?.[index] || "")}">`);
     form.elements.photo.addEventListener("change", async (event) => {
-      try { pendingPhoto = await cropProfilePhoto(event.target.files[0]); const image = modal.querySelector("[data-profile-preview]"); image.src = pendingPhoto.preview; image.hidden = false; }
-      catch (error) { modal.querySelector("[data-profile-error]").textContent = error.message; }
+      try {
+        pendingPhoto = await loadProfilePhoto(event.target.files[0]);
+        const crop = root.querySelector("[data-profile-crop]"); crop.hidden = false;
+        root.querySelector("[data-current-profile-preview]").hidden = true;
+        updateProfileCropPreview();
+      } catch (error) { root.querySelector("[data-profile-error]").textContent = error.message; }
     });
-    modal.querySelector("[data-close-profile]")?.addEventListener("click", () => modal.remove());
-    modal.querySelector("[data-profile-logout]")?.addEventListener("click", logout);
+    root.querySelectorAll("[data-crop-zoom], [data-crop-x], [data-crop-y]").forEach((input) => input.addEventListener("input", () => {
+      pendingPhoto.zoom = Number(root.querySelector("[data-crop-zoom]").value);
+      pendingPhoto.x = Number(root.querySelector("[data-crop-x]").value);
+      pendingPhoto.y = Number(root.querySelector("[data-crop-y]").value);
+      updateProfileCropPreview();
+    }));
+    root.querySelectorAll("[data-close-profile]").forEach((button) => button.addEventListener("click", goBackToDashboard));
+    root.querySelector("[data-profile-logout]")?.addEventListener("click", logout);
     form.addEventListener("submit", async (event) => {
       event.preventDefault(); const submit = form.querySelector("[type=submit]"); submit.disabled = true;
       try {
-        const result = await profileRequest("/api/profile/me", { method: "PUT", body: JSON.stringify({ name: form.elements.name.value, email: form.elements.email.value, phone: form.elements.phone.value, links: [...links.querySelectorAll("input")].map((input) => input.value), ...(pendingPhoto ? { photo: { type: pendingPhoto.type, base64: pendingPhoto.base64 } } : {}) }) });
-        profile = result.profile; modal.remove(); renderDashboard();
-      } catch (error) { modal.querySelector("[data-profile-error]").textContent = error.message; submit.disabled = false; }
+        const cropped = pendingPhoto ? cropProfilePhoto(pendingPhoto) : null;
+        const result = await profileRequest("/api/profile/me", { method: "PUT", body: JSON.stringify({ name: form.elements.name.value, email: form.elements.email.value, phone: form.elements.phone.value, links: [...links.querySelectorAll("input")].map((input) => input.value), ...(cropped ? { photo: { type: cropped.type, base64: cropped.base64 } } : {}) }) });
+        profile = result.profile; setHistory("dashboard", {}, true); renderDashboard();
+      } catch (error) { root.querySelector("[data-profile-error]").textContent = error.message; submit.disabled = false; }
     });
+  }
+
+  function updateProfileCropPreview() {
+    if (!pendingPhoto) return;
+    const image = root.querySelector("[data-profile-preview]");
+    image.src = cropProfilePhoto(pendingPhoto).preview;
   }
 
   async function boot() {
@@ -495,10 +584,16 @@
       profile = (await profileRequest("/api/profile/me")).profile;
       if (!profile) {
         root.innerHTML = '<section class="qr-admin-loading"><img src="/img/logo.svg" alt="Quartz Report"><p>Création de votre profil contributeur…</p></section>';
-        openProfile(true);
+        setHistory("profile", { required: true }, true);
+        openProfile(true, { push: false });
         return;
       }
-      await loadArticles(); renderDashboard();
+      await loadArticles();
+      if (!history.state?.quartzAdmin) setHistory("dashboard", {}, true);
+      const state = history.state;
+      if (state.view === "profile") openProfile(Boolean(state.required), { push: false });
+      else if (state.view === "editor") openEditor(articles.find((article) => article.path === state.path) || null, { push: false });
+      else renderDashboard();
     } catch (error) {
       if (/Connexion GitHub requise|401/.test(error.message)) { logout(); return; }
       renderLogin(error.message);
