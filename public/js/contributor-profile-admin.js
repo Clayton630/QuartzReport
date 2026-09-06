@@ -238,7 +238,7 @@
   }
 
   function enhanceProfileButton() {
-    const candidates = [...document.querySelectorAll("button")];
+    const candidates = [...document.querySelectorAll('button, [role="button"], [aria-label]')];
     const button = candidates.find((candidate) => /account options|options du compte|logout|log out|déconnexion|se déconnecter/i.test(`${candidate.getAttribute("aria-label") || ""} ${candidate.title || ""} ${candidate.textContent || ""}`));
     if (!button || button.dataset.quartzProfileButton === "ready") return;
     button.dataset.quartzProfileButton = "ready";
