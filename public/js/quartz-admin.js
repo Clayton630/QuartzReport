@@ -23,9 +23,6 @@
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
   const escapeYaml = (value = "") => JSON.stringify(String(value));
-  const dateInputValue = (value) => new Date(value || Date.now()).toISOString().slice(0, 16);
-  const dateInputDay = (value) => dateInputValue(value).slice(0, 10);
-  const dateInputTime = (value) => dateInputValue(value).slice(11, 16);
   const friendlyDate = (value) => new Intl.DateTimeFormat("fr-FR", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
   const slugify = (value) => String(value || "article")
     .normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
@@ -162,11 +159,16 @@
   }
 
   function inlineMarkdown(value) {
-    let result = escapeHtml(value);
-    result = result.replace(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+["']([^"']*)["'])?\)/g, (_, alt, src, title = "") => {
+    const images = [];
+    let result = String(value).replace(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+["']([^"']*)["'])?\)/g, (_, alt, src, title = "") => {
       const safeSrc = /^(https?:\/\/|\/img\/uploads\/)/.test(src) ? src : "";
-      return safeSrc ? `<img src="${escapeHtml(safeSrc)}" alt="${escapeHtml(alt)}" title="${escapeHtml(title)}">` : "";
+      if (!safeSrc) return "";
+      const token = `@@QR_IMAGE_${images.length}@@`;
+      images.push({ token, html: `<img src="${escapeHtml(safeSrc)}" alt="${escapeHtml(alt)}" title="${escapeHtml(title)}">` });
+      return token;
     });
+    result = escapeHtml(result);
+    for (const image of images) result = result.replace(image.token, image.html);
     result = result.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     result = result.replace(/`([^`]+)`/g, "<code>$1</code>");
     result = result.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
@@ -410,7 +412,6 @@
         <div class="qr-admin-editor__heading"><p class="qr-admin-eyebrow">${article ? "Modifier l’article" : "Nouvel article"}</p><h1>${article ? escapeHtml(article.title) : "Rédiger un article"}</h1></div>
         <form class="qr-admin-form" data-article-form>
           <label>Titre <input name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article"></label>
-          <div class="qr-admin-date-fields"><label>Date de publication <input name="date-day" type="date" required value="${dateInputDay(current.date)}"></label><label>Heure <input name="date-time" type="time" required value="${dateInputTime(current.date)}"></label></div>
           <label>Résumé <small>Il apparaît sur la page d’accueil et dans les aperçus partagés.</small><textarea name="description" maxlength="300" required placeholder="Expliquez brièvement le sujet de l’article.">${escapeHtml(current.description)}</textarea></label>
           <div class="qr-admin-field-row"><label>Catégorie <select name="category">${CATEGORIES.map((category) => `<option ${category === current.category ? "selected" : ""}>${category}</option>`).join("")}</select></label><label class="qr-admin-feature-toggle"><input name="important" type="checkbox" ${current.important ? "checked" : ""}><span><strong>Mettre en avant</strong><small>Affiche l’article dans la sélection principale de l’accueil.</small></span></label></div>
           <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? `<img src="${escapeHtml(current.thumbnail)}" alt="">` : "Aucune image sélectionnée"}</span></label>
@@ -467,7 +468,7 @@
     const cover = pendingCover ? URL.createObjectURL(pendingCover) : currentArticle?.thumbnail;
     const modal = document.createElement("section");
     modal.className = "qr-admin-preview";
-    const publicationDate = `${form.elements["date-day"].value}T${form.elements["date-time"].value}`;
+    const publicationDate = currentArticle?.date || new Date().toISOString();
     modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt=""></div>` : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(profile.name)}, le ${escapeHtml(friendlyDate(publicationDate))}</p></header><section class="article-body">${root.querySelector("[data-editor-body]").innerHTML}</section></article></main>`;
     document.body.append(modal);
     modal.querySelector("[data-close-preview]").addEventListener("click", () => modal.remove());
@@ -491,7 +492,7 @@
     try {
       const title = form.elements.title.value.trim();
       const cover = pendingCover ? await uploadImage(pendingCover) : currentArticle?.thumbnail || "";
-      const date = new Date(`${form.elements["date-day"].value}T${form.elements["date-time"].value}`).toISOString();
+      const date = currentArticle?.date || new Date().toISOString();
       const markdown = editorMarkdown();
       const source = `---\ntitle: ${escapeYaml(title)}\ndate: ${date}\nauthor: ${escapeYaml(profile.name)}\nauthor_github_id: ${escapeYaml(profile.githubId)}\ndescription: ${escapeYaml(form.elements.description.value.trim())}\n${cover ? `thumbnail: ${escapeYaml(cover)}\n` : ""}important: ${form.elements.important.checked}\ncategory: ${escapeYaml(form.elements.category.value)}\n---\n${markdown}\n`;
       const path = currentArticle?.path || `articles/${slugify(title)}.md`;
@@ -539,7 +540,7 @@
     if (push) setHistory("profile", { required: Boolean(required) });
     root.querySelector(".qr-admin-account-menu")?.remove();
     pendingPhoto = null;
-    root.innerHTML = `${renderHeader()}<section class="qr-admin-profile-page"><div class="qr-admin-editor__topbar">${required ? "<span></span>" : '<button class="qr-admin-back" type="button" data-close-profile>‹ <span>Retour</span></button>'}<h1>Mon profil</h1></div><p>${required ? "Votre nom public est nécessaire avant de rédiger un article." : "Seuls votre nom et votre photo sont visibles publiquement."}</p><form data-profile-form><label>Nom public <input name="name" maxlength="80" required value="${escapeHtml(profile?.name || "")}"></label><label>Photo de profil <input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="qr-admin-profile-crop" data-profile-crop hidden><img class="qr-admin-profile-preview" data-profile-preview alt="Aperçu recadré de la photo"><label>Zoom <input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom></label><label>Position horizontale <input type="range" min="0" max="100" value="50" data-crop-x></label><label>Position verticale <input type="range" min="0" max="100" value="50" data-crop-y></label></div><img class="qr-admin-profile-preview" data-current-profile-preview ${profile?.hasPhoto ? `src="${profileAvatar()}"` : "hidden"} alt="Photo de profil actuelle"><label>E-mail <input name="email" type="email" maxlength="254" value="${escapeHtml(profile?.email || "")}"></label><label>Téléphone <input name="phone" maxlength="40" value="${escapeHtml(profile?.phone || "")}"></label><div class="qr-admin-profile-links"><strong>Liens personnels ou réseaux</strong></div><p class="qr-admin-form-error" data-profile-error></p><div class="qr-admin-profile-actions">${required ? '<button type="button" class="qr-admin-secondary" data-profile-logout>Se déconnecter</button>' : '<button type="button" class="qr-admin-secondary" data-close-profile>Annuler</button>'}<button type="submit" class="qr-admin-primary">Enregistrer</button></div></form></section>`;
+    root.innerHTML = `${renderHeader()}<section class="qr-admin-profile-page"><h1>Mon profil</h1><p>${required ? "Votre nom public est nécessaire avant de rédiger un article." : "Seuls votre nom et votre photo sont visibles publiquement."}</p><form data-profile-form><label>Nom public <input name="name" maxlength="80" required value="${escapeHtml(profile?.name || "")}"></label><label>Photo de profil <input name="photo" type="file" accept="image/jpeg,image/png,image/webp"></label><div class="qr-admin-profile-crop" data-profile-crop hidden><img class="qr-admin-profile-preview" data-profile-preview alt="Aperçu recadré de la photo"><label>Zoom <input type="range" min="1" max="3" step="0.01" value="1" data-crop-zoom></label><label>Position horizontale <input type="range" min="0" max="100" value="50" data-crop-x></label><label>Position verticale <input type="range" min="0" max="100" value="50" data-crop-y></label></div><img class="qr-admin-profile-preview" data-current-profile-preview ${profile?.hasPhoto ? `src="${profileAvatar()}"` : "hidden"} alt="Photo de profil actuelle"><label>E-mail <input name="email" type="email" maxlength="254" value="${escapeHtml(profile?.email || "")}"></label><label>Téléphone <input name="phone" maxlength="40" value="${escapeHtml(profile?.phone || "")}"></label><div class="qr-admin-profile-links"><strong>Liens personnels ou réseaux</strong></div><p class="qr-admin-form-error" data-profile-error></p><div class="qr-admin-profile-actions">${required ? '<button type="button" class="qr-admin-secondary" data-profile-logout>Se déconnecter</button>' : '<button type="button" class="qr-admin-secondary" data-close-profile>Annuler</button>'}<button type="submit" class="qr-admin-primary">Enregistrer</button></div></form></section>`;
     root.querySelector("[data-account]").addEventListener("click", openAccountMenu);
     const form = root.querySelector("[data-profile-form]");
     const links = root.querySelector(".qr-admin-profile-links");
