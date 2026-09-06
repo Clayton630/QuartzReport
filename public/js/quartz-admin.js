@@ -16,6 +16,7 @@
   let currentArticle = null;
   let pendingCover = null;
   let pendingPhoto = null;
+  let editorDirty = false;
 
   const escapeHtml = (value = "") => String(value)
     .replaceAll("&", "&amp;")
@@ -303,7 +304,10 @@
   }
 
   function updateEditorState() {
+    editorDirty = true;
     root.querySelector("[data-editor-status]").textContent = "Modifications non publiées";
+    const publish = root.querySelector("[data-publish]");
+    if (publish) publish.disabled = false;
   }
 
   async function loadArticles() {
@@ -414,10 +418,10 @@
 
   function editorTemplate(article) {
     const current = article || { title: "", description: "", category: "Autre", date: new Date().toISOString(), thumbnail: "", important: false, body: "" };
-    const publishLabel = article ? "Publier la modification" : "Publier l’article";
+    const publishLabel = article ? "Publier les modifications" : "Publier l’article";
     return `${renderHeader()}
       <section class="qr-admin-editor">
-        <div class="qr-admin-editor__topbar"><button class="qr-admin-back" type="button" data-back>‹ <span>Retour</span></button><div class="qr-admin-editor__actions"><button class="qr-admin-icon-button" type="button" data-preview aria-label="Prévisualiser l’article">◉</button><button class="qr-admin-primary" type="button" data-publish>${publishLabel}</button></div></div>
+        <div class="qr-admin-editor__topbar"><button class="qr-admin-back" type="button" data-back>‹ <span>Retour</span></button><div class="qr-admin-editor__actions"><button class="qr-admin-icon-button" type="button" data-preview aria-label="Prévisualiser l’article">◉</button><button class="qr-admin-primary" type="button" data-publish disabled>${publishLabel}</button></div></div>
         <div class="qr-admin-editor__heading"><p class="qr-admin-eyebrow">${article ? "Modifier l’article" : "Nouvel article"}</p><h1>${article ? escapeHtml(article.title) : "Rédiger un article"}</h1></div>
         <form class="qr-admin-form" data-article-form>
           <label>Titre <input name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article"></label>
@@ -438,13 +442,15 @@
     if (push) setHistory("editor", { path: article?.path || null });
     currentArticle = article;
     pendingCover = null;
+    editorDirty = false;
     root.innerHTML = editorTemplate(article);
     root.querySelector("[data-account]").addEventListener("click", openAccountMenu);
     root.querySelector("[data-back]").addEventListener("click", () => {
       if (root.querySelector("[data-editor-status]").textContent === "Modifications non publiées" && !window.confirm("Quitter sans publier vos modifications ?")) return;
       goBackToDashboard();
     });
-    root.querySelector("[data-editor-body]").addEventListener("input", updateEditorState);
+    root.querySelector("[data-article-form]").addEventListener("input", updateEditorState);
+    root.querySelector("[data-article-form]").addEventListener("change", updateEditorState);
     root.querySelectorAll("[data-command]").forEach((button) => button.addEventListener("click", () => command(button.dataset.command, button.dataset.value || null)));
     root.querySelectorAll("[data-block]").forEach((button) => button.addEventListener("click", () => command("formatBlock", button.dataset.block)));
     root.querySelector("[data-divider]").addEventListener("click", () => command("insertHorizontalRule"));
@@ -498,8 +504,9 @@
     const form = root.querySelector("[data-article-form]");
     if (!form.reportValidity()) return;
     const publish = root.querySelector("[data-publish]");
-    const publishLabel = currentArticle ? "Publier la modification" : "Publier l’article";
-    publish.disabled = true; publish.textContent = currentArticle ? "Publication de la modification…" : "Publication de l’article…";
+    const publishLabel = currentArticle ? "Publier les modifications" : "Publier l’article";
+    if (!editorDirty) return;
+    publish.disabled = true; publish.textContent = currentArticle ? "Publication des modifications…" : "Publication de l’article…";
     try {
       const title = form.elements.title.value.trim();
       const cover = pendingCover ? await uploadImage(pendingCover) : currentArticle?.thumbnail || "";
