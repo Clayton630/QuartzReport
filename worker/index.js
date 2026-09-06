@@ -9,6 +9,12 @@ const MAX_ARTICLE_BYTES = 256 * 1024;
 const OAUTH_STATE_COOKIE = "__Host-quartzreport_oauth_state";
 const OAUTH_ORIGIN_COOKIE = "__Host-quartzreport_oauth_origin";
 const GITHUB_ADMIN_SCOPE = "public_repo";
+const PROFILE_MAX_NAME_LENGTH = 80;
+const PROFILE_MAX_EMAIL_LENGTH = 254;
+const PROFILE_MAX_PHONE_LENGTH = 40;
+const PROFILE_MAX_LINKS = 4;
+const PROFILE_MAX_LINK_LENGTH = 2048;
+const PROFILE_MAX_PHOTO_BASE64_LENGTH = 350_000;
 
 function isAllowedOrigin(origin) {
   return (
@@ -25,8 +31,8 @@ function corsHeaders(request) {
 
   return {
     "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type",
+    "Access-Control-Allow-Methods": "GET, PUT, OPTIONS",
+    "Access-Control-Allow-Headers": "Authorization, Content-Type",
     Vary: "Origin",
   };
 }
@@ -254,6 +260,178 @@ async function cachedFeed(request, ctx) {
   }
 }
 
+function profileError(message, request, status = 400) {
+  return jsonResponse({ error: message }, request, { status, headers: { "Cache-Control": "no-store" } });
+}
+
+function profileResponse(profile) {
+  if (!profile) return null;
+  let links = [];
+  try {
+    links = JSON.parse(profile.links_json || "[]");
+  } catch {
+    links = [];
+  }
+  return {
+    githubId: profile.github_id,
+    githubLogin: profile.github_login,
+    name: profile.display_name,
+    email: profile.email || "",
+    phone: profile.phone || "",
+    links,
+    hasPhoto: Boolean(profile.photo_base64 && profile.photo_type),
+  };
+}
+
+function publicProfileResponse(profile) {
+  const data = profileResponse(profile);
+  if (!data) return null;
+  return {
+    githubId: data.githubId,
+    name: data.name,
+    avatarUrl: data.hasPhoto ? `/api/profile/avatar/${encodeURIComponent(data.githubId)}` : null,
+  };
+}
+
+function cleanOptionalText(value, maxLength, label) {
+  if (value === undefined || value === null || value === "") return "";
+  if (typeof value !== "string") throw new Error(`${label} invalide`);
+  const clean = value.trim();
+  if (clean.length > maxLength) throw new Error(`${label} trop long`);
+  return clean;
+}
+
+function cleanProfileInput(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("Profil invalide");
+  const name = cleanOptionalText(data.name, PROFILE_MAX_NAME_LENGTH, "Nom");
+  if (!name) throw new Error("Le nom est obligatoire");
+  const email = cleanOptionalText(data.email, PROFILE_MAX_EMAIL_LENGTH, "E-mail");
+  if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/u.test(email)) throw new Error("E-mail invalide");
+  const phone = cleanOptionalText(data.phone, PROFILE_MAX_PHONE_LENGTH, "Téléphone");
+  if (data.links !== undefined && !Array.isArray(data.links)) throw new Error("Liens invalides");
+  const links = (data.links || []).filter((link) => link !== "").map((link) => {
+    const clean = cleanOptionalText(link, PROFILE_MAX_LINK_LENGTH, "Lien");
+    try {
+      const url = new URL(clean);
+      if (url.protocol !== "https:" && url.protocol !== "http:") throw new Error();
+    } catch {
+      throw new Error("Lien invalide");
+    }
+    return clean;
+  });
+  if (links.length > PROFILE_MAX_LINKS) throw new Error(`Maximum ${PROFILE_MAX_LINKS} liens`);
+
+  let photoBase64 = null;
+  let photoType = null;
+  if (data.photo) {
+    if (typeof data.photo !== "object" || typeof data.photo.base64 !== "string") throw new Error("Photo invalide");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(data.photo.type)) throw new Error("Format de photo invalide");
+    if (!/^[A-Za-z0-9+/]*={0,2}$/u.test(data.photo.base64) || data.photo.base64.length > PROFILE_MAX_PHOTO_BASE64_LENGTH) {
+      throw new Error("Photo trop lourde ou invalide");
+    }
+    photoBase64 = data.photo.base64;
+    photoType = data.photo.type;
+  }
+
+  return { name, email, phone, links, photoBase64, photoType, removePhoto: data.removePhoto === true };
+}
+
+async function authenticatedGitHubUser(request) {
+  const authorization = request.headers.get("Authorization") || "";
+  const token = authorization.startsWith("Bearer ") ? authorization.slice(7).trim() : "";
+  if (!token) return null;
+  const response = await fetch("https://api.github.com/user", {
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "User-Agent": "QuartzReport-ContributorProfiles",
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+  if (!response.ok) return null;
+  const user = await response.json();
+  if (!user || !Number.isInteger(user.id) || typeof user.login !== "string") return null;
+  return { id: String(user.id), login: user.login };
+}
+
+async function profileRequestData(request) {
+  const text = await readTextLimited(request, 500_000);
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error("Données invalides");
+  }
+}
+
+async function handleOwnProfile(request, env) {
+  const user = await authenticatedGitHubUser(request);
+  if (!user) return profileError("Connexion GitHub requise", request, 401);
+  if (request.method === "GET") {
+    const profile = await env.PROFILES_DB.prepare("SELECT * FROM contributor_profiles WHERE github_id = ?")
+      .bind(user.id)
+      .first();
+    return jsonResponse({ profile: profileResponse(profile) }, request, { headers: { "Cache-Control": "no-store" } });
+  }
+  if (request.method !== "PUT") return profileError("Méthode non autorisée", request, 405);
+  try {
+    const input = cleanProfileInput(await profileRequestData(request));
+    const existing = await env.PROFILES_DB.prepare("SELECT photo_base64, photo_type FROM contributor_profiles WHERE github_id = ?")
+      .bind(user.id)
+      .first();
+    const photoBase64 = input.removePhoto ? null : input.photoBase64 ?? existing?.photo_base64 ?? null;
+    const photoType = input.removePhoto ? null : input.photoType ?? existing?.photo_type ?? null;
+    await env.PROFILES_DB.prepare(
+      `INSERT INTO contributor_profiles
+        (github_id, github_login, display_name, email, phone, links_json, photo_type, photo_base64, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(github_id) DO UPDATE SET
+         github_login = excluded.github_login,
+         display_name = excluded.display_name,
+         email = excluded.email,
+         phone = excluded.phone,
+         links_json = excluded.links_json,
+         photo_type = excluded.photo_type,
+         photo_base64 = excluded.photo_base64,
+         updated_at = CURRENT_TIMESTAMP`,
+    ).bind(user.id, user.login, input.name, input.email || null, input.phone || null, JSON.stringify(input.links), photoType, photoBase64).run();
+    const profile = await env.PROFILES_DB.prepare("SELECT * FROM contributor_profiles WHERE github_id = ?")
+      .bind(user.id)
+      .first();
+    return jsonResponse({ profile: profileResponse(profile) }, request, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    return profileError(error instanceof Error ? error.message : "Profil invalide", request);
+  }
+}
+
+async function handlePublicProfiles(request, env) {
+  const ids = [...new Set((new URL(request.url).searchParams.get("ids") || "").split(","))]
+    .filter((id) => /^\d{1,20}$/u.test(id))
+    .slice(0, 50);
+  if (ids.length === 0) return jsonResponse({ profiles: {} }, request, { headers: { "Cache-Control": "public, max-age=60" } });
+  const placeholders = ids.map(() => "?").join(", ");
+  const { results } = await env.PROFILES_DB.prepare(
+    `SELECT github_id, github_login, display_name, links_json, photo_type, photo_base64 FROM contributor_profiles WHERE github_id IN (${placeholders})`,
+  ).bind(...ids).all();
+  const profiles = Object.fromEntries(results.map((profile) => [profile.github_id, publicProfileResponse(profile)]));
+  return jsonResponse({ profiles }, request, { headers: { "Cache-Control": "public, max-age=60" } });
+}
+
+async function handleProfileAvatar(request, env, githubId) {
+  if (!/^\d{1,20}$/u.test(githubId)) return new Response("Not found", { status: 404 });
+  const profile = await env.PROFILES_DB.prepare("SELECT photo_type, photo_base64 FROM contributor_profiles WHERE github_id = ?")
+    .bind(githubId)
+    .first();
+  if (!profile?.photo_type || !profile.photo_base64) return new Response("Not found", { status: 404 });
+  const binary = Uint8Array.from(atob(profile.photo_base64), (character) => character.charCodeAt(0));
+  return new Response(binary, {
+    headers: {
+      "content-type": profile.photo_type,
+      "cache-control": "public, max-age=300",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -332,6 +510,23 @@ export default {
       );
     }
 
+    if (url.pathname === "/api/profile/me") {
+      if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders(request) });
+      if (!isAllowedOrigin(request.headers.get("Origin"))) return new Response("Forbidden", { status: 403 });
+      return handleOwnProfile(request, env);
+    }
+
+    if (url.pathname === "/api/profiles") {
+      if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders(request) });
+      if (request.method !== "GET") return profileError("Méthode non autorisée", request, 405);
+      return handlePublicProfiles(request, env);
+    }
+
+    if (url.pathname.startsWith("/api/profile/avatar/")) {
+      if (request.method !== "GET") return new Response("Method not allowed", { status: 405 });
+      return handleProfileAvatar(request, env, url.pathname.slice("/api/profile/avatar/".length));
+    }
+
     if (url.pathname === "/api/articles") {
       if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders(request) });
       if (request.method !== "GET") {
@@ -353,6 +548,7 @@ export default {
 };
 
 export const __test = {
+  cleanProfileInput,
   constantTimeEqual,
   isAllowedOrigin,
   isArticleFile,

@@ -2,6 +2,7 @@
 title: Le RER B est banger !!
 date: 2025-11-12T17:18:18.316Z
 author: Thibaud le s
+author_github_id: "235680222"
 description: Review du RER B
 thumbnail: /img/uploads/djerwkba_400x400.png
 important: true

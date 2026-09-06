@@ -18,8 +18,12 @@ const cover = optimizedImageUrl(article.thumbnail, 1280);
   <main class="articles">
     <article class="article-full">
       <div class="article-cover"><img src={cover} srcset={optimizedImageSrcset(article.thumbnail, coverImageWidths)} sizes="100vw" {...imageDimensionAttributes(article.thumbnailDimensions)} alt="Illustration de l'article" loading="eager" decoding="async" /></div>
-      <header class="article-header"><h1>{article.title}</h1><p class="article-meta">Par {article.author}, le {date}</p></header>
+      <header class="article-header"><h1>{article.title}</h1><p class="article-meta">Par <span data-contributor-name={article.authorGithubId ? true : undefined} data-contributor-id={article.authorGithubId || undefined}>{article.author}</span>, le {date}</p></header>
       <section class="article-body" set:html={article.bodyHtml}></section>
+      <footer class="article-contributor" data-contributor-card={article.authorGithubId ? true : undefined} data-contributor-id={article.authorGithubId || undefined} hidden={!article.authorGithubId}>
+        <img data-contributor-avatar alt="" hidden>
+        <p>Par <strong data-contributor-name>{article.author}</strong></p>
+      </footer>
     </article>
   </main>
 </BaseLayout>

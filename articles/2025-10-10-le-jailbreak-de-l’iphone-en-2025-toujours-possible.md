@@ -2,6 +2,7 @@
 title: "Le jailbreak de l’iPhone en 2025 : toujours possible ?"
 date: 2025-10-10T17:19:28.873Z
 author: Iban
+author_github_id: "93536549"
 description: "Le jailbreak de l’iPhone en 2025 : toujours possible ?"
 thumbnail: /img/uploads/cover-article-jailbreak-demo-.png
 important: true

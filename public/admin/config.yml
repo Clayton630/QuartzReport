@@ -18,7 +18,8 @@ collections:
     fields:
       - { label: "Titre", name: "title", widget: "string" }
       - { label: "Date", name: "date", widget: "datetime" }
-      - { label: "Auteur", name: "author", widget: "string", default: "Clayton" }
+      - { label: "Auteur", name: "author", widget: "contributor-name" }
+      - { label: "Identifiant auteur", name: "author_github_id", widget: "contributor-id" }
       - { label: "Résumé", name: "description", widget: "text" }
       # ✅ Editeur markdown avec support des images inline
       - label: "Contenu"

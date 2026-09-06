@@ -10,6 +10,23 @@ test("only legitimate article filenames are accepted", () => {
   assert.equal(__test.isArticleFile("article.txt"), false);
 });
 
+test("contributor profiles require a name and only accept safe public links", () => {
+  assert.throws(() => __test.cleanProfileInput({ name: "" }), /nom est obligatoire/i);
+  assert.throws(() => __test.cleanProfileInput({ name: "Clayton", links: ["javascript:alert(1)"] }), /lien invalide/i);
+  assert.deepEqual(
+    __test.cleanProfileInput({ name: " Clayton ", links: ["https://example.com/profil"] }),
+    {
+      name: "Clayton",
+      email: "",
+      phone: "",
+      links: ["https://example.com/profil"],
+      photoBase64: null,
+      photoType: null,
+      removePhoto: false,
+    },
+  );
+});
+
 test("OAuth state comparisons reject missing and altered values", () => {
   assert.equal(__test.constantTimeEqual("same-state", "same-state"), true);
   assert.equal(__test.constantTimeEqual("same-state", "other-state"), false);

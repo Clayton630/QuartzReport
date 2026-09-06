@@ -20,7 +20,7 @@ const shortDate = (date) => new Intl.DateTimeFormat("fr-FR", { day: "numeric", m
     {featured.map((article, index) => (
       <a href={`/articles/${encodeURIComponent(article.slug)}/`} class="card" data-category={article.category}>
         <div class="card-inner"><img src={optimizedImageUrl(article.thumbnail, 1280)} alt="" loading={index === 0 ? "eager" : "lazy"} decoding="async" />
-          <div class="card-content"><p class="card-meta">Par {article.author}, {shortDate(article.date)}</p><h3>{article.title}</h3></div>
+          <div class="card-content"><p class="card-meta">Par <span data-contributor-name={article.authorGithubId ? true : undefined} data-contributor-id={article.authorGithubId || undefined}>{article.author}</span>, {shortDate(article.date)}</p><h3>{article.title}</h3></div>
         </div>
       </a>
     ))}

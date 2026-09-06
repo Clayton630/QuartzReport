@@ -2,6 +2,7 @@
 title: Test Multi images en article
 date: 2025-10-08T07:42:25.635Z
 author: Clayton
+author_github_id: "93291298"
 description: osef
 thumbnail: /img/uploads/500_333.jpeg
 important: false

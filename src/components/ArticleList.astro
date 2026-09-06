@@ -40,7 +40,7 @@ const weekTitle = (start) => {
                   <a href={`/articles/${encodeURIComponent(article.slug)}/`} class="day-article-link">
                     <div class="thumb" style={`background-image:url('${optimizedImageUrl(article.thumbnail, 800)}')`}></div>
                     <div class="day-article-info">
-                      <p class="day-meta">Par {article.author}, à {formatTime(article.date)}</p>
+                      <p class="day-meta">Par <span data-contributor-name={article.authorGithubId ? true : undefined} data-contributor-id={article.authorGithubId || undefined}>{article.author}</span>, à {formatTime(article.date)}</p>
                       <h4>{article.title}</h4>
                       <p class="day-desc">{article.description}</p>
                     </div>

@@ -54,6 +54,29 @@
   object-fit: contain;
 }
 
+.article-contributor {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 var(--page-x) 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e7e7e7;
+  color: #444;
+}
+
+.article-contributor img {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eee;
+}
+
+.article-contributor p {
+  margin: 0;
+}
+
 @media (max-width: 480px) {
   .article-body {
     font-size: 0.95rem;

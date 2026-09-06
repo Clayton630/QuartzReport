@@ -3,6 +3,14 @@
   "name": "quartzreport-oauth",
   "main": "index.js",
   "compatibility_date": "2026-09-05",
+  "d1_databases": [
+    {
+      "binding": "PROFILES_DB",
+      "database_name": "quartzreport-profiles",
+      "database_id": "abacd763-ac11-49dd-be84-a641edfccec5",
+      "migrations_dir": "migrations"
+    }
+  ],
   "observability": {
     "enabled": true,
     "logs": { "head_sampling_rate": 1 },

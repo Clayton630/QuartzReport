@@ -2,6 +2,7 @@
 title: Article du 7 Octobre
 date: 2025-10-07T07:04:37.131Z
 author: Clayton
+author_github_id: "93291298"
 description: j
 thumbnail: /img/uploads/apple-final-cut-camera-2-0-lifestyle-250909_big.jpg.large_2x-grande.jpeg
 important: false

@@ -117,6 +117,7 @@ async function articleFromSource(filename, source) {
     filename,
     title: meta.title || "Sans titre",
     author: meta.author || "Inconnu",
+    authorGithubId: /^\d{1,20}$/u.test(String(meta.author_github_id || "")) ? String(meta.author_github_id) : null,
     description: meta.description || body.replace(/\s+/g, " ").slice(0, 160),
     category: meta.category || "Autre",
     important: meta.important === "true" || meta.important === true,
