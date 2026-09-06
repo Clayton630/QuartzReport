@@ -168,13 +168,13 @@
       return token;
     });
     result = escapeHtml(result);
-    for (const image of images) result = result.replace(image.token, image.html);
     result = result.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     result = result.replace(/`([^`]+)`/g, "<code>$1</code>");
     result = result.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     result = result.replace(/__([^_]+)__/g, "<strong>$1</strong>");
     result = result.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>");
     result = result.replace(/(?<!_)_([^_]+)_(?!_)/g, "<em>$1</em>");
+    for (const image of images) result = result.replace(image.token, image.html);
     return result;
   }
 
