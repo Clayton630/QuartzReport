@@ -352,11 +352,7 @@
     root.querySelector(".qr-admin-brand")?.addEventListener("click", (event) => {
       event.preventDefault();
       if (editorDirty && root.querySelector("[data-article-form]") && !window.confirm("Quitter sans publier vos modifications ?")) return;
-      currentArticle = null;
-      pendingCover = null;
-      editorDirty = false;
-      setHistory("dashboard", {}, true);
-      renderDashboard();
+      goBackToDashboard();
     });
   }
 
