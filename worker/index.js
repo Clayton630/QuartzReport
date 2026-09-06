@@ -258,50 +258,6 @@ async function cachedFeed(request, ctx) {
   }
 }
 
-async function legacyArticleRead(url, request, ctx) {
-  if (request.method !== "GET") {
-    return jsonResponse({ error: "Method not allowed" }, request, {
-      status: 405,
-      headers: { Allow: "GET, OPTIONS" },
-    });
-  }
-
-  const prefix = `/api/repos/${REPOSITORY}/contents/articles`;
-  const suffix = url.pathname.slice(prefix.length);
-  const isListing = suffix === "" || suffix === "/";
-  const filename = suffix.startsWith("/") ? decodeURIComponent(suffix.slice(1)) : "";
-  if (!isListing && !isArticleFile(filename)) {
-    return jsonResponse({ error: "Not found" }, request, { status: 404 });
-  }
-
-  const cache = caches.default;
-  const cacheUrl = new URL(request.url);
-  cacheUrl.searchParams.delete("_");
-  const cacheKey = new Request(cacheUrl, { method: "GET" });
-  const cached = await cache.match(cacheKey);
-  if (cached) return responseWithCors(cached, request);
-
-  const githubPath = isListing
-    ? `/repos/${REPOSITORY}/contents/articles?ref=${BRANCH}`
-    : `/repos/${REPOSITORY}/contents/articles/${encodeURIComponent(filename)}?ref=${BRANCH}`;
-  let upstream;
-  try {
-    upstream = await githubFetch(githubPath);
-  } catch {
-    return jsonResponse({ error: "Article source unavailable" }, request, { status: 502 });
-  }
-
-  const response = new Response(upstream.body, {
-    status: upstream.status,
-    headers: {
-      "content-type": upstream.headers.get("content-type") || "application/json; charset=utf-8",
-      "cache-control": "public, max-age=120",
-    },
-  });
-  ctx.waitUntil(cache.put(cacheKey, response.clone()));
-  return responseWithCors(response, request);
-}
-
 function imageSource(url) {
   const src = url.searchParams.get("src");
   if (!src) return null;
@@ -448,12 +404,6 @@ export default {
         console.error(JSON.stringify({ message: "Feed request failed", error: String(error) }));
         return jsonResponse({ error: "Article feed unavailable" }, request, { status: 502 });
       }
-    }
-
-    const legacyPrefix = `/api/repos/${REPOSITORY}/contents/articles`;
-    if (url.pathname === legacyPrefix || url.pathname.startsWith(`${legacyPrefix}/`)) {
-      if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders(request) });
-      return legacyArticleRead(url, request, ctx);
     }
 
     return new Response("Not found", { status: 404 });

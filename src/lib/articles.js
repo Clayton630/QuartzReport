@@ -13,13 +13,44 @@ function parseFrontMatter(source) {
   if (!match) return { meta: {}, body: source.trim() };
 
   const meta = {};
+  let currentKey = null;
   for (const line of match[1].split("\n")) {
-    const separator = line.indexOf(":");
-    if (separator < 1) continue;
-    const key = line.slice(0, separator).trim();
-    meta[key] = line.slice(separator + 1).trim().replace(/^"|"$/g, "");
+    if (/^\s+\S/u.test(line) && currentKey) {
+      meta[currentKey] = `${meta[currentKey]} ${line.trim()}`.trim();
+      continue;
+    }
+
+    const entry = line.match(/^([A-Za-z][A-Za-z0-9_-]*):\s*(.*)$/u);
+    if (!entry) {
+      currentKey = null;
+      continue;
+    }
+
+    const [, key, rawValue] = entry;
+    const value = rawValue.trim();
+    if (value.startsWith('"') && value.endsWith('"')) {
+      try {
+        meta[key] = JSON.parse(value);
+      } catch {
+        meta[key] = value.slice(1, -1);
+      }
+    } else if (value.startsWith("'") && value.endsWith("'")) {
+      meta[key] = value.slice(1, -1).replaceAll("''", "'");
+    } else {
+      meta[key] = value;
+    }
+    currentKey = key;
   }
   return { meta, body: match[2].trim() };
+}
+
+function articleDate(value, filename) {
+  const fromMetadata = new Date(value || "");
+  if (!Number.isNaN(fromMetadata.valueOf())) return fromMetadata;
+
+  const fromFilename = filename.match(/^(\d{4}-\d{2}-\d{2})-/u)?.[1];
+  const fallback = fromFilename ? new Date(`${fromFilename}T12:00:00.000Z`) : new Date(0);
+  return Number.isNaN(fallback.valueOf()) ? new Date(0) : fallback;
 }
 
 function optimizedImageUrl(value, width = 1280) {
@@ -43,7 +74,7 @@ function htmlForArticle(markdown) {
 function articleFromSource(filename, source) {
   const { meta, body } = parseFrontMatter(source);
   const firstImage = body.match(/!\[.*?\]\((.*?)\)/)?.[1];
-  const date = new Date(meta.date || Date.now());
+  const date = articleDate(meta.date, filename);
   return {
     slug: filename.replace(/\.md$/i, ""),
     filename,
@@ -52,7 +83,7 @@ function articleFromSource(filename, source) {
     description: meta.description || body.replace(/\s+/g, " ").slice(0, 160),
     category: meta.category || "Autre",
     important: meta.important === "true" || meta.important === true,
-    date: Number.isNaN(date.valueOf()) ? new Date() : date,
+    date,
     thumbnail: meta.thumbnail || firstImage || placeholderImage,
     bodyHtml: htmlForArticle(body),
   };
@@ -67,3 +98,5 @@ export async function getArticles() {
 }
 
 export { optimizedImageUrl };
+
+export const __test = { articleDate, parseFrontMatter };

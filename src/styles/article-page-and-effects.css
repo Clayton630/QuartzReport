@@ -96,53 +96,6 @@
   }
 }
 
-/* ===== Nav: extended breathing space for shadows (desktop + mobile) ===== */
-.main-nav {
-  overflow-x: auto;
-  overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
-
-  /* ⬇️ ABAISSEMENT DES CATÉGORIES (Desktop) :
-     On a ajouté +12px au padding-top pour descendre le texte.
-     On a retiré 12px au margin-bottom pour que la suite ne bouge pas.
-  */
-  padding-top: 44px;
-  /* Était 32px */
-  padding-bottom: 42px;
-
-  margin-top: -32px;
-  margin-bottom: -54px;
-  /* Était -42px */
-
-  position: relative;
-  z-index: 2;
-}
-
-/* 📱 Variante mobile : ombres encore plus respirantes */
-@media (max-width: 768px) {
-  .main-nav {
-    /* ⬇️ ABAISSEMENT MOBILE :
-       Même logique : +12px en haut, -12px en bas.
-    */
-    padding-top: 48px;
-    /* Était 36px */
-    padding-bottom: 52px;
-
-    margin-top: -36px;
-    margin-bottom: -64px;
-    /* Était -52px */
-  }
-}
-
-/* 📱 Catégories légèrement plus petites mais toujours confortables */
-@media (max-width: 480px) {
-  .main-nav a {
-    padding: 9px 18px;
-    font-size: 1.0rem;
-    border-radius: 36px;
-  }
-}
-
 /* === HOTTEST : Calage Mobile & Desktop === */
 
 /* 1. On nettoie la marge sur le premier élément (Spacer ou Carte) */
@@ -156,13 +109,6 @@
 @media (max-width: 768px) {
   .hottest-spacer {
     display: none !important;
-  }
-}
-
-/* 3. Sur Desktop : On garde la marge à 0 (le spacer JS fait le travail) */
-@media (min-width: 769px) {
-  .hottest-grid .card:first-child {
-    margin-left: 0 !important;
   }
 }
 
