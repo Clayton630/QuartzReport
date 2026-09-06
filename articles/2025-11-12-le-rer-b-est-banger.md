@@ -18,8 +18,4 @@ Il a des trains *banger* aussi
 
 Regardez moi ces trains **magnifiques**
 
-**
-**
-
-modif de la part de clayton**
-**
+wtf ????
