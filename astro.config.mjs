@@ -1,6 +1,6 @@
 import { defineConfig } from "astro/config";
 
 export default defineConfig({
-  site: "https://quartzreport.pages.dev",
+  site: "https://quartzreport.fr",
   output: "static",
 });

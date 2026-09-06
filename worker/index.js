@@ -1,4 +1,5 @@
-const SITE_ORIGIN = "https://quartzreport.pages.dev";
+const SITE_ORIGIN = "https://quartzreport.fr";
+const PAGES_ASSET_ORIGIN = "https://quartzreport.pages.dev";
 const REPOSITORY = "Clayton630/QuartzReport";
 const BRANCH = "main";
 const FEED_CACHE_SECONDS = 120;
@@ -16,6 +17,8 @@ const GITHUB_ADMIN_SCOPE = "public_repo";
 function isAllowedOrigin(origin) {
   return (
     origin === SITE_ORIGIN ||
+    origin === "https://www.quartzreport.fr" ||
+    origin === PAGES_ASSET_ORIGIN ||
     /^https:\/\/[a-z0-9-]+\.quartzreport\.pages\.dev$/u.test(origin || "")
   );
 }
@@ -303,10 +306,10 @@ function imageSource(url) {
   const src = url.searchParams.get("src");
   if (!src) return null;
   try {
-    const candidate = new URL(src, SITE_ORIGIN);
+    const candidate = new URL(src, PAGES_ASSET_ORIGIN);
     const filename = candidate.pathname.slice("/img/uploads/".length);
     if (
-      candidate.origin !== SITE_ORIGIN ||
+      candidate.origin !== PAGES_ASSET_ORIGIN ||
       !candidate.pathname.startsWith("/img/uploads/") ||
       !filename ||
       filename.includes("/") ||

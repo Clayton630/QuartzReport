@@ -23,7 +23,7 @@ test("admin OAuth only accepts the public-repository permission", () => {
   assert.equal(__test.hasOnlyPublicRepoScope(undefined), false);
 });
 
-test("OAuth callback only targets QuartzReport Pages", () => {
+test("OAuth callback only targets QuartzReport origins", () => {
   const previewRequest = new Request(
     "https://quartzreport-oauth.claytonelhorga.workers.dev/auth?site_id=2e42426c.quartzreport.pages.dev",
   );
@@ -35,11 +35,13 @@ test("OAuth callback only targets QuartzReport Pages", () => {
   );
 
   assert.equal(__test.oauthTargetOrigin(previewRequest), "https://2e42426c.quartzreport.pages.dev");
-  assert.equal(__test.oauthTargetOrigin(externalRequest), "https://quartzreport.pages.dev");
+  assert.equal(__test.oauthTargetOrigin(externalRequest), "https://quartzreport.fr");
   assert.equal(__test.oauthTargetOrigin(malformedRequest), "https://quartzreport.pages.dev");
 });
 
-test("only QuartzReport Pages origins receive API CORS access", () => {
+test("only QuartzReport origins receive API CORS access", () => {
+  assert.equal(__test.isAllowedOrigin("https://quartzreport.fr"), true);
+  assert.equal(__test.isAllowedOrigin("https://www.quartzreport.fr"), true);
   assert.equal(__test.isAllowedOrigin("https://quartzreport.pages.dev"), true);
   assert.equal(__test.isAllowedOrigin("https://20859af1.quartzreport.pages.dev"), true);
   assert.equal(__test.isAllowedOrigin("https://example.com"), false);
