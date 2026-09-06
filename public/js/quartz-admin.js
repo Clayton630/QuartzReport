@@ -7,6 +7,7 @@
   const BRANCH = PREVIEW_BRANCHES[window.location.host] || "main";
   const isPreview = BRANCH !== "main";
   const STORAGE_KEY = "decap-cms-user";
+  const MEDIA_CATALOG_PATH = "data/media-catalog.json";
   const CATEGORIES = ["Apple", "Comparatif", "Review", "Analyse", "Autre"];
   const root = document.getElementById("quartz-admin");
   let token = null;
@@ -15,6 +16,9 @@
   let publicProfiles = {};
   let currentArticle = null;
   let pendingCover = null;
+  let stagedImages = new Map();
+  let savedInlineRange = null;
+  let coverSelection = 0;
   let pendingPhoto = null;
   let editorDirty = false;
 
@@ -282,32 +286,166 @@
     updateEditorState();
   }
 
-  async function openMediaLibrary() {
-    const picker = document.createElement("section");
-    picker.className = "qr-admin-media";
-    picker.innerHTML = `<header class="qr-admin-media__bar"><button type="button" class="qr-admin-back" data-close-media>‹ Retour</button><strong>Insérer une image</strong><button type="button" class="qr-admin-secondary" data-upload-media>Importer</button></header><main class="qr-admin-media__content"><p>Choisissez une image déjà enregistrée, ou importez-en une nouvelle.</p><div class="qr-admin-media__grid" data-media-list><span>Chargement des images…</span></div></main>`;
-    document.body.append(picker);
-    picker.querySelector("[data-close-media]").addEventListener("click", () => picker.remove());
-    picker.querySelector("[data-upload-media]").addEventListener("click", () => root.querySelector("[data-inline-image]").click());
-    try {
-      const listing = await request(`https://api.github.com/repos/${REPOSITORY}/contents/public/img/uploads?ref=${BRANCH}`);
-      const images = listing.filter((entry) => entry.type === "file" && /\.(jpe?g|png|webp)$/i.test(entry.name));
-      const list = picker.querySelector("[data-media-list]");
-      list.innerHTML = images.length ? images.map((entry) => `<button type="button" data-media-path="/img/uploads/${encodeURIComponent(entry.name)}"><img src="/img/uploads/${encodeURIComponent(entry.name)}" alt=""><span>${escapeHtml(entry.name)}</span></button>`).join("") : "<span>Aucune image enregistrée.</span>";
-      list.querySelectorAll("[data-media-path]").forEach((button) => button.addEventListener("click", () => {
-        insertInlineImage(button.dataset.mediaPath);
-        picker.remove();
-      }));
-    } catch (error) {
-      picker.querySelector("[data-media-list]").textContent = error.message || "Impossible de charger les images.";
+  function insertPendingInlineImage(staged) {
+    const editor = root.querySelector("[data-editor-body]");
+    const wrapper = document.createElement("span");
+    wrapper.className = "qr-admin-pending-image";
+    wrapper.contentEditable = "false";
+    wrapper.dataset.stagedImage = staged.id;
+    wrapper.innerHTML = `<img src="${escapeHtml(staged.previewUrl)}" alt="Image en cours d’envoi"><span><i aria-hidden="true"></i>Envoi de l’image…</span>`;
+    const range = savedInlineRange;
+    if (range && editor.contains(range.commonAncestorContainer)) {
+      range.deleteContents();
+      range.insertNode(wrapper);
+      range.setStartAfter(wrapper); range.collapse(true);
+      const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
+    } else {
+      const paragraph = document.createElement("p"); paragraph.append(wrapper); editor.append(paragraph);
     }
+    savedInlineRange = null;
+    return wrapper;
+  }
+
+  function resolvePendingInlineImage(staged, wrapper) {
+    const image = document.createElement("img");
+    image.src = staged.path; image.alt = "";
+    wrapper.replaceWith(image);
+    URL.revokeObjectURL(staged.previewUrl);
+    updateEditorState();
+  }
+
+  function openMediaLibrary() {
+    const editor = root.querySelector("[data-editor-body]");
+    const selection = window.getSelection();
+    savedInlineRange = selection?.rangeCount && editor.contains(selection.getRangeAt(0).commonAncestorContainer) ? selection.getRangeAt(0).cloneRange() : null;
+    root.querySelector("[data-inline-image]").click();
+  }
+
+  function base64FromBytes(bytes) {
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let index = 0; index < bytes.length; index += chunkSize) binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
+    return btoa(binary);
+  }
+
+  async function inspectImage(file) {
+    if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
+    if (file.size > 12 * 1024 * 1024) throw new Error("Cette image dépasse 12 Mo.");
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    const digest = await crypto.subtle.digest("SHA-256", bytes);
+    const previewUrl = URL.createObjectURL(file);
+    const image = new Image();
+    await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = previewUrl; });
+    const canvas = document.createElement("canvas"); canvas.width = 9; canvas.height = 8;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(image, 0, 0, 9, 8);
+    const pixels = context.getImageData(0, 0, 9, 8).data;
+    let hash = "";
+    for (let y = 0; y < 8; y += 1) {
+      let value = 0;
+      for (let x = 0; x < 8; x += 1) {
+        const left = pixels[(y * 9 + x) * 4] * 0.299 + pixels[(y * 9 + x) * 4 + 1] * 0.587 + pixels[(y * 9 + x) * 4 + 2] * 0.114;
+        const right = pixels[(y * 9 + x + 1) * 4] * 0.299 + pixels[(y * 9 + x + 1) * 4 + 1] * 0.587 + pixels[(y * 9 + x + 1) * 4 + 2] * 0.114;
+        value = (value << 1) | Number(left > right);
+      }
+      hash += value.toString(16).padStart(2, "0");
+    }
+    return { bytes, previewUrl, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), width: image.naturalWidth, height: image.naturalHeight, bytes: file.size, dhash: hash } };
+  }
+
+  function hammingDistance(left, right) {
+    let distance = 0;
+    for (let index = 0; index < left.length; index += 1) {
+      let value = parseInt(left[index], 16) ^ parseInt(right[index], 16);
+      while (value) { distance += value & 1; value >>>= 1; }
+    }
+    return distance;
+  }
+
+  function imageQuality(image) { return Number(image.width) * Number(image.height); }
+
+  async function loadMediaCatalog() {
+    const file = await request(`https://api.github.com/repos/${REPOSITORY}/contents/${MEDIA_CATALOG_PATH}?ref=${encodeURIComponent(BRANCH)}`);
+    const source = decodeURIComponent(escape(atob(file.content.replace(/\n/g, ""))));
+    const catalog = JSON.parse(source);
+    if (!Array.isArray(catalog.images)) throw new Error("Le catalogue d’images est invalide.");
+    return { ...catalog, sha: file.sha };
+  }
+
+  function findSimilarImage(meta, catalog) {
+    const exact = catalog.images.filter((image) => image.sha256 === meta.sha256);
+    if (exact.length) return exact.sort((left, right) => imageQuality(right) - imageQuality(left))[0];
+    return catalog.images
+      .filter((image) => Math.abs((image.width / image.height) - (meta.width / meta.height)) < 0.08 && hammingDistance(image.dhash, meta.dhash) <= 6)
+      .sort((left, right) => hammingDistance(left.dhash, meta.dhash) - hammingDistance(right.dhash, meta.dhash) || imageQuality(right) - imageQuality(left))[0] || null;
+  }
+
+  function askAboutSimilarImage(staged, existing) {
+    return new Promise((resolve) => {
+      const incomingQuality = imageQuality(staged.meta);
+      const existingQuality = imageQuality(existing);
+      const newIsBetter = incomingQuality > existingQuality;
+      const dialog = document.createElement("section");
+      dialog.className = "qr-admin-image-match";
+      dialog.innerHTML = `<div class="qr-admin-image-match__panel" role="dialog" aria-modal="true" aria-labelledby="qr-image-match-title"><p class="qr-admin-eyebrow">Image déjà disponible</p><h2 id="qr-image-match-title">Une image très proche existe déjà.</h2><div class="qr-admin-image-match__images"><figure><img src="${escapeHtml(existing.path)}" alt="Version déjà enregistrée"><figcaption>Déjà enregistrée<br>${existing.width} × ${existing.height}</figcaption></figure><figure><img src="${escapeHtml(staged.previewUrl)}" alt="Nouvelle image"><figcaption>Nouvelle image<br>${staged.meta.width} × ${staged.meta.height}</figcaption></figure></div><p>${newIsBetter ? "La nouvelle version est plus définie. Elle peut remplacer celle déjà enregistrée." : "La version déjà enregistrée est au moins aussi définie. Sa réutilisation évite un doublon."}</p><div class="qr-admin-image-match__actions"><button type="button" class="qr-admin-secondary" data-use-existing>Utiliser l’existante</button><button type="button" class="qr-admin-primary" data-use-new>${newIsBetter ? "Remplacer par la nouvelle" : "Conserver quand même la nouvelle"}</button></div></div>`;
+      document.body.append(dialog);
+      dialog.querySelector("[data-use-existing]").addEventListener("click", () => { dialog.remove(); resolve("existing"); });
+      dialog.querySelector("[data-use-new]").addEventListener("click", () => { dialog.remove(); resolve("new"); });
+    });
+  }
+
+  async function stageImage(file) {
+    const staged = { id: `image-${Date.now()}-${Math.random().toString(36).slice(2)}`, fileName: file?.name || "", status: "uploading", isNew: true, replaceExisting: false };
+    stagedImages.set(staged.id, staged); updatePublishState();
+    try {
+      const inspected = await inspectImage(file);
+      const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[file.type];
+      staged.previewUrl = inspected.previewUrl;
+      staged.meta = inspected.meta;
+      staged.path = `/img/uploads/${Date.now()}-${slugify(file.name.replace(/\.[^.]+$/, ""))}.${extension}`;
+      const [blob, catalog] = await Promise.all([
+        request(`https://api.github.com/repos/${REPOSITORY}/git/blobs`, { method: "POST", body: JSON.stringify({ content: base64FromBytes(inspected.bytes), encoding: "base64" }) }),
+        loadMediaCatalog(),
+      ]);
+      staged.blobSha = blob.sha;
+      const existing = findSimilarImage(staged.meta, catalog);
+      if (existing) {
+        staged.status = "choice"; updatePublishState();
+        const choice = await askAboutSimilarImage(staged, existing);
+        if (choice === "existing") { staged.path = existing.path; staged.isNew = false; }
+        else if (imageQuality(staged.meta) > imageQuality(existing)) { staged.path = existing.path; staged.replaceExisting = true; }
+      }
+      staged.status = "ready";
+      return staged;
+    } catch (error) {
+      stagedImages.delete(staged.id); if (staged.previewUrl) URL.revokeObjectURL(staged.previewUrl); updatePublishState();
+      throw error;
+    } finally {
+      updatePublishState();
+    }
+  }
+
+  function pendingImageCount() {
+    return [...stagedImages.values()].filter((image) => image.status === "uploading" || image.status === "choice").length;
+  }
+
+  function updatePublishState() {
+    const publish = root.querySelector("[data-publish]");
+    const status = root.querySelector("[data-editor-status]");
+    if (!publish || !status) return;
+    const pending = pendingImageCount();
+    if (pending) {
+      publish.disabled = true;
+      status.textContent = `${pending === 1 ? "Image en cours d’envoi…" : `${pending} images en cours d’envoi…`} Publication disponible dès la fin de l’envoi.`;
+      return;
+    }
+    publish.disabled = !editorDirty;
+    status.textContent = editorDirty ? "Modifications non publiées" : "Prêt à publier";
   }
 
   function updateEditorState() {
     editorDirty = true;
-    root.querySelector("[data-editor-status]").textContent = "Modifications non publiées";
-    const publish = root.querySelector("[data-publish]");
-    if (publish) publish.disabled = false;
+    updatePublishState();
   }
 
   async function loadArticles() {
@@ -451,6 +589,9 @@
     if (push) setHistory("editor", { path: article?.path || null });
     currentArticle = article;
     pendingCover = null;
+    stagedImages = new Map();
+    savedInlineRange = null;
+    coverSelection = 0;
     editorDirty = false;
     root.innerHTML = editorTemplate(article);
     bindAdminHeader();
@@ -471,16 +612,37 @@
     root.querySelector("[data-image]").addEventListener("click", openMediaLibrary);
     root.querySelector("[data-inline-image]").addEventListener("change", async (event) => {
       const file = event.target.files[0]; if (!file) return;
-      try { insertInlineImage(await uploadImage(file)); document.querySelector(".qr-admin-media")?.remove(); }
+      let pending = null;
+      try {
+        pending = { id: `pending-${Date.now()}`, previewUrl: URL.createObjectURL(file), status: "uploading" };
+        const placeholder = insertPendingInlineImage(pending);
+        URL.revokeObjectURL(pending.previewUrl);
+        const staged = await stageImage(file);
+        resolvePendingInlineImage(staged, placeholder);
+      }
       catch (error) { notice(error.message, "error"); }
       event.target.value = "";
     });
-    root.querySelector("[name=cover]").addEventListener("change", (event) => {
-      pendingCover = event.target.files[0] || null;
+    root.querySelector("[name=cover]").addEventListener("change", async (event) => {
+      const file = event.target.files[0] || null;
       const preview = root.querySelector("[data-cover-preview]");
-      if (!pendingCover) return;
-      preview.innerHTML = `<img src="${URL.createObjectURL(pendingCover)}" alt="Aperçu de l’image de couverture">`;
-      updateEditorState();
+      if (!file) return;
+      const selection = ++coverSelection;
+      const localPreview = URL.createObjectURL(file);
+      preview.classList.add("is-uploading");
+      preview.innerHTML = `<img src="${escapeHtml(localPreview)}" alt="Aperçu de l’image de couverture"><span><i aria-hidden="true"></i>Envoi de l’image…</span>`;
+      try {
+        const staged = await stageImage(file);
+        if (selection !== coverSelection) return;
+        pendingCover = staged;
+        preview.classList.remove("is-uploading");
+        preview.innerHTML = `<img src="${escapeHtml(pendingCover.previewUrl)}" alt="Aperçu de l’image de couverture">`;
+        URL.revokeObjectURL(localPreview);
+        updateEditorState();
+      } catch (error) {
+        URL.revokeObjectURL(localPreview); preview.classList.remove("is-uploading"); preview.textContent = "Aucune image sélectionnée";
+        notice(error.message, "error");
+      }
     });
     root.querySelector("[data-preview]").addEventListener("click", openArticlePreview);
     root.querySelector("[data-publish]").addEventListener("click", publishArticle);
@@ -489,7 +651,7 @@
 
   function openArticlePreview() {
     const form = root.querySelector("[data-article-form]");
-    const cover = pendingCover ? URL.createObjectURL(pendingCover) : currentArticle?.thumbnail;
+    const cover = pendingCover?.previewUrl || currentArticle?.thumbnail;
     const modal = document.createElement("section");
     modal.className = "qr-admin-preview";
     const publicationDate = currentArticle?.date || new Date().toISOString();
@@ -499,14 +661,32 @@
     modal.querySelector("[data-close-preview]").addEventListener("click", () => modal.remove());
   }
 
-  async function uploadImage(file) {
-    if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
-    if (file.size > 12 * 1024 * 1024) throw new Error("Cette image dépasse 12 Mo.");
-    const content = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(String(reader.result).split(",")[1]); reader.onerror = () => reject(new Error("Impossible de lire cette image.")); reader.readAsDataURL(file); });
-    const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[file.type];
-    const path = `public/img/uploads/${Date.now()}-${slugify(file.name.replace(/\.[^.]+$/, ""))}.${extension}`;
-    await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(path).replaceAll("%2F", "/")}`, { method: "PUT", body: JSON.stringify({ message: `Ajouter l’image ${file.name}`, content, branch: BRANCH }) });
-    return `/${path.slice("public/".length)}`;
+  function textToBase64(value) { return btoa(unescape(encodeURIComponent(value))); }
+
+  async function createGitBlob(content) {
+    const blob = await request(`https://api.github.com/repos/${REPOSITORY}/git/blobs`, { method: "POST", body: JSON.stringify({ content: textToBase64(content), encoding: "base64" }) });
+    return blob.sha;
+  }
+
+  async function commitArticleAndImages({ path, source, title, usedImagePaths }) {
+    const catalog = await loadMediaCatalog();
+    const currentRef = await request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encodeURIComponent(BRANCH)}`);
+    const parent = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits/${currentRef.object.sha}`);
+    const nextCatalog = { version: 1, images: [...catalog.images] };
+    const entries = [];
+    for (const staged of stagedImages.values()) {
+      if (!staged.isNew || !usedImagePaths.has(staged.path)) continue;
+      const catalogEntry = { path: staged.path, ...staged.meta };
+      const previousIndex = nextCatalog.images.findIndex((image) => image.path === staged.path);
+      if (previousIndex >= 0) nextCatalog.images.splice(previousIndex, 1, catalogEntry);
+      else nextCatalog.images.push(catalogEntry);
+      entries.push({ path: `public${staged.path}`, mode: "100644", type: "blob", sha: staged.blobSha });
+    }
+    const [articleBlob, catalogBlob] = await Promise.all([createGitBlob(source), createGitBlob(`${JSON.stringify(nextCatalog, null, 2)}\n`)]);
+    entries.push({ path, mode: "100644", type: "blob", sha: articleBlob }, { path: MEDIA_CATALOG_PATH, mode: "100644", type: "blob", sha: catalogBlob });
+    const tree = await request(`https://api.github.com/repos/${REPOSITORY}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: parent.tree.sha, tree: entries }) });
+    const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message: `${currentArticle ? "Mettre à jour" : "Créer"} l’article « ${title} »`, tree: tree.sha, parents: [currentRef.object.sha] }) });
+    await request(`https://api.github.com/repos/${REPOSITORY}/git/refs/heads/${encodeURIComponent(BRANCH)}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) });
   }
 
   async function publishArticle() {
@@ -514,20 +694,20 @@
     if (!form.reportValidity()) return;
     const publish = root.querySelector("[data-publish]");
     const publishLabel = currentArticle ? "Publier les modifications" : "Publier l’article";
-    if (!editorDirty) return;
+    if (!editorDirty || pendingImageCount()) return;
     publish.disabled = true; publish.textContent = currentArticle ? "Publication des modifications…" : "Publication de l’article…";
     try {
       const title = form.elements.title.value.trim();
-      const cover = pendingCover ? await uploadImage(pendingCover) : currentArticle?.thumbnail || "";
+      const cover = pendingCover?.path || currentArticle?.thumbnail || "";
       const date = currentArticle?.date || new Date().toISOString();
       const author = currentArticle ? currentArticle.author : profile.name;
       const authorGithubId = currentArticle ? currentArticle.authorGithubId : profile.githubId;
       const markdown = editorMarkdown();
       const source = `---\ntitle: ${escapeYaml(title)}\ndate: ${date}\nauthor: ${escapeYaml(author)}\n${authorGithubId ? `author_github_id: ${escapeYaml(authorGithubId)}\n` : ""}description: ${escapeYaml(form.elements.description.value.trim())}\n${cover ? `thumbnail: ${escapeYaml(cover)}\n` : ""}important: ${form.elements.important.checked}\ncategory: ${escapeYaml(form.elements.category.value)}\n---\n${markdown}\n`;
       const path = currentArticle?.path || `articles/${slugify(title)}.md`;
-      const body = { message: `${currentArticle ? "Mettre à jour" : "Créer"} l’article « ${title} »`, content: btoa(unescape(encodeURIComponent(source))), branch: BRANCH };
-      if (currentArticle?.sha) body.sha = currentArticle.sha;
-      await request(`https://api.github.com/repos/${REPOSITORY}/contents/${encodeURIComponent(path).replaceAll("%2F", "/")}`, { method: "PUT", body: JSON.stringify(body) });
+      const usedImagePaths = new Set([...markdown.matchAll(/!\[[^\]]*\]\((\/img\/uploads\/[^\s)]+)/g)].map((match) => match[1]));
+      if (cover) usedImagePaths.add(cover);
+      await commitArticleAndImages({ path, source, title, usedImagePaths });
       notice("Article publié. Il sera visible sur Quartz Report dans environ une minute.");
       await loadArticles(); setHistory("dashboard", {}, true); renderDashboard();
     } catch (error) {

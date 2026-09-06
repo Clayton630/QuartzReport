@@ -67,6 +67,10 @@
 .qr-admin-feature-toggle small { margin: 0; }
 .qr-admin-cover-preview { display: grid; min-height: 120px; overflow: hidden; place-items: center; color: #777; font-size: 13px; font-weight: 500; background: #e9e9e6; border-radius: 12px; }
 .qr-admin-cover-preview img { display: block; width: 100%; max-height: 280px; object-fit: cover; }
+.qr-admin-cover-preview.is-uploading { position: relative; }
+.qr-admin-cover-preview.is-uploading img { filter: grayscale(.35) brightness(.72); }
+.qr-admin-cover-preview.is-uploading > span { position: absolute; display: inline-flex; gap: 8px; align-items: center; padding: 8px 11px; color: #fff; background: rgba(0,0,0,.72); border-radius: 999px; }
+.qr-admin-cover-preview i, .qr-admin-pending-image i { width: 13px; height: 13px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: qr-admin-spin .7s linear infinite; }
 .qr-admin-content-label { margin-bottom: -12px; }
 .qr-admin-toolbar { display: flex; gap: 4px; flex-wrap: wrap; padding: 7px; background: #e9e9e6; border: 1px solid #d5d5d1; border-radius: 12px; }
 .qr-admin-toolbar button { min-width: 35px; height: 35px; padding: 0 8px; color: #292929; font: inherit; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
@@ -79,6 +83,18 @@
 .qr-admin-rich-editor pre { padding: 12px; overflow: auto; color: #eee; background: #191919; border-radius: 9px; }
 .qr-admin-rich-editor img { display: block; max-width: 100%; height: auto; margin: 1em auto; border-radius: 8px; }
 .qr-admin-editor-status { margin: -8px 0 0; color: #777; font-size: 12px; }
+.qr-admin-pending-image { position: relative; display: inline-grid; width: min(100%, 620px); margin: 8px 0; overflow: hidden; vertical-align: middle; background: #e9e9e6; border-radius: 10px; }
+.qr-admin-pending-image img { display: block; width: 100%; filter: grayscale(.35) brightness(.72); }
+.qr-admin-pending-image > span { position: absolute; inset: 0; display: flex; gap: 8px; align-items: center; justify-content: center; color: #fff; font: 600 13px/1 system-ui, sans-serif; text-shadow: 0 1px 2px #000; }
+.qr-admin-image-match { position: fixed; z-index: 200; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.48); }
+.qr-admin-image-match__panel { width: min(100%, 620px); padding: 24px; color: #171717; background: #f6f6f4; border-radius: 18px; box-shadow: 0 20px 70px rgba(0,0,0,.25); }
+.qr-admin-image-match__panel h2 { margin: 2px 0 18px; font-size: clamp(22px, 5vw, 30px); }
+.qr-admin-image-match__images { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.qr-admin-image-match__images figure { min-width: 0; margin: 0; overflow: hidden; background: #e7e7e4; border-radius: 10px; }
+.qr-admin-image-match__images img { display: block; width: 100%; aspect-ratio: 1.35; object-fit: cover; }
+.qr-admin-image-match__images figcaption { padding: 8px; color: #555; font-size: 12px; }
+.qr-admin-image-match__actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+@keyframes qr-admin-spin { to { transform: rotate(360deg); } }
 .qr-admin-delete { justify-self: start; margin-top: 36px; padding: 0; color: #b42318; font: inherit; font-weight: 700; background: transparent; border: 0; cursor: pointer; }
 .qr-admin-preview, .qr-admin-modal { position: fixed; z-index: 100; inset: 0; overflow: auto; background: rgba(14,14,14,.62); }
 .qr-admin-preview { background: #f6f6f4; }
