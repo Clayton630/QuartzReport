@@ -9,7 +9,6 @@ Cette liste rassemble les améliorations volontairement reportées. Elles ne son
 ## Base technique
 
 - [ ] Créer un sitemap XML réel des pages et articles, puis le déclarer dans Google Search Console pour lancer le référencement de `quartzreport.fr`.
-- [ ] Ajouter une vérification automatique du code Astro avant publication.
 
 ## À traiter plus tard, avec précaution
 
