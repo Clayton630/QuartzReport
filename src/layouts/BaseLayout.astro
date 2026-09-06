@@ -1,9 +1,31 @@
 ---
 import "../styles/style.css";
 
-const { title = "QuartzReport", description = "QuartzReport : actualités, analyses, tests et comparatifs.", article = false, image } = Astro.props;
+const {
+  title = "QuartzReport",
+  description = "QuartzReport : actualités, analyses, tests et comparatifs.",
+  article = false,
+  image,
+  articleData,
+} = Astro.props;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const socialImage = image ? new URL(image, Astro.site).toString() : undefined;
+const socialImageAlt = articleData?.imageAlt || `Illustration de l'article ${articleData?.title || title}`;
+const jsonLd = article && articleData
+  ? {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      headline: articleData.title,
+      description,
+      image: socialImage ? [socialImage] : undefined,
+      datePublished: articleData.publishedAt.toISOString(),
+      ...(articleData.modifiedAt ? { dateModified: articleData.modifiedAt.toISOString() } : {}),
+      author: { "@type": "Person", name: articleData.author },
+      articleSection: articleData.category,
+      mainEntityOfPage: { "@type": "WebPage", "@id": canonical.toString() },
+      publisher: { "@type": "Organization", name: "Quartz Report", url: Astro.site.toString() },
+    }
+  : undefined;
 ---
 
 <!doctype html>
@@ -20,7 +42,19 @@ const socialImage = image ? new URL(image, Astro.site).toString() : undefined;
     <meta property="og:type" content={article ? "article" : "website"} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="fr_FR" />
     {socialImage && <meta property="og:image" content={socialImage} />}
+    {socialImage && <meta property="og:image:secure_url" content={socialImage} />}
+    {socialImage && <meta property="og:image:alt" content={socialImageAlt} />}
+    {articleData && <meta property="article:published_time" content={articleData.publishedAt.toISOString()} />}
+    {articleData?.category && <meta property="article:section" content={articleData.category} />}
+    <meta name="twitter:card" content={socialImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {socialImage && <meta name="twitter:image" content={socialImage} />}
+    {socialImage && <meta name="twitter:image:alt" content={socialImageAlt} />}
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/framework7-icons/css/framework7-icons.css" />
   </head>
   <body>

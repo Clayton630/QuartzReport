@@ -13,7 +13,19 @@ const date = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", y
 const cover = optimizedImageUrl(article.thumbnail, 1280);
 ---
 
-<BaseLayout title={`${article.title} – Quartz Report`} description={article.description} image={cover} article>
+<BaseLayout
+  title={`${article.title} – Quartz Report`}
+  description={article.description}
+  image={cover}
+  article
+  articleData={{
+    title: article.title,
+    author: article.author,
+    category: article.category,
+    publishedAt: article.date,
+    imageAlt: `Illustration de l'article ${article.title}`,
+  }}
+>
   <Header />
   <main class="articles">
     <article class="article-full">
