@@ -165,12 +165,13 @@ async function htmlForArticle(markdown) {
   const matches = [...safeHtml.matchAll(/<img\s+([^>]*?)src="(\/img\/uploads\/[^\"]+)"([^>]*)>/gi)];
   const replacements = await Promise.all(matches.map(async (match) => {
     const [, before, source, after] = match;
+    const remainingAttributes = after.replace(/\s*\/\s*$/u, "");
     const dimensions = await localImageDimensions(source);
     const srcset = optimizedImageSrcset(source, inlineImageWidths);
     const dimensionAttributes = imageDimensionAttributes(dimensions);
     return {
       source: match[0],
-      replacement: `<img ${before}src="${optimizedImageUrl(source, 1280)}"${after} srcset="${escapeHtmlAttribute(srcset)}" sizes="(max-width: 768px) 100vw, min(100vw, 1024px)"${dimensions ? ` width="${dimensionAttributes.width}" height="${dimensionAttributes.height}"` : ""} loading="lazy" decoding="async">`,
+      replacement: `<img ${before}src="${optimizedImageUrl(source, 1280)}"${remainingAttributes} srcset="${escapeHtmlAttribute(srcset)}" sizes="(max-width: 768px) 100vw, min(100vw, 1024px)"${dimensions ? ` width="${dimensionAttributes.width}" height="${dimensionAttributes.height}"` : ""} loading="lazy" decoding="async">`,
     };
   }));
   return replacements.reduce((html, { source, replacement }) => html.replace(source, replacement), safeHtml);
