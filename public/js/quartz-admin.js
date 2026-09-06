@@ -44,6 +44,14 @@
     }
     catch { return ""; }
   };
+  const adminGithubImageUrl = (value = "", revision = "") => {
+    try {
+      const path = new URL(String(value), window.location.origin).pathname;
+      const url = new URL(`https://raw.githubusercontent.com/${REPOSITORY}/${BRANCH}/public${path}`);
+      url.searchParams.set("v", revision || "admin");
+      return url.href;
+    } catch { return ""; }
+  };
 
   function getStoredToken() {
     try {
@@ -529,10 +537,7 @@
         attempts += 1;
         window.setTimeout(() => {
           const revision = image.dataset.adminRevision || "article";
-          const width = Number(image.dataset.adminImageWidth || 0);
-          image.src = attempts < 3
-            ? adminImageUrl(image.dataset.adminImage, revision, width, attempts)
-            : adminImageUrl(image.dataset.adminImage, revision, 0, attempts);
+          image.src = adminGithubImageUrl(image.dataset.adminImage, `${revision}-${attempts}`);
         }, 3000);
       });
     });
