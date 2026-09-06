@@ -16,7 +16,7 @@
 .qr-admin-login .qr-admin-primary { margin-top: 26px; width: 100%; }
 .qr-admin-header { position: relative; z-index: 20; display: flex; align-items: center; justify-content: space-between; min-height: 54px; padding: calc(12px + env(safe-area-inset-top)) var(--page-x-mobile) 12px; background: none; border: 0; }
 .qr-admin-brand { display: flex; align-items: center; }
-.qr-admin-brand img { display: block; width: auto; height: 23px; }
+.qr-admin-brand img { display: block; width: auto; height: 23px; filter: brightness(0); }
 .qr-admin-account { position: relative; display: grid; place-items: center; width: 38px; height: 38px; padding: 0; overflow: hidden; color: #171717; font-size: 23px; line-height: 1; background: transparent; border: 0; border-radius: 50%; cursor: pointer; }
 .qr-admin-account img { width: 100%; height: 100%; object-fit: cover; }
 .qr-admin-account-menu { position: absolute; z-index: 30; top: 56px; right: 18px; width: 190px; padding: 6px; background: #fff; border: 1px solid #dededb; border-radius: 13px; box-shadow: 0 14px 40px rgba(0,0,0,.15); }
@@ -57,6 +57,7 @@
 .qr-admin-form > label, .qr-admin-field-row > label, .qr-admin-modal label { display: grid; gap: 7px; color: #333; font-size: 14px; font-weight: 750; }
 .qr-admin-form small, .qr-admin-modal small { display: block; color: #777; font-size: 12px; font-weight: 500; line-height: 1.35; }
 .qr-admin-form input, .qr-admin-form textarea, .qr-admin-form select, .qr-admin-modal input { width: 100%; box-sizing: border-box; padding: 12px 13px; color: #1a1a1a; font: inherit; font-weight: 500; background: #fff; border: 1px solid #d4d4d0; border-radius: 11px; outline: none; }
+.qr-admin-form input[type="datetime-local"] { min-width: 0; max-width: 100%; inline-size: 100%; min-inline-size: 0; font-size: 16px; }
 .qr-admin-form input:focus, .qr-admin-form textarea:focus, .qr-admin-form select:focus, .qr-admin-modal input:focus { border-color: #171717; box-shadow: 0 0 0 3px rgba(0,0,0,.08); }
 .qr-admin-form textarea { min-height: 85px; resize: vertical; }
 .qr-admin-field-row { display: grid; gap: 20px; }
