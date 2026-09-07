@@ -19,6 +19,7 @@
   let currentArticle = null;
   let pendingCover = null;
   let stagedImages = new Map();
+  const transientImagePreviews = new Map();
   let savedInlineRange = null;
   let coverSelection = 0;
   let pendingPhoto = null;
@@ -276,7 +277,7 @@
       case "pre": return `\`\`\`\n${node.textContent}\n\`\`\`\n\n`;
       case "hr": return "---\n\n";
       case "img": {
-        const src = node.getAttribute("src") || "";
+        const src = node.dataset.qrPublishedSrc || node.getAttribute("src") || "";
         const alt = node.getAttribute("alt") || "";
         const title = node.getAttribute("title") || "";
         return /^(https?:\/\/|\/img\/uploads\/)/.test(src) ? `![${alt}](${src}${title ? ` \"${title}\"` : ""})\n\n` : "";
@@ -341,9 +342,8 @@
 
   function resolvePendingInlineImage(staged, wrapper) {
     const image = document.createElement("img");
-    image.src = staged.path; image.alt = "";
+    image.src = staged.previewUrl; image.dataset.qrPublishedSrc = staged.path; image.alt = "";
     wrapper.replaceWith(image);
-    URL.revokeObjectURL(staged.previewUrl);
     updateEditorState();
   }
 
@@ -597,7 +597,8 @@
   }
 
   function articleCard(article) {
-    const image = article.thumbnail ? `<img src="${escapeHtml(adminImageUrl(article.thumbnail, article.sha, 320))}" data-admin-image="${escapeHtml(article.thumbnail)}" data-admin-image-revision="${escapeHtml(article.sha)}" data-admin-image-width="320" alt="" loading="lazy">` : "<span class=\"qr-admin-card__placeholder\">Article</span>";
+    const preview = transientImagePreviews.get(article.thumbnail);
+    const image = article.thumbnail ? `<img src="${escapeHtml(preview || adminImageUrl(article.thumbnail, article.sha, 320))}"${preview ? "" : ` data-admin-image="${escapeHtml(article.thumbnail)}" data-admin-image-revision="${escapeHtml(article.sha)}" data-admin-image-width="320"`} alt="" loading="lazy">` : "<span class=\"qr-admin-card__placeholder\">Article</span>";
     return `<article class="qr-admin-card" data-edit="${escapeHtml(article.path)}">
       <div class="qr-admin-card__image">${image}</div>
       <div class="qr-admin-card__content">
@@ -678,7 +679,7 @@
           <label>Titre <input name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article"></label>
           <label>Résumé <small>Il apparaît sur la page d’accueil et dans les aperçus partagés.</small><textarea name="description" maxlength="300" required placeholder="Expliquez brièvement le sujet de l’article.">${escapeHtml(current.description)}</textarea></label>
           <div class="qr-admin-field-row"><label>Catégorie <select name="category">${CATEGORIES.map((category) => `<option ${category === current.category ? "selected" : ""}>${category}</option>`).join("")}</select></label><label class="qr-admin-feature-toggle"><input name="important" type="checkbox" ${current.important ? "checked" : ""}><span><strong>Mettre en avant</strong><small>Affiche l’article dans la sélection principale de l’accueil.</small></span></label></div>
-          <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? `<img src="${escapeHtml(adminImageUrl(current.thumbnail, article?.sha, 1200))}" data-admin-image="${escapeHtml(current.thumbnail)}" data-admin-image-revision="${escapeHtml(article?.sha || "article")}" data-admin-image-width="1200" alt="">` : "Aucune image sélectionnée"}</span></label>
+          <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? (() => { const preview = transientImagePreviews.get(current.thumbnail); return `<img src="${escapeHtml(preview || adminImageUrl(current.thumbnail, article?.sha, 1200))}"${preview ? "" : ` data-admin-image="${escapeHtml(current.thumbnail)}" data-admin-image-revision="${escapeHtml(article?.sha || "article")}" data-admin-image-width="1200"`} alt="">`; })() : "Aucune image sélectionnée"}</span></label>
           <label class="qr-admin-content-label">Contenu <small>Écrivez directement votre article tel qu’il sera lu.</small></label>
           ${editorToolbar()}
           <div class="qr-admin-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-editor-body>${markdownToHtml(current.body)}</div>
@@ -698,6 +699,10 @@
     coverSelection = 0;
     editorDirty = false;
     root.innerHTML = editorTemplate(article);
+    root.querySelectorAll("[data-editor-body] img").forEach((image) => {
+      const preview = transientImagePreviews.get(image.getAttribute("src"));
+      if (preview) { image.dataset.qrPublishedSrc = image.getAttribute("src"); image.src = preview; }
+    });
     bindAdminHeader();
     bindAdminImages();
     root.querySelector("[data-back]").addEventListener("click", () => {
@@ -841,6 +846,9 @@
       const markdown = editorMarkdown();
       const source = `---\ntitle: ${escapeYaml(title)}\ndate: ${date}\nauthor: ${escapeYaml(author)}\n${authorGithubId ? `author_github_id: ${escapeYaml(authorGithubId)}\n` : ""}description: ${escapeYaml(form.elements.description.value.trim())}\n${cover ? `thumbnail: ${escapeYaml(cover)}\n` : ""}important: ${form.elements.important.checked}\ncategory: ${escapeYaml(form.elements.category.value)}\n---\n${markdown}\n`;
       const path = currentArticle?.path || `articles/${slugify(title)}.md`;
+      for (const image of stagedImages.values()) {
+        if (image.status === "ready" && image.isNew && image.previewUrl) transientImagePreviews.set(image.path, image.previewUrl);
+      }
       const removedImageCount = await commitArticleWithCleanup({ path, source, title, previousSource: currentArticle?.source || "" });
       notice(`Article publié${removedImageCount ? ` ; ${removedImageCount} image${removedImageCount > 1 ? "s" : ""} inutilisée${removedImageCount > 1 ? "s" : ""} supprimée${removedImageCount > 1 ? "s" : ""}.` : "."} Il sera visible sur Quartz Report dans environ une minute.`);
       await loadArticles(); setHistory("dashboard", {}, true); renderDashboard();
