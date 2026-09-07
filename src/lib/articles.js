@@ -8,6 +8,7 @@ import {
   localImageDimensions,
   optimizedImageSrcset,
   optimizedImageUrl,
+  originalImageUrl,
   placeholderImage,
 } from "./images.js";
 
@@ -96,7 +97,7 @@ async function htmlForArticle(markdown) {
     const dimensionAttributes = imageDimensionAttributes(dimensions);
     return {
       source: match[0],
-      replacement: `<img ${before}src="${optimizedImageUrl(source, 1280)}"${remainingAttributes} srcset="${escapeHtmlAttribute(srcset)}" sizes="(max-width: 768px) 100vw, min(100vw, 1024px)"${dimensions ? ` width="${dimensionAttributes.width}" height="${dimensionAttributes.height}"` : ""} loading="lazy" decoding="async">`,
+      replacement: `<img ${before}src="${optimizedImageUrl(source, 1280)}" data-image-fallback="${escapeHtmlAttribute(originalImageUrl(source))}"${remainingAttributes} srcset="${escapeHtmlAttribute(srcset)}" sizes="(max-width: 768px) 100vw, min(100vw, 1024px)"${dimensions ? ` width="${dimensionAttributes.width}" height="${dimensionAttributes.height}"` : ""} loading="lazy" decoding="async">`,
     };
   }));
   return replacements.reduce((html, { source, replacement }) => html.replace(source, replacement), safeHtml);
@@ -144,6 +145,6 @@ export async function getArticles() {
   return uniqueArticles.sort((a, b) => b.date - a.date);
 }
 
-export { coverImageWidths, imageDimensionAttributes, optimizedImageSrcset, optimizedImageUrl } from "./images.js";
+export { coverImageWidths, imageDimensionAttributes, optimizedImageSrcset, optimizedImageUrl, originalImageUrl } from "./images.js";
 
 export const __test = { articleDate, articleSlug, parseFrontMatter };

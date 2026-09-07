@@ -13,5 +13,6 @@ Cette liste rassemble les améliorations volontairement reportées. Elles ne son
 
 ## À traiter plus tard, avec précaution
 
+- [ ] Accepter puis compresser automatiquement les photos de profil trop lourdes avant leur envoi, au lieu de les refuser ; conserver une petite photo carrée de bonne qualité.
 - [ ] Refaire l’interface d’administration et de rédaction, sans modifier le système actuel avant qu’une nouvelle version soit prête.
 - [ ] Améliorer progressivement l’accessibilité : descriptions utiles des images, catégories compréhensibles par lecteur d’écran et structure HTML plus sémantique.

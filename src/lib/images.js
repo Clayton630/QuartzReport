@@ -28,6 +28,11 @@ function encodedUploadPath(value) {
   }
 }
 
+function originalImageUrl(value) {
+  if (typeof value !== "string" || !value.trim()) return placeholderImage;
+  return isLocalUpload(value) ? encodedUploadPath(value) : value;
+}
+
 function optimizedImageUrl(value, width = 1280) {
   if (typeof value !== "string" || !value.trim()) return placeholderImage;
   if (!isLocalUpload(value)) return value;
@@ -113,6 +118,7 @@ export {
   localImageDimensions,
   optimizedImageSrcset,
   optimizedImageUrl,
+  originalImageUrl,
   placeholderImage,
 };
 

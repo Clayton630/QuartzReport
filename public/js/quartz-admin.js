@@ -8,6 +8,8 @@
   const isPreview = BRANCH !== "main";
   const STORAGE_KEY = "decap-cms-user";
   const MEDIA_CATALOG_PATH = "data/media-catalog.json";
+  const MAX_SOURCE_IMAGE_BYTES = 50 * 1024 * 1024;
+  const MAX_PUBLISHED_IMAGE_BYTES = 24 * 1024 * 1024;
   const CATEGORIES = ["Apple", "Comparatif", "Review", "Analyse", "Autre"];
   const root = document.getElementById("quartz-admin");
   let token = null;
@@ -361,19 +363,57 @@
 
   async function inspectImage(file) {
     if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
-    if (file.size > 12 * 1024 * 1024) throw new Error("Cette image dépasse 12 Mo.");
+    if (file.size > MAX_SOURCE_IMAGE_BYTES) throw new Error("Cette image dépasse la limite de 50 Mo.");
     const sourceBytes = new Uint8Array(await file.arrayBuffer());
     const sourceDigest = await crypto.subtle.digest("SHA-256", sourceBytes);
     const sourceSha256 = [...new Uint8Array(sourceDigest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
     const sourceUrl = URL.createObjectURL(file);
     const image = new Image();
     await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = sourceUrl; });
-    const outputType = file.type === "image/png" ? "image/png" : file.type;
-    const normalizedCanvas = document.createElement("canvas"); normalizedCanvas.width = image.naturalWidth; normalizedCanvas.height = image.naturalHeight;
-    normalizedCanvas.getContext("2d").drawImage(image, 0, 0);
-    const normalized = await new Promise((resolve) => normalizedCanvas.toBlob(resolve, outputType, outputType === "image/png" ? undefined : 0.96));
+    const render = async (width, height, type, quality) => {
+      const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, type, quality));
+      if (!blob) throw new Error("Impossible de préparer cette image.");
+      return blob;
+    };
+    let outputType = file.type;
+    let width = image.naturalWidth;
+    let height = image.naturalHeight;
+    let normalized = await render(width, height, outputType, outputType === "image/png" ? undefined : 0.96);
+    let compressed = normalized.size < file.size;
+    if (normalized.size > MAX_PUBLISHED_IMAGE_BYTES) {
+      const scaleSteps = [0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.32, 0.25];
+      const qualitySteps = outputType === "image/png" ? [undefined] : [0.96, 0.92, 0.88, 0.84, 0.8, 0.76];
+      let done = false;
+      for (const scale of scaleSteps) {
+        const nextWidth = Math.max(1, Math.round(image.naturalWidth * scale));
+        const nextHeight = Math.max(1, Math.round(image.naturalHeight * scale));
+        for (const quality of qualitySteps) {
+          const candidate = await render(nextWidth, nextHeight, outputType, quality);
+          if (candidate.size <= MAX_PUBLISHED_IMAGE_BYTES) {
+            normalized = candidate; width = nextWidth; height = nextHeight; compressed = true; done = true; break;
+          }
+        }
+        if (done) break;
+      }
+      if (!done && outputType === "image/png") {
+        outputType = "image/webp";
+        for (const scale of scaleSteps) {
+          const nextWidth = Math.max(1, Math.round(image.naturalWidth * scale));
+          const nextHeight = Math.max(1, Math.round(image.naturalHeight * scale));
+          for (const quality of [0.96, 0.92, 0.88, 0.84, 0.8, 0.76]) {
+            const candidate = await render(nextWidth, nextHeight, outputType, quality);
+            if (candidate.size <= MAX_PUBLISHED_IMAGE_BYTES) {
+              normalized = candidate; width = nextWidth; height = nextHeight; compressed = true; done = true; break;
+            }
+          }
+          if (done) break;
+        }
+      }
+      if (!done) { URL.revokeObjectURL(sourceUrl); throw new Error("Impossible de réduire cette image sous 24 Mo."); }
+    }
     URL.revokeObjectURL(sourceUrl);
-    if (!normalized) throw new Error("Impossible de préparer cette image.");
     const bytes = new Uint8Array(await normalized.arrayBuffer());
     const digest = await crypto.subtle.digest("SHA-256", bytes);
     const previewUrl = URL.createObjectURL(normalized);
@@ -391,7 +431,7 @@
       }
       hash += value.toString(16).padStart(2, "0");
     }
-    return { bytes, previewUrl, mimeType: outputType, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), sourceSha256, width: image.naturalWidth, height: image.naturalHeight, bytes: normalized.size, dhash: hash } };
+    return { bytes, previewUrl, mimeType: outputType, compressed, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), sourceSha256, width, height, bytes: normalized.size, dhash: hash } };
   }
 
   function hammingDistance(left, right) {
@@ -452,6 +492,7 @@
         loadMediaCatalog(),
       ]);
       staged.blobSha = blob.sha;
+      if (inspected.compressed) notice("Image compressée automatiquement pour rester sous 24 Mo.");
       const match = findSimilarImage(staged.meta, catalog);
       if (match?.exact) {
         staged.path = match.image.path; staged.isNew = false;
@@ -462,7 +503,6 @@
         if (choice === "existing") { staged.path = match.image.path; staged.isNew = false; }
         else if (imageQuality(staged.meta) > imageQuality(match.image)) { staged.path = match.image.path; staged.replaceExisting = true; }
       }
-      if (staged.isNew) await persistStagedImage(staged, catalog);
       staged.status = "ready";
       return staged;
     } catch (error) {
@@ -733,25 +773,6 @@
     return blob.sha;
   }
 
-  async function persistStagedImage(staged, catalog) {
-    const currentRef = await request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${encodeURIComponent(BRANCH)}`);
-    const parent = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits/${currentRef.object.sha}`);
-    const nextCatalog = { version: 1, images: [...catalog.images] };
-    const catalogEntry = { path: staged.path, ...staged.meta };
-    const previousIndex = nextCatalog.images.findIndex((image) => image.path === staged.path);
-    if (previousIndex >= 0) nextCatalog.images.splice(previousIndex, 1, catalogEntry);
-    else nextCatalog.images.push(catalogEntry);
-    const catalogBlob = await createGitBlob(`${JSON.stringify(nextCatalog, null, 2)}\n`);
-    const entries = [
-      { path: `public${staged.path}`, mode: "100644", type: "blob", sha: staged.blobSha },
-      { path: MEDIA_CATALOG_PATH, mode: "100644", type: "blob", sha: catalogBlob },
-    ];
-    const tree = await request(`https://api.github.com/repos/${REPOSITORY}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: parent.tree.sha, tree: entries }) });
-    const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message: `Ajouter l’image ${staged.fileName}`, tree: tree.sha, parents: [currentRef.object.sha] }) });
-    await request(`https://api.github.com/repos/${REPOSITORY}/git/refs/heads/${encodeURIComponent(BRANCH)}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) });
-    staged.commitSha = commit.sha;
-  }
-
   async function loadArticleSources(ref) {
     const listing = await request(`https://api.github.com/repos/${REPOSITORY}/contents/articles?ref=${encodeURIComponent(ref)}`);
     return Promise.all(listing
@@ -774,7 +795,16 @@
     if (!deleting) nextSources.push(source);
     const referenced = new Set(nextSources.flatMap((articleSource) => [...uploadPathsInSource(articleSource)]));
     const unusedPaths = [...uploadPathsInSource(previousSource)].filter((imagePath) => !referenced.has(imagePath));
+    const stagedByPath = new Map([...stagedImages.values()]
+      .filter((image) => !deleting && image.status === "ready" && image.isNew && image.blobSha && referenced.has(image.path))
+      .map((image) => [image.path, image]));
     const nextImages = catalog.images.filter((image) => !unusedPaths.includes(image.path));
+    for (const staged of stagedByPath.values()) {
+      const entry = { path: staged.path, ...staged.meta };
+      const existingIndex = nextImages.findIndex((image) => image.path === staged.path);
+      if (existingIndex >= 0) nextImages.splice(existingIndex, 1, entry);
+      else nextImages.push(entry);
+    }
     const treeEntries = [];
 
     if (deleting) {
@@ -782,8 +812,9 @@
     } else {
       treeEntries.push({ path, mode: "100644", type: "blob", sha: await createGitBlob(source) });
     }
+    for (const staged of stagedByPath.values()) treeEntries.push({ path: `public${staged.path}`, mode: "100644", type: "blob", sha: staged.blobSha });
     for (const imagePath of unusedPaths) treeEntries.push({ path: `public${imagePath}`, mode: "100644", type: "blob", sha: null });
-    if (nextImages.length !== catalog.images.length) {
+    if (nextImages.length !== catalog.images.length || stagedByPath.size) {
       treeEntries.push({ path: MEDIA_CATALOG_PATH, mode: "100644", type: "blob", sha: await createGitBlob(`${JSON.stringify({ version: 1, images: nextImages }, null, 2)}\n`) });
     }
 
