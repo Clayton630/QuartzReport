@@ -9,6 +9,12 @@
       "database_name": "quartzreport-profiles",
       "database_id": "abacd763-ac11-49dd-be84-a641edfccec5",
       "migrations_dir": "migrations"
+    },
+    {
+      "binding": "DRAFTS_DB",
+      "database_name": "quartzreport-drafts",
+      "database_id": "d9a5d516-b677-44b2-a868-de31183a2b58",
+      "migrations_dir": "drafts-migrations"
     }
   ],
   "observability": {

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://unpkg.com/wrangler@4/config-schema.json",
+  "name": "quartzreport-drafts-local",
+  "main": "index.js",
+  "compatibility_date": "2026-09-05",
+  "d1_databases": [
+    {
+      "binding": "DRAFTS_DB",
+      "database_name": "quartzreport-drafts-local",
+      "database_id": "11111111-1111-4111-8111-111111111111",
+      "migrations_dir": "drafts-migrations"
+    }
+  ]
+}

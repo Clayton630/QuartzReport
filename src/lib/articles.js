@@ -84,8 +84,8 @@ function escapeHtmlAttribute(value) {
 async function htmlForArticle(markdown) {
   const rawHtml = marked.parse(markdown);
   const safeHtml = sanitizeHtml(rawHtml, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2"]),
-    allowedAttributes: { a: ["href", "title"], img: ["src", "alt", "title"] },
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img", "h1", "h2", "input"]),
+    allowedAttributes: { a: ["href", "title"], img: ["src", "alt", "title"], input: ["type", "checked", "disabled"] },
     allowedSchemes: ["http", "https"],
   });
   const matches = [...safeHtml.matchAll(/<img\s+([^>]*?)src="(\/img\/uploads\/[^\"]+)"([^>]*)>/gi)];

@@ -9,6 +9,7 @@ const coverImageWidths = [768, 1280, 1920, 2560];
 const inlineImageWidths = [480, 768, 1280, 1920];
 const imageDimensionsCache = new Map();
 const nonTransformableUploads = new Set(mediaCatalog.images.filter((image) => image.transformable === false).map((image) => image.path));
+const useLocalImageFiles = Boolean(import.meta.env?.DEV);
 
 function isLocalUpload(value) {
   return (
@@ -36,12 +37,14 @@ function originalImageUrl(value) {
 function optimizedImageUrl(value, width = 1280) {
   if (typeof value !== "string" || !value.trim()) return placeholderImage;
   if (!isLocalUpload(value)) return value;
+  if (useLocalImageFiles) return encodedUploadPath(value);
   if (nonTransformableUploads.has(value)) return encodedUploadPath(value);
   return `/cdn-cgi/image/width=${width},quality=${imageQuality},format=webp${encodedUploadPath(value)}`;
 }
 
 function optimizedImageSrcset(value, widths) {
   if (!isLocalUpload(value)) return undefined;
+  if (useLocalImageFiles) return undefined;
   if (nonTransformableUploads.has(value)) return undefined;
   return widths.map((width) => `${optimizedImageUrl(value, width)} ${width}w`).join(", ");
 }

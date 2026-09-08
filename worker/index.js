@@ -15,9 +15,15 @@ const PROFILE_MAX_PHONE_LENGTH = 40;
 const PROFILE_MAX_LINKS = 4;
 const PROFILE_MAX_LINK_LENGTH = 2048;
 const PROFILE_MAX_PHOTO_BASE64_LENGTH = 350_000;
+const DRAFT_MAX_PAYLOAD_BYTES = 400_000;
+const LOCAL_DEVELOPMENT_ORIGINS = new Set([
+  "http://localhost:4321",
+  "http://192.168.1.204:4321",
+]);
 
 function isAllowedOrigin(origin) {
   return (
+    LOCAL_DEVELOPMENT_ORIGINS.has(origin) ||
     origin === SITE_ORIGIN ||
     origin === "https://www.quartzreport.fr" ||
     origin === PAGES_ASSET_ORIGIN ||
@@ -108,7 +114,8 @@ function oauthTargetOrigin(request) {
   const siteId = url.searchParams.get("site_id");
   if (siteId) {
     try {
-      const origin = new URL(`https://${siteId}`).origin;
+      const isLocalDevelopmentHost = siteId === "localhost:4321" || siteId === "192.168.1.204:4321";
+      const origin = new URL(`${isLocalDevelopmentHost ? "http" : "https"}://${siteId}`).origin;
       if (isAllowedOrigin(origin)) return origin;
     } catch {
       // Fall through to the referrer, then to the production site.
@@ -363,6 +370,86 @@ async function profileRequestData(request) {
   }
 }
 
+function draftError(message, request, status = 400) {
+  return jsonResponse({ error: message }, request, { status, headers: { "Cache-Control": "no-store" } });
+}
+
+function isDraftId(value) {
+  return typeof value === "string" && /^[a-zA-Z0-9_-]{8,80}$/u.test(value);
+}
+
+function cleanDraftInput(data) {
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("Brouillon invalide");
+  const text = (value, limit, label) => {
+    if (value === undefined || value === null) return "";
+    if (typeof value !== "string" || value.length > limit) throw new Error(`${label} invalide`);
+    return value;
+  };
+  const category = text(data.category, 80, "Catégorie") || "Autre";
+  const payload = {
+    title: text(data.title, 160, "Titre"),
+    description: text(data.description, 300, "Résumé"),
+    category,
+    important: data.important === true,
+    body: text(data.body, 300_000, "Contenu"),
+    thumbnail: text(data.thumbnail, 4096, "Image de couverture"),
+  };
+  return payload;
+}
+
+async function handleDrafts(request, env, draftId = null) {
+  if (!env.DRAFTS_DB) return draftError("Les brouillons ne sont pas configurés ici", request, 503);
+  const user = await authenticatedGitHubUser(request);
+  if (!user) return draftError("Connexion GitHub requise", request, 401);
+
+  if (!draftId && request.method === "GET") {
+    const { results } = await env.DRAFTS_DB.prepare(
+      "SELECT draft_id, payload_json, created_at, updated_at FROM contributor_drafts WHERE github_id = ? ORDER BY updated_at DESC",
+    ).bind(user.id).all();
+    const drafts = results.map((row) => ({
+      id: row.draft_id,
+      ...JSON.parse(row.payload_json),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
+    return jsonResponse({ drafts }, request, { headers: { "Cache-Control": "no-store" } });
+  }
+
+  if (!draftId || !isDraftId(draftId)) return draftError("Brouillon introuvable", request, 404);
+  if (request.method === "GET") {
+    const row = await env.DRAFTS_DB.prepare(
+      "SELECT draft_id, payload_json, created_at, updated_at FROM contributor_drafts WHERE draft_id = ? AND github_id = ?",
+    ).bind(draftId, user.id).first();
+    if (!row) return draftError("Brouillon introuvable", request, 404);
+    return jsonResponse({ draft: { id: row.draft_id, ...JSON.parse(row.payload_json), createdAt: row.created_at, updatedAt: row.updated_at } }, request, { headers: { "Cache-Control": "no-store" } });
+  }
+  if (request.method === "DELETE") {
+    const result = await env.DRAFTS_DB.prepare("DELETE FROM contributor_drafts WHERE draft_id = ? AND github_id = ?").bind(draftId, user.id).run();
+    if (!result.meta.changes) return draftError("Brouillon introuvable", request, 404);
+    return jsonResponse({ deleted: true }, request, { headers: { "Cache-Control": "no-store" } });
+  }
+  if (request.method !== "PUT") return draftError("Méthode non autorisée", request, 405);
+  try {
+    const payload = cleanDraftInput(await profileRequestData(request));
+    const raw = JSON.stringify(payload);
+    if (raw.length > DRAFT_MAX_PAYLOAD_BYTES) throw new Error("Brouillon trop lourd");
+    await env.DRAFTS_DB.prepare(
+      `INSERT INTO contributor_drafts (draft_id, github_id, github_login, payload_json, created_at, updated_at)
+       VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+       ON CONFLICT(draft_id) DO UPDATE SET
+         payload_json = excluded.payload_json, github_login = excluded.github_login, updated_at = CURRENT_TIMESTAMP
+       WHERE contributor_drafts.github_id = excluded.github_id`,
+    ).bind(draftId, user.id, user.login, raw).run();
+    const row = await env.DRAFTS_DB.prepare(
+      "SELECT draft_id, payload_json, created_at, updated_at FROM contributor_drafts WHERE draft_id = ? AND github_id = ?",
+    ).bind(draftId, user.id).first();
+    if (!row) return draftError("Ce brouillon appartient à un autre compte", request, 403);
+    return jsonResponse({ draft: { id: row.draft_id, ...JSON.parse(row.payload_json), createdAt: row.created_at, updatedAt: row.updated_at } }, request, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    return draftError(error instanceof Error ? error.message : "Brouillon invalide", request);
+  }
+}
+
 async function handleOwnProfile(request, env) {
   const user = await authenticatedGitHubUser(request);
   if (!user) return profileError("Connexion GitHub requise", request, 401);
@@ -516,6 +603,12 @@ export default {
       return handleOwnProfile(request, env);
     }
 
+    if (url.pathname === "/api/drafts" || url.pathname.startsWith("/api/drafts/")) {
+      if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders(request) });
+      if (!isAllowedOrigin(request.headers.get("Origin"))) return new Response("Forbidden", { status: 403 });
+      return handleDrafts(request, env, url.pathname === "/api/drafts" ? null : url.pathname.slice("/api/drafts/".length));
+    }
+
     if (url.pathname === "/api/profiles") {
       if (request.method === "OPTIONS") return new Response(null, { headers: corsHeaders(request) });
       if (request.method !== "GET") return profileError("Méthode non autorisée", request, 405);
@@ -554,4 +647,6 @@ export const __test = {
   isArticleFile,
   hasOnlyPublicRepoScope,
   oauthTargetOrigin,
+  cleanDraftInput,
+  isDraftId,
 };

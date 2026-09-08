@@ -52,6 +52,7 @@ test("OAuth callback only targets QuartzReport origins", () => {
   );
 
   assert.equal(__test.oauthTargetOrigin(previewRequest), "https://2e42426c.quartzreport.pages.dev");
+  assert.equal(__test.oauthTargetOrigin(new Request("https://quartzreport-oauth.claytonelhorga.workers.dev/auth?site_id=localhost:4321")), "http://localhost:4321");
   assert.equal(__test.oauthTargetOrigin(externalRequest), "https://quartzreport.fr");
   assert.equal(__test.oauthTargetOrigin(malformedRequest), "https://quartzreport.pages.dev");
 });
@@ -61,5 +62,7 @@ test("only QuartzReport origins receive API CORS access", () => {
   assert.equal(__test.isAllowedOrigin("https://www.quartzreport.fr"), true);
   assert.equal(__test.isAllowedOrigin("https://quartzreport.pages.dev"), true);
   assert.equal(__test.isAllowedOrigin("https://20859af1.quartzreport.pages.dev"), true);
+  assert.equal(__test.isAllowedOrigin("http://localhost:4321"), true);
+  assert.equal(__test.isAllowedOrigin("http://192.168.1.204:4321"), true);
   assert.equal(__test.isAllowedOrigin("https://example.com"), false);
 });

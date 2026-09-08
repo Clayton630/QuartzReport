@@ -1,3 +1,15 @@
+import { Editor, mergeAttributes } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+import { Table } from "@tiptap/extension-table";
+import TableRow from "@tiptap/extension-table-row";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import { Markdown } from "@tiptap/markdown";
+
 (() => {
   const API = "https://quartzreport-oauth.claytonelhorga.workers.dev";
   const REPOSITORY = "Clayton630/QuartzReport";
@@ -5,16 +17,39 @@
     "admin-redesign.quartzreport.pages.dev": "admin-redesign",
   };
   const BRANCH = PREVIEW_BRANCHES[window.location.host] || "main";
+  const isLocalLab = window.location.hostname === "localhost" || /^192\.168\./.test(window.location.hostname);
+  const LOCAL_HOST = window.location.hostname;
+  const DRAFT_API = isLocalLab ? `http://${LOCAL_HOST}:8787` : API;
+  const DRAFT_MEDIA_API = isLocalLab ? `http://${LOCAL_HOST}:8788` : "";
   const isPreview = BRANCH !== "main";
   const STORAGE_KEY = "decap-cms-user";
   const MEDIA_CATALOG_PATH = "data/media-catalog.json";
   const MAX_SOURCE_IMAGE_BYTES = 50 * 1024 * 1024;
   const MAX_PUBLISHED_IMAGE_BYTES = 24 * 1024 * 1024;
   const CATEGORIES = ["Apple", "Comparatif", "Review", "Analyse", "Autre"];
+  const QuartzImage = Image.extend({
+    addAttributes() {
+      return {
+        ...this.parent?.(),
+        previewSrc: {
+          default: null,
+          parseHTML: (element) => element.getAttribute("data-qr-preview-src"),
+        },
+      };
+    },
+    renderHTML({ HTMLAttributes }) {
+      const { previewSrc, src, ...attributes } = HTMLAttributes;
+      return ["img", mergeAttributes(attributes, {
+        src: previewSrc || src,
+        ...(previewSrc && src ? { "data-qr-published-src": src } : {}),
+      })];
+    },
+  });
   const root = document.getElementById("quartz-admin");
   let token = null;
   let profile = null;
   let articles = [];
+  let drafts = [];
   let publicProfiles = {};
   let currentArticle = null;
   let pendingCover = null;
@@ -24,6 +59,10 @@
   let coverSelection = 0;
   let pendingPhoto = null;
   let editorDirty = false;
+  let richEditor = null;
+
+  const isDraft = (article) => Boolean(article?.isDraft);
+  const newDraftId = () => `draft_${crypto.randomUUID().replaceAll("-", "")}`;
 
   const escapeHtml = (value = "") => String(value)
     .replaceAll("&", "&amp;")
@@ -39,6 +78,10 @@
   const adminImageUrl = (value = "", revision = "", width = 0, retry = "") => {
     try {
       const original = new URL(String(value), window.location.origin);
+      if (window.location.hostname === "localhost" || /^192\.168\./.test(window.location.hostname)) {
+        original.searchParams.set("v", revision || "admin");
+        return original.href;
+      }
       const url = width ? new URL(`/cdn-cgi/image/width=${width},quality=80,format=webp${original.pathname}`, window.location.origin) : original;
       url.searchParams.set("v", revision || "admin");
       if (retry) url.searchParams.set("retry", retry);
@@ -70,6 +113,7 @@
   }
 
   function logout() {
+    exitEditorFullscreen();
     localStorage.removeItem(STORAGE_KEY);
     sessionStorage.removeItem("decap-cms-auth");
     token = null;
@@ -78,16 +122,33 @@
   }
 
   function setHistory(view, data = {}, replace = false) {
-    const state = { quartzAdmin: true, view, ...data };
+    const currentDepth = Number.isInteger(history.state?.quartzAdminDepth) ? history.state.quartzAdminDepth : 0;
+    const state = { quartzAdmin: true, quartzAdminDepth: replace ? currentDepth : currentDepth + 1, view, ...data };
     history[replace ? "replaceState" : "pushState"](state, "", window.location.href);
   }
 
   function goBackToDashboard() {
-    if (history.state?.quartzAdmin && history.state.view !== "dashboard") history.back();
-    else renderDashboard();
+    exitEditorFullscreen();
+    history.replaceState({ quartzAdmin: true, quartzAdminDepth: 0, view: "dashboard" }, "", window.location.href);
+    renderDashboard();
+  }
+
+  function exitEditorFullscreen() {
+    const composer = root.querySelector("[data-composer].is-fullscreen");
+    composer?.classList.remove("is-fullscreen");
+    document.body.classList.remove("qr-admin-composer-fullscreen");
+    const button = root.querySelector("[data-fullscreen]");
+    if (!button) return;
+    button.textContent = "⛶";
+    button.title = "Plein écran";
+    button.setAttribute("aria-label", button.title);
+    button.setAttribute("aria-pressed", "false");
   }
 
   async function request(url, options = {}) {
+    if (isLocalLab && !["GET", "HEAD"].includes(options.method || "GET")) {
+      throw new Error("L’environnement local est protégé : il ne peut pas modifier le vrai site.");
+    }
     const response = await fetch(url, {
       ...options,
       cache: "no-store",
@@ -104,6 +165,9 @@
   }
 
   async function profileRequest(path, options = {}) {
+    if (isLocalLab && !["GET", "HEAD"].includes(options.method || "GET")) {
+      throw new Error("L’environnement local est protégé : il ne peut pas modifier le vrai profil.");
+    }
     const response = await fetch(`${API}${path}`, {
       ...options,
       headers: {
@@ -114,6 +178,26 @@
     const body = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(body.error || "Impossible de charger votre profil.");
     return body;
+  }
+
+  async function draftRequest(path, options = {}) {
+    const response = await fetch(`${DRAFT_API}${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(options.headers || {}),
+      },
+    });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || "Impossible de gérer le brouillon.");
+    return body;
+  }
+
+  async function loadDrafts() {
+    if (!isLocalLab) { drafts = []; return; }
+    const result = await draftRequest("/api/drafts");
+    drafts = (result.drafts || []).map((draft) => ({ ...draft, isDraft: true, author: profile.name, authorDisplayName: profile.name, authorGithubId: profile.githubId, date: draft.createdAt || new Date().toISOString() }));
   }
 
   function notice(message, type = "success") {
@@ -131,9 +215,9 @@
         <div>
           <p class="qr-admin-eyebrow">Administration</p>
           <h1>Rédigez et publiez.</h1>
-          <p>Connectez-vous avec GitHub pour accéder à l’espace contributeur.</p>
+          <p>Connectez-vous avec GitHub pour accéder à votre espace rédacteur.</p>
           ${error ? `<p class="qr-admin-form-error">${escapeHtml(error)}</p>` : ""}
-          <button class="qr-admin-primary" type="button" data-login>Se connecter avec GitHub</button>
+          <button class="qr-admin-primary qr-admin-login-button" type="button" data-login><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .6A11.4 11.4 0 0 0 8.4 22.8c.57.11.78-.25.78-.55v-2.15c-3.17.69-3.84-1.34-3.84-1.34-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.33.96.1-.74.4-1.25.73-1.54-2.53-.29-5.2-1.27-5.2-5.65 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.03 0 0 .97-.31 3.14 1.17A10.9 10.9 0 0 1 12 6c.97 0 1.95.13 2.86.39 2.18-1.48 3.14-1.17 3.14-1.17.62 1.58.23 2.74.11 3.03.73.8 1.18 1.82 1.18 3.07 0 4.39-2.67 5.36-5.21 5.65.41.35.78 1.03.78 2.08v3.18c0 .3.21.66.79.55A11.4 11.4 0 0 0 12 .6Z"/></svg><span>Se connecter avec GitHub</span></button>
         </div>
       </section>`;
     root.querySelector("[data-login]").addEventListener("click", beginLogin);
@@ -165,10 +249,27 @@
 
   window.addEventListener("popstate", () => {
     if (!token || !profile) return;
+    // L'entrée supplémentaire ajoutée à l'ouverture du plein écran sert
+    // uniquement à permettre au bouton Retour du navigateur de le fermer.
+    if (document.querySelector("[data-composer].is-fullscreen")) {
+      exitEditorFullscreen();
+      return;
+    }
+    // Le retour natif iOS peut réafficher l'éditeur précédent : on efface
+    // systématiquement l'état visuel plein écran avant de reconstruire la vue.
+    exitEditorFullscreen();
     const state = history.state;
     if (!state?.quartzAdmin || state.view === "dashboard") { renderDashboard(); return; }
     if (state.view === "profile") { openProfile(Boolean(state.required), { push: false }); return; }
-    if (state.view === "editor") openEditor(articles.find((article) => article.path === state.path) || null, { push: false });
+    if (state.view === "drafts") { renderDrafts(); return; }
+    if (state.view === "editor") {
+      const item = state.draftId ? drafts.find((draft) => draft.id === state.draftId) : articles.find((article) => article.path === state.path);
+      openEditor(item || null, { push: false });
+    }
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") exitEditorFullscreen();
   });
 
   function parseFrontMatter(source) {
@@ -210,6 +311,7 @@
     result = escapeHtml(result);
     result = result.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
     result = result.replace(/`([^`]+)`/g, "<code>$1</code>");
+    result = result.replace(/~~([^~]+)~~/g, "<s>$1</s>");
     result = result.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     result = result.replace(/__([^_]+)__/g, "<strong>$1</strong>");
     result = result.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, "<em>$1</em>");
@@ -234,6 +336,27 @@
       if (heading) { const level = heading[1].length; output.push(`<h${level}>${inlineMarkdown(heading[2])}</h${level}>`); index += 1; continue; }
       if (/^---+$/.test(line.trim())) { output.push("<hr>"); index += 1; continue; }
       if (line.startsWith("> ")) { output.push(`<blockquote>${inlineMarkdown(line.slice(2))}</blockquote>`); index += 1; continue; }
+      const tableDivider = (value) => /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(value.trim());
+      if (line.includes("|") && index + 1 < lines.length && tableDivider(lines[index + 1])) {
+        const cells = (value) => value.trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
+        const headers = cells(line);
+        index += 2;
+        const rows = [];
+        while (index < lines.length && lines[index].includes("|") && lines[index].trim()) rows.push(cells(lines[index++]));
+        output.push(`<div class="qr-admin-table-wrap"><table><thead><tr>${headers.map((cell) => `<th>${inlineMarkdown(cell)}</th>`).join("")}</tr></thead><tbody>${rows.map((row) => `<tr>${headers.map((_, cellIndex) => `<td>${inlineMarkdown(row[cellIndex] || "")}</td>`).join("")}</tr>`).join("")}</tbody></table></div>`);
+        continue;
+      }
+      const task = line.match(/^-\s+\[([ xX])\]\s+(.+)$/);
+      if (task) {
+        const items = [];
+        while (index < lines.length) {
+          const item = lines[index].match(/^-\s+\[([ xX])\]\s+(.+)$/);
+          if (!item) break;
+          items.push(`<li><label><input type="checkbox" contenteditable="false" ${item[1].toLowerCase() === "x" ? "checked" : ""}><span>${inlineMarkdown(item[2])}</span></label></li>`);
+          index += 1;
+        }
+        output.push(`<ul class="qr-admin-task-list">${items.join("")}</ul>`); continue;
+      }
       const unordered = line.match(/^[-*+]\s+(.+)$/);
       const ordered = line.match(/^\d+\.\s+(.+)$/);
       if (unordered || ordered) {
@@ -260,6 +383,7 @@
     switch (node.tagName.toLowerCase()) {
       case "strong": case "b": return `**${content}**`;
       case "em": case "i": return `*${content}*`;
+      case "s": case "strike": case "del": return `~~${content}~~`;
       case "code": return node.parentElement?.tagName.toLowerCase() === "pre" ? content : `\`${node.textContent}\``;
       case "a": {
         const href = node.getAttribute("href") || "";
@@ -272,10 +396,25 @@
       case "p": case "div": return `${content}\n\n`;
       case "blockquote": return `> ${content.trim()}\n\n`;
       case "li": return content;
-      case "ul": return [...node.children].map((item) => `- ${markdownFromNode(item).trim()}`).join("\n") + "\n\n";
+      case "ul": {
+        if (node.classList.contains("qr-admin-task-list")) {
+          return [...node.children].map((item) => {
+            const checkbox = item.querySelector(':scope input[type="checkbox"]');
+            const text = [...item.querySelectorAll(":scope > label > span")].map(markdownFromNode).join("").trim();
+            return `- [${checkbox?.checked ? "x" : " "}] ${text}`;
+          }).join("\n") + "\n\n";
+        }
+        return [...node.children].map((item) => `- ${markdownFromNode(item).trim()}`).join("\n") + "\n\n";
+      }
       case "ol": return [...node.children].map((item, index) => `${index + 1}. ${markdownFromNode(item).trim()}`).join("\n") + "\n\n";
       case "pre": return `\`\`\`\n${node.textContent}\n\`\`\`\n\n`;
       case "hr": return "---\n\n";
+      case "table": {
+        const rows = [...node.querySelectorAll("tr")].map((row) => [...row.children].map((cell) => markdownFromNode(cell).replaceAll("|", "\\|").trim()));
+        if (!rows.length) return "";
+        return `| ${rows[0].join(" | ")} |\n| ${rows[0].map(() => "---").join(" | ")} |${rows.slice(1).map((row) => `\n| ${row.join(" | ")} |`).join("")}\n\n`;
+      }
+      case "th": case "td": return content;
       case "img": {
         const src = node.dataset.qrPublishedSrc || node.getAttribute("src") || "";
         const alt = node.getAttribute("alt") || "";
@@ -287,71 +426,67 @@
   }
 
   function editorMarkdown() {
-    return [...root.querySelector("[data-editor-body]").childNodes].map(markdownFromNode).join("").replace(/\n{3,}/g, "\n\n").trim();
+    return richEditor?.getMarkdown().replace(/\n{3,}/g, "\n\n").trim() || "";
   }
 
   function command(commandName, value = null) {
-    const editor = root.querySelector("[data-editor-body]");
-    editor.focus();
-    document.execCommand(commandName, false, value);
-    updateEditorState();
+    if (!richEditor) return;
+    const chain = richEditor.chain().focus();
+    if (commandName === "bold") chain.toggleBold().run();
+    else if (commandName === "italic") chain.toggleItalic().run();
+    else if (commandName === "strikeThrough") chain.toggleStrike().run();
+    else if (commandName === "insertUnorderedList") chain.toggleBulletList().run();
+    else if (commandName === "insertOrderedList") chain.toggleOrderedList().run();
+    else if (commandName === "insertHorizontalRule") chain.setHorizontalRule().run();
+    else if (commandName === "undo") chain.undo().run();
+    else if (commandName === "redo") chain.redo().run();
+    else if (commandName === "formatBlock" && value === "pre") chain.toggleCodeBlock().run();
+    else if (commandName === "formatBlock" && value === "p") chain.setParagraph().run();
   }
 
-  function insertInlineImage(path) {
-    const editor = root.querySelector("[data-editor-body]");
-    const image = document.createElement("img");
-    image.src = path;
-    image.alt = "";
-    const selection = window.getSelection();
-    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
-    if (range && editor.contains(range.commonAncestorContainer)) {
-      range.deleteContents();
-      range.insertNode(image);
-      range.setStartAfter(image);
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-    } else {
-      const paragraph = document.createElement("p");
-      paragraph.append(image);
-      editor.append(paragraph);
-    }
-    editor.focus();
-    updateEditorState();
+  function insertChecklist() {
+    richEditor?.chain().focus().toggleTaskList().run();
   }
 
-  function insertPendingInlineImage(staged) {
-    const editor = root.querySelector("[data-editor-body]");
-    const wrapper = document.createElement("span");
-    wrapper.className = "qr-admin-pending-image";
-    wrapper.contentEditable = "false";
-    wrapper.dataset.stagedImage = staged.id;
-    wrapper.innerHTML = `<img src="${escapeHtml(staged.previewUrl)}" alt="Image en cours d’envoi"><span><i aria-hidden="true"></i>Envoi de l’image…</span>`;
-    const range = savedInlineRange;
-    if (range && editor.contains(range.commonAncestorContainer)) {
-      range.deleteContents();
-      range.insertNode(wrapper);
-      range.setStartAfter(wrapper); range.collapse(true);
-      const selection = window.getSelection(); selection.removeAllRanges(); selection.addRange(range);
-    } else {
-      const paragraph = document.createElement("p"); paragraph.append(wrapper); editor.append(paragraph);
-    }
-    savedInlineRange = null;
-    return wrapper;
+  function insertTable() {
+    richEditor?.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
   }
 
-  function resolvePendingInlineImage(staged, wrapper) {
-    const image = document.createElement("img");
-    image.src = staged.previewUrl; image.dataset.qrPublishedSrc = staged.path; image.alt = "";
-    wrapper.replaceWith(image);
-    updateEditorState();
+  function insertInlineImage(staged) {
+    richEditor?.chain().focus().setImage({ src: staged.path, previewSrc: staged.previewUrl, alt: "" }).run();
   }
 
   function openMediaLibrary() {
-    const editor = root.querySelector("[data-editor-body]");
-    const selection = window.getSelection();
-    savedInlineRange = selection?.rangeCount && editor.contains(selection.getRangeAt(0).commonAncestorContainer) ? selection.getRangeAt(0).cloneRange() : null;
     root.querySelector("[data-inline-image]").click();
+  }
+
+  function createRichEditor(markdown) {
+    richEditor?.destroy();
+    richEditor = new Editor({
+      element: root.querySelector("[data-editor-body]"),
+      content: markdown || "",
+      contentType: "markdown",
+      extensions: [
+        StarterKit.configure({ heading: { levels: [2, 3] } }),
+        Link.configure({ openOnClick: false, autolink: true, defaultProtocol: "https" }),
+        QuartzImage,
+        TaskList,
+        TaskItem.configure({ nested: true }),
+        Table.configure({ resizable: false }),
+        TableRow,
+        TableHeader,
+        TableCell,
+      Markdown,
+      ],
+      editorProps: {
+        // Le contenu éditable est la seule partie qui reprend exactement les
+        // styles de lecture publics. Le conteneur qui l'accueille reste neutre,
+        // sinon les marges d'un article se retrouvent imbriquées deux fois.
+        attributes: { class: "article-body qr-admin-editor-content" },
+      },
+      onUpdate: () => { updateEditorState(); updateToolbarState(); },
+      onSelectionUpdate: updateToolbarState,
+    });
   }
 
   function base64FromBytes(bytes) {
@@ -478,10 +613,28 @@
     });
   }
 
+  async function stageLocalDraftImage(file, staged) {
+    const inspected = await inspectImage(file);
+    const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[inspected.mimeType];
+    const mediaId = `${crypto.randomUUID()}.${extension}`;
+    const response = await fetch(`${DRAFT_MEDIA_API}/images/${mediaId}`, {
+      method: "PUT", headers: { "Content-Type": inspected.mimeType }, body: inspected.bytes,
+    });
+    if (!response.ok) throw new Error("Impossible d’envoyer l’image du brouillon local.");
+    staged.previewUrl = `${DRAFT_MEDIA_API}/images/${mediaId}`;
+    staged.path = staged.previewUrl;
+    staged.meta = inspected.meta;
+    staged.isNew = false;
+    staged.status = "ready";
+    if (inspected.compressed) notice("Image compressée automatiquement pour rester sous 24 Mo.");
+    return staged;
+  }
+
   async function stageImage(file) {
     const staged = { id: `image-${Date.now()}-${Math.random().toString(36).slice(2)}`, fileName: file?.name || "", status: "uploading", isNew: true, replaceExisting: false };
     stagedImages.set(staged.id, staged); updatePublishState();
     try {
+      if (isLocalLab) return await stageLocalDraftImage(file, staged);
       const inspected = await inspectImage(file);
       const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[inspected.mimeType];
       staged.previewUrl = inspected.previewUrl;
@@ -519,8 +672,16 @@
 
   function updatePublishState() {
     const publish = root.querySelector("[data-publish]");
+    const saveDraft = root.querySelector("[data-save-draft]");
     const status = root.querySelector("[data-editor-status]");
     if (!publish || !status) return;
+    if (isLocalLab) {
+      publish.disabled = true;
+      const pending = pendingImageCount();
+      if (saveDraft) saveDraft.disabled = pending > 0 || (!editorDirty && Boolean(currentArticle));
+      status.textContent = pending ? "Image en cours d’envoi…" : (editorDirty ? "Modifications non enregistrées" : (currentArticle ? "Brouillon enregistré" : "Prêt à enregistrer"));
+      return;
+    }
     const pending = pendingImageCount();
     if (pending) {
       publish.disabled = true;
@@ -534,6 +695,26 @@
   function updateEditorState() {
     editorDirty = true;
     updatePublishState();
+  }
+
+  function updateToolbarState() {
+    if (!richEditor) return;
+    const states = [
+      ['[data-command="bold"]', richEditor.isActive("bold")],
+      ['[data-command="italic"]', richEditor.isActive("italic")],
+      ['[data-command="strikeThrough"]', richEditor.isActive("strike")],
+      ['[data-command="insertUnorderedList"]', richEditor.isActive("bulletList")],
+      ['[data-command="insertOrderedList"]', richEditor.isActive("orderedList")],
+      ['[data-checklist]', richEditor.isActive("taskList")],
+      ['[data-block="blockquote"]', richEditor.isActive("blockquote")],
+      ['[data-block="h2"]', richEditor.isActive("heading", { level: 2 })],
+      ['[data-block="h3"]', richEditor.isActive("heading", { level: 3 })],
+      ['[data-block="p"]', richEditor.isActive("paragraph")],
+      ['[data-command="formatBlock"][data-value="pre"]', richEditor.isActive("codeBlock")],
+    ];
+    for (const [selector, active] of states) root.querySelector(selector)?.classList.toggle("is-active", active);
+    root.querySelector('[data-command="undo"]')?.toggleAttribute("disabled", !richEditor.can().undo());
+    root.querySelector('[data-command="redo"]')?.toggleAttribute("disabled", !richEditor.can().redo());
   }
 
   async function loadArticles() {
@@ -611,18 +792,25 @@
     </article>`;
   }
 
+  function draftCard(draft) {
+    const image = draft.thumbnail ? `<img src="${escapeHtml(draft.thumbnail)}" alt="" loading="lazy">` : "<span class=\"qr-admin-card__placeholder\">Brouillon</span>";
+    return `<article class="qr-admin-card" data-edit-draft="${escapeHtml(draft.id)}"><div class="qr-admin-card__image">${image}</div><div class="qr-admin-card__content"><p class="qr-admin-card__meta">Brouillon · ${escapeHtml(friendlyDate(draft.updatedAt || draft.createdAt))}</p><h2>${escapeHtml(draft.title || "Sans titre")}</h2><p>${escapeHtml(draft.description || "Aucun résumé pour le moment.")}</p><p class="qr-admin-card__author">${escapeHtml(draft.category || "Autre")}</p></div><span class="qr-admin-card__action" aria-hidden="true">›</span></article>`;
+  }
+
   function renderDashboard() {
+    exitEditorFullscreen();
     root.innerHTML = `${renderHeader()}
       <section class="qr-admin-dashboard">
         ${isPreview ? '<p class="qr-admin-preview-banner">Version de test : les articles publiés ici restent dans la branche de test.</p>' : ""}
         <div class="qr-admin-dashboard__intro">
-          <div><p class="qr-admin-eyebrow">Bonjour ${escapeHtml(profile.name)}</p><h1>Vos articles</h1></div>
-          <button class="qr-admin-primary" type="button" data-new>Ajouter un article</button>
+          <h1>Bienvenue, ${escapeHtml(profile.name)}</h1>
+          <div class="qr-admin-dashboard__actions"><button class="qr-admin-secondary" type="button" data-drafts>Mes brouillons</button><button class="qr-admin-primary" type="button" data-new>Ajouter un article</button></div>
         </div>
         <label class="qr-admin-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Rechercher un article" data-search></label>
         <div class="qr-admin-article-list" data-list>${articles.map(articleCard).join("") || "<p class=\"qr-admin-empty\">Aucun article pour le moment.</p>"}</div>
       </section>`;
     root.querySelector("[data-new]").addEventListener("click", () => openEditor());
+    root.querySelector("[data-drafts]").addEventListener("click", renderDrafts);
     bindAdminHeader();
     root.querySelector("[data-search]").addEventListener("input", (event) => {
       const needle = event.target.value.trim().toLocaleLowerCase();
@@ -632,6 +820,15 @@
     });
     bindArticleCards();
     bindAdminImages();
+  }
+
+  function renderDrafts() {
+    exitEditorFullscreen();
+    setHistory("drafts");
+    root.innerHTML = `${renderHeader()}<section class="qr-admin-dashboard"><div class="qr-admin-dashboard__intro"><h1>Mes brouillons</h1><button class="qr-admin-primary" type="button" data-new>Ajouter un article</button></div><p class="qr-admin-empty">Ces brouillons sont privés et ne sont pas publiés sur Quartz Report.</p><div class="qr-admin-article-list">${drafts.map(draftCard).join("") || "<p class=\"qr-admin-empty\">Aucun brouillon pour le moment.</p>"}</div></section>`;
+    root.querySelector("[data-new]").addEventListener("click", () => openEditor());
+    root.querySelectorAll("[data-edit-draft]").forEach((element) => element.addEventListener("click", () => openEditor(drafts.find((draft) => draft.id === element.dataset.editDraft))));
+    bindAdminHeader();
   }
 
   function bindArticleCards() {
@@ -653,45 +850,110 @@
   }
 
   function editorToolbar() {
-    return `<div class="qr-admin-toolbar" aria-label="Outils de mise en forme">
-      <button type="button" data-command="bold" title="Gras"><strong>G</strong></button>
-      <button type="button" data-command="italic" title="Italique"><em>I</em></button>
-      <button type="button" data-block="h2" title="Grand intertitre">H2</button>
-      <button type="button" data-block="h3" title="Petit intertitre">H3</button>
-      <button type="button" data-command="insertUnorderedList" title="Liste à puces">•≡</button>
-      <button type="button" data-command="insertOrderedList" title="Liste numérotée">1≡</button>
-      <button type="button" data-block="blockquote" title="Citation">❝</button>
-      <button type="button" data-link title="Ajouter un lien">↗</button>
-      <button type="button" data-command="formatBlock" data-value="pre" title="Bloc de code">&lt;/&gt;</button>
-      <button type="button" data-divider title="Séparateur">—</button>
-      <button type="button" data-image title="Insérer une image">▧</button>
+    return `<div class="qr-admin-toolbar" role="toolbar" aria-label="Outils de mise en forme">
+      <button type="button" data-command="undo" title="Annuler" aria-label="Annuler la dernière action"><span aria-hidden="true">↶</span><span class="qr-admin-toolbar__label">Annuler</span></button>
+      <button type="button" data-command="redo" title="Rétablir" aria-label="Rétablir la dernière action"><span aria-hidden="true">↷</span><span class="qr-admin-toolbar__label">Rétablir</span></button>
+      <button type="button" data-block="p" title="Texte normal" aria-label="Revenir au texte normal"><span aria-hidden="true">T</span><span class="qr-admin-toolbar__label">Normal</span></button>
+      <span class="qr-admin-toolbar__separator" aria-hidden="true"></span>
+      <button type="button" data-command="bold" title="Gras" aria-label="Mettre en gras"><b>B</b><span class="qr-admin-toolbar__label">Gras</span></button>
+      <button type="button" data-command="italic" title="Italique" aria-label="Mettre en italique"><i>I</i><span class="qr-admin-toolbar__label">Italique</span></button>
+      <button type="button" data-command="strikeThrough" title="Barré" aria-label="Barrer le texte"><s>S</s><span class="qr-admin-toolbar__label">Barré</span></button>
+      <span class="qr-admin-toolbar__separator" aria-hidden="true"></span>
+      <button type="button" data-block="h2" title="Intertitre" aria-label="Ajouter un intertitre"><strong>H</strong><span class="qr-admin-toolbar__label">Intertitre</span></button>
+      <button type="button" data-block="h3" title="Sous-titre" aria-label="Ajouter un sous-titre"><strong>h</strong><span class="qr-admin-toolbar__label">Sous-titre</span></button>
+      <span class="qr-admin-toolbar__separator" aria-hidden="true"></span>
+      <button type="button" data-command="insertUnorderedList" title="Liste à puces" aria-label="Créer une liste à puces"><span aria-hidden="true">•≡</span><span class="qr-admin-toolbar__label">Liste</span></button>
+      <button type="button" data-command="insertOrderedList" title="Liste numérotée" aria-label="Créer une liste numérotée"><span aria-hidden="true">1≡</span><span class="qr-admin-toolbar__label">Numéros</span></button>
+      <button type="button" data-checklist title="Checklist" aria-label="Créer une checklist"><span aria-hidden="true">☑</span><span class="qr-admin-toolbar__label">Checklist</span></button>
+      <span class="qr-admin-toolbar__separator" aria-hidden="true"></span>
+      <button type="button" data-block="blockquote" title="Citation" aria-label="Ajouter une citation"><span aria-hidden="true">❝</span><span class="qr-admin-toolbar__label">Citation</span></button>
+      <button type="button" data-link title="Lien" aria-label="Ajouter un lien"><span aria-hidden="true">↗</span><span class="qr-admin-toolbar__label">Lien</span></button>
+      <button type="button" data-command="formatBlock" data-value="pre" title="Bloc de code" aria-label="Ajouter un bloc de code"><code>&lt;/&gt;</code><span class="qr-admin-toolbar__label">Code</span></button>
+      <button type="button" data-table title="Tableau" aria-label="Ajouter un tableau"><span aria-hidden="true">▦</span><span class="qr-admin-toolbar__label">Tableau</span></button>
+      <button type="button" data-divider title="Séparateur" aria-label="Ajouter un séparateur"><span aria-hidden="true">—</span><span class="qr-admin-toolbar__label">Séparateur</span></button>
+      <button type="button" data-image title="Image" aria-label="Insérer une image"><span aria-hidden="true">▧</span><span class="qr-admin-toolbar__label">Image</span></button>
     </div>`;
+  }
+
+  function previewAuthorAvatar(article) {
+    const githubId = article?.authorGithubId || profile?.githubId || "";
+    if (githubId === profile?.githubId && profile?.hasPhoto) return profileAvatar();
+    const avatarPath = publicProfiles[githubId]?.avatarUrl;
+    return avatarPath ? `${API}${avatarPath}` : "";
+  }
+
+  async function loadPublicPreviewHeader() {
+    const target = root.querySelector("[data-public-preview-header]");
+    if (!target) return;
+    try {
+      // On reprend le vrai en-tête rendu par la page d'accueil : aucune copie
+      // de son HTML ou de son CSS dans l'administration.
+      const response = await fetch("/", { cache: "no-store" });
+      if (!response.ok) throw new Error("Accueil indisponible");
+      const page = new DOMParser().parseFromString(await response.text(), "text/html");
+      const header = page.querySelector(".site-header");
+      if (!header) throw new Error("En-tête introuvable");
+      target.replaceChildren(header);
+      target.querySelectorAll("a, button").forEach((element) => element.addEventListener("click", (event) => event.preventDefault()));
+    } catch {
+      target.hidden = true;
+    }
   }
 
   function editorTemplate(article) {
     const current = article || { title: "", description: "", category: "Autre", date: new Date().toISOString(), thumbnail: "", important: false, body: "" };
-    const publishLabel = article ? "Publier les modifications" : "Publier l’article";
+    const publishedArticle = Boolean(article && !isDraft(article));
+    const publishLabel = publishedArticle ? "Publier les modifications" : "Publier l’article";
+    const displayAuthor = article?.authorDisplayName || article?.author || profile.name;
+    const publicationDate = article?.date || new Date().toISOString();
+    const authorGithubId = article?.authorGithubId || profile.githubId || "";
+    const authorAvatar = previewAuthorAvatar(article);
     return `${renderHeader()}
       <section class="qr-admin-editor">
-        <div class="qr-admin-editor__topbar"><button class="qr-admin-back" type="button" data-back>‹ <span>Retour</span></button><div class="qr-admin-editor__actions"><button class="qr-admin-icon-button" type="button" data-preview aria-label="Prévisualiser l’article">◉</button><button class="qr-admin-primary" type="button" data-publish disabled>${publishLabel}</button></div></div>
-        <div class="qr-admin-editor__heading"><p class="qr-admin-eyebrow">${article ? "Modifier l’article" : "Nouvel article"}</p><h1>${article ? escapeHtml(article.title) : "Rédiger un article"}</h1></div>
+        <div class="qr-admin-editor__topbar"><button class="qr-admin-back" type="button" data-back>‹ <span>Retour</span></button><div class="qr-admin-editor__actions"><button class="qr-admin-secondary" type="button" data-save-draft disabled>Enregistrer dans mes brouillons</button><button class="qr-admin-primary" type="button" data-publish disabled>${publishLabel}</button></div></div>
         <form class="qr-admin-form" data-article-form>
-          <label>Titre <input name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article"></label>
-          <label>Résumé <small>Il apparaît sur la page d’accueil et dans les aperçus partagés.</small><textarea name="description" maxlength="300" required placeholder="Expliquez brièvement le sujet de l’article.">${escapeHtml(current.description)}</textarea></label>
-          <div class="qr-admin-field-row"><label>Catégorie <select name="category">${CATEGORIES.map((category) => `<option ${category === current.category ? "selected" : ""}>${category}</option>`).join("")}</select></label><label class="qr-admin-feature-toggle"><input name="important" type="checkbox" ${current.important ? "checked" : ""}><span><strong>Mettre en avant</strong><small>Affiche l’article dans la sélection principale de l’accueil.</small></span></label></div>
-          <label>Image de couverture <small>Elle apparaît en tête de l’article, sur l’accueil et lors des partages.</small><input name="cover" type="file" accept="image/jpeg,image/png,image/webp"><span class="qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? (() => { const preview = transientImagePreviews.get(current.thumbnail); return `<img src="${escapeHtml(preview || adminImageUrl(current.thumbnail, article?.sha, 1200))}"${preview ? "" : ` data-admin-image="${escapeHtml(current.thumbnail)}" data-admin-image-revision="${escapeHtml(article?.sha || "article")}" data-admin-image-width="1200"`} alt="">`; })() : "Aucune image sélectionnée"}</span></label>
-          <label class="qr-admin-content-label">Contenu <small>Écrivez directement votre article tel qu’il sera lu.</small></label>
-          ${editorToolbar()}
-          <div class="qr-admin-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-editor-body>${markdownToHtml(current.body)}</div>
+          <section class="qr-admin-article-composer" data-composer>
+            <button class="qr-admin-composer-toggle" type="button" data-fullscreen aria-label="Passer l’éditeur en plein écran" title="Plein écran">⛶</button>
+            <div class="qr-admin-public-preview-header" data-public-preview-header></div>
+            <main class="articles qr-admin-article-stage">
+              <article class="article-full">
+                <label class="qr-admin-composer-cover" title="Changer l’image de couverture">
+                  <input name="cover" type="file" accept="image/jpeg,image/png,image/webp">
+                  <span class="article-cover qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? (() => { const preview = transientImagePreviews.get(current.thumbnail); return `<img src="${escapeHtml(preview || adminImageUrl(current.thumbnail, article?.sha, 1200))}"${preview ? "" : ` data-admin-image="${escapeHtml(current.thumbnail)}" data-admin-image-revision="${escapeHtml(article?.sha || "article")}" data-admin-image-width="1200"`} alt="">`; })() : '<span class="qr-admin-composer-cover__empty">Ajouter une image de couverture</span>'}</span>
+                  <span class="qr-admin-composer-cover__hint">Changer la couverture</span>
+                </label>
+                <header class="article-header qr-admin-composer-header">
+                  <input class="qr-admin-article-title" name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article" aria-label="Titre de l’article">
+                  <p class="article-meta">Par ${escapeHtml(displayAuthor)}, le ${escapeHtml(new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(publicationDate)))}</p>
+                </header>
+                <section class="qr-admin-editor-surface" data-editor-body></section>
+                <footer class="article-contributor" data-preview-contributor ${authorGithubId ? "" : "hidden"}>
+                  <img ${authorAvatar ? `src="${escapeHtml(authorAvatar)}"` : "hidden"} alt="">
+                  <p>Par <strong>${escapeHtml(displayAuthor)}</strong></p>
+                </footer>
+              </article>
+            </main>
+            ${editorToolbar()}
+          </section>
+          <details class="qr-admin-publishing-options">
+            <summary>Réglages de publication</summary>
+            <div class="qr-admin-publishing-options__fields">
+              <label>Résumé <small>Il apparaît sur la page d’accueil et dans les aperçus partagés.</small><textarea name="description" maxlength="300" required placeholder="Expliquez brièvement le sujet de l’article.">${escapeHtml(current.description)}</textarea></label>
+              <div class="qr-admin-field-row"><label>Catégorie <select name="category">${CATEGORIES.map((category) => `<option ${category === current.category ? "selected" : ""}>${category}</option>`).join("")}</select></label><label class="qr-admin-feature-toggle"><input name="important" type="checkbox" ${current.important ? "checked" : ""}><span><strong>Mettre en avant</strong><small>Affiche l’article dans la sélection principale de l’accueil.</small></span></label></div>
+            </div>
+          </details>
           <input type="file" accept="image/jpeg,image/png,image/webp" hidden data-inline-image>
           <p class="qr-admin-editor-status" data-editor-status>Prêt à publier</p>
         </form>
-        ${article ? '<button class="qr-admin-delete" type="button" data-delete>Supprimer cet article</button>' : ""}
+        ${publishedArticle ? '<button class="qr-admin-delete" type="button" data-delete>Supprimer cet article</button>' : (isDraft(article) ? '<button class="qr-admin-delete" type="button" data-delete-draft>Supprimer ce brouillon</button>' : "")}
       </section>`;
   }
 
   function openEditor(article = null, { push = true } = {}) {
-    if (push) setHistory("editor", { path: article?.path || null });
+    exitEditorFullscreen();
+    if (push) setHistory("editor", { path: article?.path || null, draftId: isDraft(article) ? article.id : null });
+    richEditor?.destroy();
+    richEditor = null;
     currentArticle = article;
     pendingCover = null;
     stagedImages = new Map();
@@ -699,36 +961,38 @@
     coverSelection = 0;
     editorDirty = false;
     root.innerHTML = editorTemplate(article);
-    root.querySelectorAll("[data-editor-body] img").forEach((image) => {
-      const preview = transientImagePreviews.get(image.getAttribute("src"));
-      if (preview) { image.dataset.qrPublishedSrc = image.getAttribute("src"); image.src = preview; }
-    });
+    createRichEditor(article?.body || "");
+    loadPublicPreviewHeader();
     bindAdminHeader();
     bindAdminImages();
     root.querySelector("[data-back]").addEventListener("click", () => {
-      if (root.querySelector("[data-editor-status]").textContent === "Modifications non publiées" && !window.confirm("Quitter sans publier vos modifications ?")) return;
+      if (editorDirty && !window.confirm("Quitter sans enregistrer vos modifications ?")) return;
       goBackToDashboard();
     });
     root.querySelector("[data-article-form]").addEventListener("input", updateEditorState);
     root.querySelector("[data-article-form]").addEventListener("change", updateEditorState);
+    root.querySelectorAll(".qr-admin-toolbar button").forEach((button) => button.addEventListener("mousedown", (event) => event.preventDefault()));
     root.querySelectorAll("[data-command]").forEach((button) => button.addEventListener("click", () => command(button.dataset.command, button.dataset.value || null)));
-    root.querySelectorAll("[data-block]").forEach((button) => button.addEventListener("click", () => command("formatBlock", button.dataset.block)));
+    root.querySelectorAll("[data-block]").forEach((button) => button.addEventListener("click", () => {
+      const block = button.dataset.block;
+      if (block === "p") command("formatBlock", "p");
+      else if (block === "blockquote") richEditor?.chain().focus().toggleBlockquote().run();
+      else richEditor?.chain().focus().toggleHeading({ level: Number(block.slice(1)) }).run();
+    }));
     root.querySelector("[data-divider]").addEventListener("click", () => command("insertHorizontalRule"));
+    root.querySelector("[data-checklist]").addEventListener("click", insertChecklist);
+    root.querySelector("[data-table]").addEventListener("click", insertTable);
     root.querySelector("[data-link]").addEventListener("click", () => {
       const href = window.prompt("Adresse du lien (https://…)");
-      if (href && /^https?:\/\//i.test(href)) command("createLink", href);
+      if (href && /^https?:\/\//i.test(href)) richEditor?.chain().focus().setLink({ href }).run();
       else if (href) notice("Le lien doit commencer par https://", "error");
     });
     root.querySelector("[data-image]").addEventListener("click", openMediaLibrary);
     root.querySelector("[data-inline-image]").addEventListener("change", async (event) => {
       const file = event.target.files[0]; if (!file) return;
-      let pending = null;
       try {
-        pending = { id: `pending-${Date.now()}`, previewUrl: URL.createObjectURL(file), status: "uploading" };
-        const placeholder = insertPendingInlineImage(pending);
-        URL.revokeObjectURL(pending.previewUrl);
         const staged = await stageImage(file);
-        resolvePendingInlineImage(staged, placeholder);
+        insertInlineImage(staged);
       }
       catch (error) { notice(error.message, "error"); }
       event.target.value = "";
@@ -754,9 +1018,22 @@
         notice(error.message, "error");
       }
     });
-    root.querySelector("[data-preview]").addEventListener("click", openArticlePreview);
+    root.querySelector("[data-fullscreen]").addEventListener("click", () => {
+      const composer = root.querySelector("[data-composer]");
+      const isFullscreen = composer.classList.toggle("is-fullscreen");
+      document.body.classList.toggle("qr-admin-composer-fullscreen", isFullscreen);
+      if (isFullscreen) history.pushState({ ...(history.state || {}), quartzAdmin: true, fullscreen: true }, "", window.location.href);
+      const button = root.querySelector("[data-fullscreen]");
+      button.textContent = isFullscreen ? "×" : "⛶";
+      button.title = isFullscreen ? "Quitter le plein écran" : "Plein écran";
+      button.setAttribute("aria-label", button.title);
+      button.setAttribute("aria-pressed", String(isFullscreen));
+    });
     root.querySelector("[data-publish]").addEventListener("click", publishArticle);
+    root.querySelector("[data-save-draft]").addEventListener("click", saveDraft);
     root.querySelector("[data-delete]")?.addEventListener("click", deleteArticle);
+    root.querySelector("[data-delete-draft]")?.addEventListener("click", deleteDraft);
+    updateToolbarState();
   }
 
   function openArticlePreview() {
@@ -766,7 +1043,7 @@
     modal.className = "qr-admin-preview";
     const publicationDate = currentArticle?.date || new Date().toISOString();
     const displayAuthor = currentArticle?.authorDisplayName || currentArticle?.author || profile.name;
-    modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt=""></div>` : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(displayAuthor)}, le ${escapeHtml(friendlyDate(publicationDate))}</p></header><section class="article-body">${root.querySelector("[data-editor-body]").innerHTML}</section></article></main>`;
+    modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt=""></div>` : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(displayAuthor)}, le ${escapeHtml(friendlyDate(publicationDate))}</p></header><section class="article-body">${richEditor?.getHTML() || ""}</section></article></main>`;
     document.body.append(modal);
     modal.querySelector("[data-close-preview]").addEventListener("click", () => modal.remove());
   }
@@ -828,6 +1105,65 @@
     const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: tree.sha, parents: [ref] }) });
     await request(`https://api.github.com/repos/${REPOSITORY}/git/refs/heads/${encodeURIComponent(BRANCH)}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) });
     return unusedPaths.length;
+  }
+
+  function draftMediaUrls(draft) {
+    const source = `${draft?.thumbnail || ""}\n${draft?.body || ""}`;
+    const escaped = DRAFT_MEDIA_API.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return [...new Set((source.match(new RegExp(`${escaped}/images/[a-zA-Z0-9_-]+\\.(?:jpg|jpeg|png|webp)`, "g")) || []))];
+  }
+
+  async function deleteLocalDraftMedia(urls) {
+    await Promise.all(urls.map((url) => fetch(url, { method: "DELETE" }).catch(() => null)));
+  }
+
+  async function saveDraft() {
+    if (!isLocalLab) { notice("Les brouillons ne sont disponibles que dans le laboratoire local pour le moment.", "error"); return; }
+    if (pendingImageCount()) return;
+    const form = root.querySelector("[data-article-form]");
+    const button = root.querySelector("[data-save-draft]");
+    const id = isDraft(currentArticle) ? currentArticle.id : newDraftId();
+    const next = {
+      id,
+      title: form.elements.title.value.trim(),
+      description: form.elements.description.value.trim(),
+      category: form.elements.category.value,
+      important: form.elements.important.checked,
+      body: editorMarkdown(),
+      thumbnail: pendingCover?.path || currentArticle?.thumbnail || "",
+    };
+    button.disabled = true; button.textContent = "Enregistrement…";
+    try {
+      const result = await draftRequest(`/api/drafts/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(next) });
+      const saved = { ...result.draft, isDraft: true, author: profile.name, authorDisplayName: profile.name, authorGithubId: profile.githubId, date: result.draft.createdAt || new Date().toISOString() };
+      const index = drafts.findIndex((draft) => draft.id === id);
+      if (index >= 0) drafts[index] = saved; else drafts.unshift(saved);
+      currentArticle = saved;
+      pendingCover = null;
+      editorDirty = false;
+      setHistory("editor", { draftId: id }, true);
+      notice("Brouillon enregistré. Il est disponible sur vos autres appareils locaux.");
+    } catch (error) {
+      notice(error.message || "Impossible d’enregistrer le brouillon.", "error");
+    } finally {
+      button.textContent = "Enregistrer dans mes brouillons";
+      updatePublishState();
+    }
+  }
+
+  async function deleteDraft() {
+    if (!isDraft(currentArticle) || !window.confirm("Supprimer définitivement ce brouillon ?")) return;
+    const draft = currentArticle;
+    try {
+      await draftRequest(`/api/drafts/${encodeURIComponent(draft.id)}`, { method: "DELETE" });
+      await deleteLocalDraftMedia(draftMediaUrls(draft));
+      drafts = drafts.filter((item) => item.id !== draft.id);
+      currentArticle = null;
+      renderDrafts();
+      notice("Brouillon supprimé.");
+    } catch (error) {
+      notice(error.message || "Impossible de supprimer le brouillon.", "error");
+    }
   }
 
   async function publishArticle() {
@@ -898,6 +1234,7 @@
   }
 
   function openProfile(required, { push = true } = {}) {
+    exitEditorFullscreen();
     if (push) setHistory("profile", { required: Boolean(required) });
     root.querySelector(".qr-admin-account-menu")?.remove();
     pendingPhoto = null;
@@ -950,11 +1287,12 @@
         openProfile(true, { push: false });
         return;
       }
-      await loadArticles();
+      await Promise.all([loadArticles(), loadDrafts()]);
       if (!history.state?.quartzAdmin) setHistory("dashboard", {}, true);
       const state = history.state;
       if (state.view === "profile") openProfile(Boolean(state.required), { push: false });
-      else if (state.view === "editor") openEditor(articles.find((article) => article.path === state.path) || null, { push: false });
+      else if (state.view === "drafts") renderDrafts();
+      else if (state.view === "editor") openEditor(state.draftId ? drafts.find((draft) => draft.id === state.draftId) || null : articles.find((article) => article.path === state.path) || null, { push: false });
       else renderDashboard();
     } catch (error) {
       if (/Connexion GitHub requise|401/.test(error.message)) { logout(); return; }
