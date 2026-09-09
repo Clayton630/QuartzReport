@@ -30,6 +30,7 @@
 .qr-admin-dashboard, .qr-admin-editor { margin: auto; padding: 28px var(--page-x-mobile) 56px; }
 .qr-admin-dashboard { width: min(100%, 1320px); }
 .qr-admin-dashboard--drafts { padding-top: 56px; }
+.qr-admin-dashboard--drafts .qr-admin-dashboard__intro { margin-bottom: 28px; }
 .qr-admin-editor { width: min(100%, 800px); }
 .qr-admin-preview-banner { margin: 0 0 20px; padding: 10px 12px; color: #634900; font-size: 13px; font-weight: 650; background: #fff3c9; border: 1px solid #eed480; border-radius: 10px; }
 .qr-admin-dashboard__intro, .qr-admin-editor__topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
