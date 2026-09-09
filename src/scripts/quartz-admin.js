@@ -79,6 +79,7 @@ import { Markdown } from "@tiptap/markdown";
   const adminImageUrl = (value = "", revision = "", width = 0, retry = "") => {
     try {
       const original = new URL(String(value), window.location.origin);
+      if (original.origin !== window.location.origin) return original.href;
       if (window.location.hostname === "localhost" || /^192\.168\./.test(window.location.hostname)) {
         original.searchParams.set("v", revision || "admin");
         return original.href;
@@ -132,6 +133,12 @@ import { Markdown } from "@tiptap/markdown";
     exitEditorFullscreen();
     history.replaceState({ quartzAdmin: true, quartzAdminDepth: 0, view: "dashboard" }, "", window.location.href);
     renderDashboard();
+  }
+
+  function goBackToDrafts() {
+    exitEditorFullscreen();
+    history.replaceState({ quartzAdmin: true, quartzAdminDepth: 1, view: "drafts" }, "", window.location.href);
+    renderDrafts({ push: false });
   }
 
   function exitEditorFullscreen() {
@@ -261,7 +268,7 @@ import { Markdown } from "@tiptap/markdown";
     const state = history.state;
     if (!state?.quartzAdmin || state.view === "dashboard") { renderDashboard(); return; }
     if (state.view === "profile") { openProfile(Boolean(state.required), { push: false }); return; }
-    if (state.view === "drafts") { renderDrafts(); return; }
+    if (state.view === "drafts") { renderDrafts({ push: false }); return; }
     if (state.view === "editor") {
       const item = state.draftId ? drafts.find((draft) => draft.id === state.draftId) : articles.find((article) => article.path === state.path);
       openEditor(item || null, { push: false });
@@ -823,11 +830,12 @@ import { Markdown } from "@tiptap/markdown";
     bindAdminImages();
   }
 
-  function renderDrafts() {
+  function renderDrafts({ push = true } = {}) {
     exitEditorFullscreen();
-    setHistory("drafts");
-    root.innerHTML = `${renderHeader()}<section class="qr-admin-dashboard"><div class="qr-admin-dashboard__intro"><h1>Mes brouillons</h1><button class="qr-admin-primary" type="button" data-new>Ajouter un article</button></div><p class="qr-admin-empty">Ces brouillons sont privés et ne sont pas publiés sur Quartz Report.</p><div class="qr-admin-article-list">${drafts.map(draftCard).join("") || "<p class=\"qr-admin-empty\">Aucun brouillon pour le moment.</p>"}</div></section>`;
+    if (push) setHistory("drafts");
+    root.innerHTML = `${renderHeader()}<section class="qr-admin-dashboard"><div class="qr-admin-dashboard__intro"><h1>Mes brouillons</h1><div class="qr-admin-dashboard__actions"><button class="qr-admin-secondary" type="button" data-dashboard>Tous les articles</button><button class="qr-admin-primary" type="button" data-new>Ajouter un article</button></div></div><div class="qr-admin-article-list">${drafts.map(draftCard).join("") || "<p class=\"qr-admin-empty\">Aucun brouillon pour le moment.</p>"}</div></section>`;
     root.querySelector("[data-new]").addEventListener("click", () => openEditor());
+    root.querySelector("[data-dashboard]").addEventListener("click", goBackToDashboard);
     root.querySelectorAll("[data-edit-draft]").forEach((element) => element.addEventListener("click", () => openEditor(drafts.find((draft) => draft.id === element.dataset.editDraft))));
     bindAdminHeader();
   }
@@ -968,7 +976,8 @@ import { Markdown } from "@tiptap/markdown";
     bindAdminImages();
     root.querySelector("[data-back]").addEventListener("click", () => {
       if (editorDirty && !window.confirm("Quitter sans enregistrer vos modifications ?")) return;
-      goBackToDashboard();
+      if (isDraft(currentArticle)) goBackToDrafts();
+      else goBackToDashboard();
     });
     root.querySelector("[data-article-form]").addEventListener("input", updateEditorState);
     root.querySelector("[data-article-form]").addEventListener("change", updateEditorState);
@@ -1195,10 +1204,10 @@ import { Markdown } from "@tiptap/markdown";
     const draft = currentArticle;
     try {
       await draftRequest(`/api/drafts/${encodeURIComponent(draft.id)}`, { method: "DELETE" });
-      await deleteLocalDraftMedia(draftMediaUrls(draft));
+      if (isLocalLab) await deleteLocalDraftMedia(draftMediaUrls(draft));
       drafts = drafts.filter((item) => item.id !== draft.id);
       currentArticle = null;
-      renderDrafts();
+      renderDrafts({ push: false });
       notice("Brouillon supprimé.");
     } catch (error) {
       notice(error.message || "Impossible de supprimer le brouillon.", "error");
