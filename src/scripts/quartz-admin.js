@@ -1122,7 +1122,7 @@ import { Markdown } from "@tiptap/markdown";
     try {
       return await request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${DRAFT_MEDIA_BRANCH}`);
     } catch (error) {
-      if (!/404/.test(error.message)) throw error;
+      if (!/404|not found/i.test(error.message)) throw error;
       const main = await request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/main`);
       await request(`https://api.github.com/repos/${REPOSITORY}/git/refs`, { method: "POST", body: JSON.stringify({ ref: `refs/heads/${DRAFT_MEDIA_BRANCH}`, sha: main.object.sha }) });
       return request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${DRAFT_MEDIA_BRANCH}`);
