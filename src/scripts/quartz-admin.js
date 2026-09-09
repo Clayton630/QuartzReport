@@ -317,6 +317,11 @@ const adminCoverImages = (source, attributes = "") => {
     return paths;
   }
 
+  function normalizedUploadPath(path) {
+    try { return decodeURIComponent(String(path || "")); }
+    catch { return String(path || ""); }
+  }
+
   function inlineMarkdown(value) {
     const images = [];
     let result = String(value).replace(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+["']([^"']*)["'])?\)/g, (_, alt, src, title = "") => {
@@ -1111,13 +1116,24 @@ const adminCoverImages = (source, attributes = "") => {
       loadMediaCatalogAtRef(ref),
       loadArticleSources(ref),
     ]);
+    const currentTree = await request(`https://api.github.com/repos/${REPOSITORY}/git/trees/${parent.tree.sha}?recursive=1`);
+    const existingUploadPaths = new Set((currentTree.tree || [])
+      .filter((entry) => entry.type === "blob" && entry.path.startsWith("public/img/uploads/"))
+      .map((entry) => `/${entry.path.slice("public/".length)}`));
     const nextSources = articleSources.filter((article) => article.path !== path).map((article) => article.source);
     if (!deleting) nextSources.push(source);
     const referenced = new Set(nextSources.flatMap((articleSource) => [...uploadPathsInSource(articleSource)]));
     const unusedPaths = [...uploadPathsInSource(previousSource)].filter((imagePath) => !referenced.has(imagePath));
     const stagedByPath = new Map([...stagedImages.values()]
-      .filter((image) => !deleting && image.status === "ready" && image.isNew && image.blobSha && referenced.has(image.path))
-      .map((image) => [image.path, image]));
+      .filter((image) => !deleting && image.status === "ready" && image.blobSha && referenced.has(normalizedUploadPath(image.path)))
+      // Un ancien état d'interface peut croire qu'une image existe déjà. Si elle est
+      // absente du dépôt, son blob reste la source de vérité et doit être joint.
+      .filter((image) => image.isNew || !existingUploadPaths.has(normalizedUploadPath(image.path)))
+      .map((image) => [normalizedUploadPath(image.path), image]));
+    const missingUploads = [...referenced].filter((imagePath) => !existingUploadPaths.has(imagePath) && !stagedByPath.has(imagePath));
+    if (missingUploads.length) {
+      throw new Error("Une image de l’article n’a pas été reçue par GitHub. Réessayez de l’ajouter avant de publier.");
+    }
     const nextImages = catalog.images.filter((image) => !unusedPaths.includes(image.path));
     for (const staged of stagedByPath.values()) {
       const entry = { path: staged.path, ...staged.meta };
