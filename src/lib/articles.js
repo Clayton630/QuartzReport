@@ -95,9 +95,10 @@ async function htmlForArticle(markdown) {
     const dimensions = await localImageDimensions(source);
     const srcset = optimizedImageSrcset(source, inlineImageWidths);
     const dimensionAttributes = imageDimensionAttributes(dimensions);
+    const srcsetAttribute = srcset ? ` srcset="${escapeHtmlAttribute(srcset)}" sizes="(max-width: 768px) 100vw, min(100vw, 1024px)"` : "";
     return {
       source: match[0],
-      replacement: `<img ${before}src="${optimizedImageUrl(source, 1280)}" data-image-fallback="${escapeHtmlAttribute(originalImageUrl(source))}"${remainingAttributes} srcset="${escapeHtmlAttribute(srcset)}" sizes="(max-width: 768px) 100vw, min(100vw, 1024px)"${dimensions ? ` width="${dimensionAttributes.width}" height="${dimensionAttributes.height}"` : ""} loading="lazy" decoding="async">`,
+      replacement: `<img ${before}src="${optimizedImageUrl(source, 1280)}" data-image-fallback="${escapeHtmlAttribute(originalImageUrl(source))}"${remainingAttributes}${srcsetAttribute}${dimensions ? ` width="${dimensionAttributes.width}" height="${dimensionAttributes.height}"` : ""} loading="lazy" decoding="async">`,
     };
   }));
   return replacements.reduce((html, { source, replacement }) => html.replace(source, replacement), safeHtml);

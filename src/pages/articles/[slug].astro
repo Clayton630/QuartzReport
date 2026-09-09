@@ -9,7 +9,7 @@ export async function getStaticPaths() {
 }
 
 const { article } = Astro.props;
-const date = new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(article.date);
+const publicationDate = new Intl.DateTimeFormat("fr-FR", { dateStyle: "long", timeStyle: "short" }).format(article.date);
 const cover = optimizedImageUrl(article.thumbnail, 1280);
 const originalCover = originalImageUrl(article.thumbnail);
 ---
@@ -30,12 +30,12 @@ const originalCover = originalImageUrl(article.thumbnail);
   <Header />
   <main class="articles">
     <article class="article-full">
-      <div class="article-cover"><img src={cover} data-image-fallback={originalCover} srcset={optimizedImageSrcset(article.thumbnail, coverImageWidths)} sizes="100vw" {...imageDimensionAttributes(article.thumbnailDimensions)} alt="Illustration de l'article" loading="eager" decoding="async" /></div>
-      <header class="article-header"><h1>{article.title}</h1><p class="article-meta">Par <span data-contributor-name={article.authorGithubId ? true : undefined} data-contributor-id={article.authorGithubId || undefined}>{article.author}</span>, le {date}</p></header>
+      <div class="article-cover-scene"><div class="article-cover"><span class="article-cover__aura" aria-hidden="true"><img class="article-cover__ambient" src={cover} alt="" decoding="async" /><img class="article-cover__halo" src={cover} alt="" decoding="async" /></span><span class="article-cover-image-mask-x"><span class="article-cover-image-mask-y"><img class="article-cover__image" src={cover} data-image-fallback={originalCover} srcset={optimizedImageSrcset(article.thumbnail, coverImageWidths)} sizes="(min-width: 60rem) 60rem, 100vw" {...imageDimensionAttributes(article.thumbnailDimensions)} alt="Illustration de l'article" loading="eager" decoding="async" /></span></span></div></div>
+      <header class="article-header"><h1>{article.title}</h1></header>
       <section class="article-body" set:html={article.bodyHtml}></section>
       <footer class="article-contributor" data-contributor-card={article.authorGithubId ? true : undefined} data-contributor-id={article.authorGithubId || undefined} hidden={!article.authorGithubId}>
         <img data-contributor-avatar alt="" hidden>
-        <p>Par <strong data-contributor-name>{article.author}</strong></p>
+        <p>Par <strong data-contributor-name>{article.author}</strong>, le {publicationDate}</p>
       </footer>
     </article>
   </main>

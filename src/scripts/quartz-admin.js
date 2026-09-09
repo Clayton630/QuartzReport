@@ -17,7 +17,7 @@ import { Markdown } from "@tiptap/markdown";
     "admin-redesign.quartzreport.pages.dev": "admin-redesign",
   };
   const BRANCH = PREVIEW_BRANCHES[window.location.host] || "main";
-  const isLocalLab = window.location.hostname === "localhost" || /^192\.168\./.test(window.location.hostname);
+  const isLocalLab = window.location.hostname === "localhost" || /^192\.168\./.test(window.location.hostname) || /^172\.(1[6-9]|2\d|3[01])\./.test(window.location.hostname);
   const LOCAL_HOST = window.location.hostname;
   const DRAFT_API = isLocalLab ? `http://${LOCAL_HOST}:8787` : API;
   const DRAFT_MEDIA_API = isLocalLab ? `http://${LOCAL_HOST}:8788` : "";
@@ -99,6 +99,10 @@ import { Markdown } from "@tiptap/markdown";
       return url.href;
     } catch { return ""; }
   };
+const adminCoverImages = (source, attributes = "") => {
+  const safeSource = escapeHtml(source);
+  return `<span class="article-cover-scene"><span class="article-cover"><span class="article-cover__aura" aria-hidden="true"><img class="article-cover__ambient" src="${safeSource}" alt=""><img class="article-cover__halo" src="${safeSource}" alt=""></span><span class="article-cover-image-mask-x"><span class="article-cover-image-mask-y"><img class="article-cover__image" src="${safeSource}" ${attributes} alt=""></span></span></span></span>`;
+};
 
   function getStoredToken() {
     try {
@@ -510,7 +514,7 @@ import { Markdown } from "@tiptap/markdown";
     return btoa(binary);
   }
 
-  async function inspectImage(file) {
+  async function inspectImage(file, { cropToSixteenByNine = false } = {}) {
     if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
     if (file.size > MAX_SOURCE_IMAGE_BYTES) throw new Error("Cette image dépasse la limite de 50 Mo.");
     const sourceBytes = new Uint8Array(await file.arrayBuffer());
@@ -519,16 +523,28 @@ import { Markdown } from "@tiptap/markdown";
     const sourceUrl = URL.createObjectURL(file);
     const image = new window.Image();
     await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = sourceUrl; });
+    const targetRatio = 16 / 9;
+    const sourceRatio = image.naturalWidth / image.naturalHeight;
+    const crop = { x: 0, y: 0, width: image.naturalWidth, height: image.naturalHeight };
+    if (cropToSixteenByNine && Math.abs(sourceRatio - targetRatio) > 0.002) {
+      if (sourceRatio > targetRatio) {
+        crop.width = image.naturalHeight * targetRatio;
+        crop.x = (image.naturalWidth - crop.width) / 2;
+      } else {
+        crop.height = image.naturalWidth / targetRatio;
+        crop.y = (image.naturalHeight - crop.height) / 2;
+      }
+    }
     const render = async (width, height, type, quality) => {
       const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
-      canvas.getContext("2d").drawImage(image, 0, 0, width, height);
+      canvas.getContext("2d").drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
       const blob = await new Promise((resolve) => canvas.toBlob(resolve, type, quality));
       if (!blob) throw new Error("Impossible de préparer cette image.");
       return blob;
     };
     let outputType = file.type;
-    let width = image.naturalWidth;
-    let height = image.naturalHeight;
+    let width = Math.round(crop.width);
+    let height = Math.round(crop.height);
     let normalized = await render(width, height, outputType, outputType === "image/png" ? undefined : 0.96);
     let compressed = normalized.size < file.size;
     if (normalized.size > MAX_PUBLISHED_IMAGE_BYTES) {
@@ -536,8 +552,8 @@ import { Markdown } from "@tiptap/markdown";
       const qualitySteps = outputType === "image/png" ? [undefined] : [0.96, 0.92, 0.88, 0.84, 0.8, 0.76];
       let done = false;
       for (const scale of scaleSteps) {
-        const nextWidth = Math.max(1, Math.round(image.naturalWidth * scale));
-        const nextHeight = Math.max(1, Math.round(image.naturalHeight * scale));
+        const nextWidth = Math.max(1, Math.round(crop.width * scale));
+        const nextHeight = Math.max(1, Math.round(crop.height * scale));
         for (const quality of qualitySteps) {
           const candidate = await render(nextWidth, nextHeight, outputType, quality);
           if (candidate.size <= MAX_PUBLISHED_IMAGE_BYTES) {
@@ -549,8 +565,8 @@ import { Markdown } from "@tiptap/markdown";
       if (!done && outputType === "image/png") {
         outputType = "image/webp";
         for (const scale of scaleSteps) {
-          const nextWidth = Math.max(1, Math.round(image.naturalWidth * scale));
-          const nextHeight = Math.max(1, Math.round(image.naturalHeight * scale));
+          const nextWidth = Math.max(1, Math.round(crop.width * scale));
+          const nextHeight = Math.max(1, Math.round(crop.height * scale));
           for (const quality of [0.96, 0.92, 0.88, 0.84, 0.8, 0.76]) {
             const candidate = await render(nextWidth, nextHeight, outputType, quality);
             if (candidate.size <= MAX_PUBLISHED_IMAGE_BYTES) {
@@ -568,7 +584,7 @@ import { Markdown } from "@tiptap/markdown";
     const previewUrl = URL.createObjectURL(normalized);
     const canvas = document.createElement("canvas"); canvas.width = 9; canvas.height = 8;
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    context.drawImage(image, 0, 0, 9, 8);
+    context.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, 9, 8);
     const pixels = context.getImageData(0, 0, 9, 8).data;
     let hash = "";
     for (let y = 0; y < 8; y += 1) {
@@ -580,7 +596,7 @@ import { Markdown } from "@tiptap/markdown";
       }
       hash += value.toString(16).padStart(2, "0");
     }
-    return { bytes, previewUrl, mimeType: outputType, compressed, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), sourceSha256, width, height, bytes: normalized.size, dhash: hash } };
+    return { bytes, previewUrl, mimeType: outputType, compressed, cropped: cropToSixteenByNine && Math.abs(sourceRatio - targetRatio) > 0.002, meta: { sha256: [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join(""), sourceSha256, width, height, bytes: normalized.size, dhash: hash } };
   }
 
   function hammingDistance(left, right) {
@@ -604,10 +620,12 @@ import { Markdown } from "@tiptap/markdown";
 
   const loadMediaCatalog = () => loadMediaCatalogAtRef(BRANCH);
 
-  function findSimilarImage(meta, catalog) {
-    const exact = catalog.images.filter((image) => image.sha256 === meta.sha256 || image.sha256 === meta.sourceSha256 || image.sourceSha256 === meta.sourceSha256);
+  function findSimilarImage(meta, catalog, { cropToSixteenByNine = false } = {}) {
+    const isSixteenByNine = (image) => Math.abs((Number(image.width) / Number(image.height)) - (16 / 9)) < 0.002;
+    const candidates = cropToSixteenByNine ? catalog.images.filter(isSixteenByNine) : catalog.images;
+    const exact = candidates.filter((image) => image.sha256 === meta.sha256 || image.sha256 === meta.sourceSha256 || image.sourceSha256 === meta.sourceSha256);
     if (exact.length) return { image: exact.sort((left, right) => Number(left.transformable === false) - Number(right.transformable === false) || imageQuality(right) - imageQuality(left))[0], exact: true };
-    const similar = catalog.images
+    const similar = candidates
       .filter((image) => Math.abs((image.width / image.height) - (meta.width / meta.height)) < 0.08 && hammingDistance(image.dhash, meta.dhash) <= 6)
       .sort((left, right) => hammingDistance(left.dhash, meta.dhash) - hammingDistance(right.dhash, meta.dhash) || imageQuality(right) - imageQuality(left))[0];
     return similar ? { image: similar, exact: false } : null;
@@ -627,8 +645,8 @@ import { Markdown } from "@tiptap/markdown";
     });
   }
 
-  async function stageLocalDraftImage(file, staged) {
-    const inspected = await inspectImage(file);
+  async function stageLocalDraftImage(file, staged, options) {
+    const inspected = await inspectImage(file, options);
     const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[inspected.mimeType];
     const mediaId = `${crypto.randomUUID()}.${extension}`;
     const response = await fetch(`${DRAFT_MEDIA_API}/images/${mediaId}`, {
@@ -640,16 +658,17 @@ import { Markdown } from "@tiptap/markdown";
     staged.meta = inspected.meta;
     staged.isNew = false;
     staged.status = "ready";
+    if (inspected.cropped) notice("Image recadrée automatiquement en 16:9.");
     if (inspected.compressed) notice("Image compressée automatiquement pour rester sous 24 Mo.");
     return staged;
   }
 
-  async function stageImage(file) {
+  async function stageImage(file, options = {}) {
     const staged = { id: `image-${Date.now()}-${Math.random().toString(36).slice(2)}`, fileName: file?.name || "", status: "uploading", isNew: true, replaceExisting: false };
     stagedImages.set(staged.id, staged); updatePublishState();
     try {
-      if (isLocalLab) return await stageLocalDraftImage(file, staged);
-      const inspected = await inspectImage(file);
+      if (isLocalLab) return await stageLocalDraftImage(file, staged, options);
+      const inspected = await inspectImage(file, options);
       const extension = ({ "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" })[inspected.mimeType];
       staged.previewUrl = inspected.previewUrl;
       staged.meta = inspected.meta;
@@ -659,8 +678,9 @@ import { Markdown } from "@tiptap/markdown";
         loadMediaCatalog(),
       ]);
       staged.blobSha = blob.sha;
+      if (inspected.cropped) notice("Image recadrée automatiquement en 16:9.");
       if (inspected.compressed) notice("Image compressée automatiquement pour rester sous 24 Mo.");
-      const match = findSimilarImage(staged.meta, catalog);
+      const match = findSimilarImage(staged.meta, catalog, options);
       if (match?.exact) {
         staged.path = match.image.path; staged.isNew = false;
         notice("Image déjà enregistrée : réutilisation automatique.");
@@ -819,7 +839,7 @@ import { Markdown } from "@tiptap/markdown";
         ${isPreview ? '<p class="qr-admin-preview-banner">Version de test : les articles publiés ici restent dans la branche de test.</p>' : ""}
         <div class="qr-admin-dashboard__intro">
           <h1>Bienvenue, ${escapeHtml(profile.name)}</h1>
-          <div class="qr-admin-dashboard__actions"><button class="qr-admin-secondary" type="button" data-drafts>Mes brouillons</button><button class="qr-admin-primary" type="button" data-new>Ajouter un article</button></div>
+          <div class="qr-admin-dashboard__actions"><button class="qr-admin-secondary" type="button" data-drafts>Mes brouillons</button><button class="qr-admin-primary" type="button" data-new>Rédiger un article</button></div>
         </div>
         <label class="qr-admin-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Rechercher un article" data-search></label>
         <div class="qr-admin-article-list" data-list>${articles.map(articleCard).join("") || "<p class=\"qr-admin-empty\">Aucun article pour le moment.</p>"}</div>
@@ -840,7 +860,7 @@ import { Markdown } from "@tiptap/markdown";
   function renderDrafts({ push = true } = {}) {
     exitEditorFullscreen();
     if (push) setHistory("drafts");
-    root.innerHTML = `${renderHeader()}<section class="qr-admin-dashboard qr-admin-dashboard--drafts"><div class="qr-admin-dashboard__intro"><h1>Mes brouillons</h1><div class="qr-admin-dashboard__actions"><button class="qr-admin-secondary" type="button" data-dashboard>Tous les articles</button><button class="qr-admin-primary" type="button" data-new>Ajouter un article</button></div></div><div class="qr-admin-article-list">${drafts.map(draftCard).join("") || "<p class=\"qr-admin-empty\">Aucun brouillon pour le moment.</p>"}</div></section>`;
+    root.innerHTML = `${renderHeader()}<section class="qr-admin-dashboard qr-admin-dashboard--drafts"><div class="qr-admin-dashboard__intro"><h1>Mes brouillons</h1><div class="qr-admin-dashboard__actions"><button class="qr-admin-secondary" type="button" data-dashboard>Tous les articles</button><button class="qr-admin-primary" type="button" data-new>Rédiger un brouillon</button></div></div><div class="qr-admin-article-list">${drafts.map(draftCard).join("") || "<p class=\"qr-admin-empty\">Aucun brouillon pour le moment.</p>"}</div></section>`;
     root.querySelector("[data-new]").addEventListener("click", () => openEditor());
     root.querySelector("[data-dashboard]").addEventListener("click", goBackToDashboard);
     root.querySelectorAll("[data-edit-draft]").forEach((element) => element.addEventListener("click", () => openEditor(drafts.find((draft) => draft.id === element.dataset.editDraft))));
@@ -919,14 +939,14 @@ import { Markdown } from "@tiptap/markdown";
   function editorTemplate(article) {
     const current = article || { title: "", description: "", category: "Autre", date: new Date().toISOString(), thumbnail: "", important: false, body: "" };
     const publishedArticle = Boolean(article && !isDraft(article));
-    const publishLabel = publishedArticle ? "Publier les modifications" : "Publier l’article";
+    const publishLabel = publishedArticle ? "Publier les modifications" : "Publier";
     const displayAuthor = article?.authorDisplayName || article?.author || profile.name;
     const publicationDate = article?.date || new Date().toISOString();
     const authorGithubId = article?.authorGithubId || profile.githubId || "";
     const authorAvatar = previewAuthorAvatar(article);
     return `${renderHeader()}
       <section class="qr-admin-editor">
-        <div class="qr-admin-editor__topbar"><button class="qr-admin-back" type="button" data-back>‹ <span>Retour</span></button><div class="qr-admin-editor__actions"><button class="qr-admin-secondary" type="button" data-save-draft disabled>Enregistrer dans mes brouillons</button><button class="qr-admin-primary" type="button" data-publish disabled>${publishLabel}</button></div></div>
+        <div class="qr-admin-editor__topbar"><button class="qr-admin-back" type="button" data-back>‹ <span>Retour</span></button><div class="qr-admin-editor__actions"><button class="qr-admin-secondary" type="button" data-save-draft disabled>Enregistrer le brouillon</button><button class="qr-admin-primary" type="button" data-publish disabled>${publishLabel}</button></div></div>
         <form class="qr-admin-form" data-article-form>
           <section class="qr-admin-article-composer" data-composer>
             <button class="qr-admin-composer-toggle" type="button" data-fullscreen aria-label="Passer l’éditeur en plein écran" title="Plein écran">⛶</button>
@@ -935,17 +955,16 @@ import { Markdown } from "@tiptap/markdown";
               <article class="article-full">
                 <label class="qr-admin-composer-cover" title="Changer l’image de couverture">
                   <input name="cover" type="file" accept="image/jpeg,image/png,image/webp">
-                  <span class="article-cover qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? (() => { const preview = transientImagePreviews.get(current.thumbnail); return `<img src="${escapeHtml(preview || adminImageUrl(current.thumbnail, article?.sha, 1200))}"${preview ? "" : ` data-admin-image="${escapeHtml(current.thumbnail)}" data-admin-image-revision="${escapeHtml(article?.sha || "article")}" data-admin-image-width="1200"`} alt="">`; })() : '<span class="qr-admin-composer-cover__empty">Ajouter une image de couverture</span>'}</span>
+                  <span class="article-cover qr-admin-cover-preview" data-cover-preview>${current.thumbnail ? (() => { const preview = transientImagePreviews.get(current.thumbnail); const source = preview || adminImageUrl(current.thumbnail, article?.sha, 1200); return adminCoverImages(source, preview ? "" : `data-admin-image="${escapeHtml(current.thumbnail)}" data-admin-image-revision="${escapeHtml(article?.sha || "article")}" data-admin-image-width="1200"`); })() : '<span class="qr-admin-composer-cover__empty">Ajouter une image de couverture</span>'}</span>
                   <span class="qr-admin-composer-cover__hint">Changer la couverture</span>
                 </label>
                 <header class="article-header qr-admin-composer-header">
                   <textarea class="qr-admin-article-title" name="title" rows="1" maxlength="160" required placeholder="Le titre de votre article" aria-label="Titre de l’article">${escapeHtml(current.title)}</textarea>
-                  <p class="article-meta">Par ${escapeHtml(displayAuthor)}, le ${escapeHtml(new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(publicationDate)))}</p>
                 </header>
                 <section class="qr-admin-editor-surface" data-editor-body></section>
                 <footer class="article-contributor" data-preview-contributor ${authorGithubId ? "" : "hidden"}>
                   <img ${authorAvatar ? `src="${escapeHtml(authorAvatar)}"` : "hidden"} alt="">
-                  <p>Par <strong>${escapeHtml(displayAuthor)}</strong></p>
+                  <p>Par <strong>${escapeHtml(displayAuthor)}</strong>, le ${escapeHtml(friendlyDate(publicationDate))}</p>
                 </footer>
               </article>
             </main>
@@ -1010,7 +1029,7 @@ import { Markdown } from "@tiptap/markdown";
     root.querySelector("[data-inline-image]").addEventListener("change", async (event) => {
       const file = event.target.files[0]; if (!file) return;
       try {
-        const staged = await stageImage(file);
+        const staged = await stageImage(file, { cropToSixteenByNine: true });
         insertInlineImage(staged);
       }
       catch (error) { notice(error.message, "error"); }
@@ -1023,13 +1042,13 @@ import { Markdown } from "@tiptap/markdown";
       const selection = ++coverSelection;
       const localPreview = URL.createObjectURL(file);
       preview.classList.add("is-uploading");
-      preview.innerHTML = `<img src="${escapeHtml(localPreview)}" alt="Aperçu de l’image de couverture"><span><i aria-hidden="true"></i>Envoi de l’image…</span>`;
+      preview.innerHTML = `${adminCoverImages(localPreview)}<span><i aria-hidden="true"></i>Envoi de l’image…</span>`;
       try {
-        const staged = await stageImage(file);
+        const staged = await stageImage(file, { cropToSixteenByNine: true });
         if (selection !== coverSelection) return;
         pendingCover = staged;
         preview.classList.remove("is-uploading");
-        preview.innerHTML = `<img src="${escapeHtml(pendingCover.previewUrl)}" alt="Aperçu de l’image de couverture">`;
+        preview.innerHTML = adminCoverImages(pendingCover.previewUrl);
         URL.revokeObjectURL(localPreview);
         updateEditorState();
       } catch (error) {
@@ -1062,7 +1081,7 @@ import { Markdown } from "@tiptap/markdown";
     modal.className = "qr-admin-preview";
     const publicationDate = currentArticle?.date || new Date().toISOString();
     const displayAuthor = currentArticle?.authorDisplayName || currentArticle?.author || profile.name;
-    modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? `<div class="article-cover"><img src="${escapeHtml(cover)}" alt=""></div>` : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(displayAuthor)}, le ${escapeHtml(friendlyDate(publicationDate))}</p></header><section class="article-body">${richEditor?.getHTML() || ""}</section></article></main>`;
+    modal.innerHTML = `<div class="qr-admin-preview__bar"><strong>Aperçu de l’article</strong><button type="button" data-close-preview>Fermer</button></div><main class="articles"><article class="article-full">${cover ? adminCoverImages(cover) : ""}<header class="article-header"><h1>${escapeHtml(form.elements.title.value || "Sans titre")}</h1><p class="article-meta">Par ${escapeHtml(displayAuthor)}, le ${escapeHtml(friendlyDate(publicationDate))}</p></header><section class="article-body">${richEditor?.getHTML() || ""}</section></article></main>`;
     document.body.append(modal);
     modal.querySelector("[data-close-preview]").addEventListener("click", () => modal.remove());
   }
@@ -1203,7 +1222,7 @@ import { Markdown } from "@tiptap/markdown";
     } catch (error) {
       notice(error.message || "Impossible d’enregistrer le brouillon.", "error");
     } finally {
-      button.textContent = "Enregistrer dans mes brouillons";
+      button.textContent = "Enregistrer le brouillon";
       updatePublishState();
     }
   }
@@ -1227,7 +1246,7 @@ import { Markdown } from "@tiptap/markdown";
     const form = root.querySelector("[data-article-form]");
     if (!form.reportValidity()) return;
     const publish = root.querySelector("[data-publish]");
-    const publishLabel = currentArticle ? "Publier les modifications" : "Publier l’article";
+    const publishLabel = currentArticle ? "Publier les modifications" : "Publier";
     if (!editorDirty || pendingImageCount()) return;
     publish.disabled = true; publish.textContent = currentArticle ? "Publication des modifications…" : "Publication de l’article…";
     try {

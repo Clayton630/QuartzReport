@@ -19,6 +19,8 @@ const DRAFT_MAX_PAYLOAD_BYTES = 400_000;
 const LOCAL_DEVELOPMENT_ORIGINS = new Set([
   "http://localhost:4321",
   "http://192.168.1.204:4321",
+  "http://192.168.68.50:4321",
+  "http://172.20.10.2:4321",
 ]);
 
 function isAllowedOrigin(origin) {
@@ -114,7 +116,7 @@ function oauthTargetOrigin(request) {
   const siteId = url.searchParams.get("site_id");
   if (siteId) {
     try {
-      const isLocalDevelopmentHost = siteId === "localhost:4321" || siteId === "192.168.1.204:4321";
+      const isLocalDevelopmentHost = siteId === "localhost:4321" || siteId === "192.168.1.204:4321" || siteId === "192.168.68.50:4321" || siteId === "172.20.10.2:4321";
       const origin = new URL(`${isLocalDevelopmentHost ? "http" : "https"}://${siteId}`).origin;
       if (isAllowedOrigin(origin)) return origin;
     } catch {
