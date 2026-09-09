@@ -1,6 +1,6 @@
 ---
 title: "Keynote Apple 2026 : \nToutes les annonces"
-date: 2026-09-09 10:28:45
+date: 2026-09-09 21:03:29
 author: "Clayton E"
 author_github_id: "93291298"
 description: "Découvrez toutes les nouveautés de Septembre 2026 chez Apple !"
@@ -15,7 +15,7 @@ La keynote s'ouvre immédiatement sur le dos d'un iPhone 18 Pro et nous propulse
 
 ## i**Phone 18 Pro**
 
-![](/img/uploads/1788981889433-colors-endframe-czfie0zmty4i-medium-2x.jpg)
+![](/img/uploads/1788987659981-colors-endframe-czfie0zmty4i-medium-2x.jpg)
 
 Disponible en Noir, Argent, Glacier et Bordeaux, ce modèle nous apporte un lot de nouveautés particulièrement conséquent cette année :
 
@@ -23,4 +23,5 @@ Disponible en Noir, Argent, Glacier et Bordeaux, ce modèle nous apporte un lot 
 Apple était donc jusqu'ici forcée de choisir une ouverture qui soit un bon entre deux. Suffisamment de lumière pour la nuit (compensée avec le mode nuit mais au prix d'un temps de pose rallongé), mais pas trop pour le jour (compensée avec le "Smart HDR" qui est la raison pour laquelle certaines de vos photos prises l'iPhone peuvent sembler artificielles). L'ouverture variable vient donc régler ces deux problématiques importantes.
 
   La seconde propriété des ouvertures d'objectif est la mise au point. En effet, plus une ouverture est grande, plus l'arriere-plan devient flou. A contrario, plus une ouverture est petite, plus la netteté des plans devient homogène. Vous l'avez peut-être déjà deviné mais ça devient un réel avantage pour le mode protrait. Jusqu'ici, l'iPhone utilisait des algorithmes (ainsi que son capteur 3D pour les modeles Pro) afin de différencier premier plan et arrière plan pour créer un flou d'arrière plan artificiel. Maintenant, grâce à cette ouverture variable, vous allez pouvoir faire de VRAIS mode portraits. Fini les petits cheveux ou autres détails qui se retrouvent flouttés alors qu'il ne le devraient pas.
-- Toujours dans la photo, cet iPhone apporte des nouveautés logicielles importantes
+- Toujours dans la photo, cet iPhone apporte des **nouveautés logicielles** importantes côté Pro incluant notamment un contrôle de l'ouverture de l'objectif, la vitesse d’obturation ainsi que la balance des blancs avec également la possibilité d'afficher un histogramme. Côté moins Pro, on peut citer l'apparition de la mise au point avec suivi ainsi qu'une nouvelle génération de styles photographiques permettant plus de controle sur le rendu final de vos photos. Enfin, il améliore la qualité de l'enregistrement vidéo en mode acceléré.
+- Côté **processur,** cet iphone embarque la toute nouvelle puce A20 Pro
