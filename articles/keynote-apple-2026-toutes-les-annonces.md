@@ -15,7 +15,7 @@ La keynote s'ouvre immédiatement sur le dos d'un iPhone 18 Pro et nous propulse
 
 ## i**Phone 18 Pro**
 
-![](/img/uploads/1788987659981-colors-endframe-czfie0zmty4i-medium-2x.jpg)
+![](/img/uploads/1788987659981-colors-endframe-czfie0zmty4i-medium-2x-v2.jpg)
 
 Disponible en Noir, Argent, Glacier et Bordeaux, ce modèle nous apporte un lot de nouveautés particulièrement conséquent cette année :
 
