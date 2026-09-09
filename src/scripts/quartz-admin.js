@@ -141,6 +141,13 @@ import { Markdown } from "@tiptap/markdown";
     renderDrafts({ push: false });
   }
 
+  function resizeArticleTitle() {
+    const title = root.querySelector("[name=title]");
+    if (!(title instanceof HTMLTextAreaElement)) return;
+    title.style.height = "auto";
+    title.style.height = `${title.scrollHeight}px`;
+  }
+
   function exitEditorFullscreen() {
     const composer = root.querySelector("[data-composer].is-fullscreen");
     composer?.classList.remove("is-fullscreen");
@@ -932,7 +939,7 @@ import { Markdown } from "@tiptap/markdown";
                   <span class="qr-admin-composer-cover__hint">Changer la couverture</span>
                 </label>
                 <header class="article-header qr-admin-composer-header">
-                  <input class="qr-admin-article-title" name="title" maxlength="160" required value="${escapeHtml(current.title)}" placeholder="Le titre de votre article" aria-label="Titre de l’article">
+                  <textarea class="qr-admin-article-title" name="title" rows="1" maxlength="160" required placeholder="Le titre de votre article" aria-label="Titre de l’article">${escapeHtml(current.title)}</textarea>
                   <p class="article-meta">Par ${escapeHtml(displayAuthor)}, le ${escapeHtml(new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(publicationDate)))}</p>
                 </header>
                 <section class="qr-admin-editor-surface" data-editor-body></section>
@@ -981,6 +988,8 @@ import { Markdown } from "@tiptap/markdown";
     });
     root.querySelector("[data-article-form]").addEventListener("input", updateEditorState);
     root.querySelector("[data-article-form]").addEventListener("change", updateEditorState);
+    root.querySelector("[name=title]").addEventListener("input", resizeArticleTitle);
+    resizeArticleTitle();
     root.querySelectorAll(".qr-admin-toolbar button").forEach((button) => button.addEventListener("mousedown", (event) => event.preventDefault()));
     root.querySelectorAll("[data-command]").forEach((button) => button.addEventListener("click", () => command(button.dataset.command, button.dataset.value || null)));
     root.querySelectorAll("[data-block]").forEach((button) => button.addEventListener("click", () => {

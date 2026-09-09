@@ -88,7 +88,7 @@
 .qr-admin-composer-cover__hint { position: absolute; right: 12px; bottom: 12px; padding: 8px 10px; color: #fff; font-size: 12px; font-weight: 700; background: rgba(0,0,0,.7); border-radius: 999px; opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .15s; }
 .qr-admin-composer-cover:hover .qr-admin-composer-cover__hint, .qr-admin-composer-cover:focus-within .qr-admin-composer-cover__hint { opacity: 1; transform: translateY(0); }
 .qr-admin-composer-header { padding-top: 28px; }
-.qr-admin-form .qr-admin-article-title { display: block; width: 100%; padding: 0; color: #111; font: 700 1.8rem/1.15 -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif; text-align: center; letter-spacing: -.035em; background: transparent; border: 0; border-radius: 0; outline: 0; }
+.qr-admin-form .qr-admin-article-title { display: block; width: 100%; min-height: 2.1rem; padding: 0; overflow: hidden; color: #111; font: 700 1.8rem/1.15 -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", sans-serif; text-align: center; letter-spacing: -.035em; overflow-wrap: anywhere; resize: none; background: transparent; border: 0; border-radius: 0; outline: 0; }
 .qr-admin-composer-header .article-meta { font-weight: 400; }
 .qr-admin-article-title::placeholder { color: #9c9c9a; opacity: 1; }
 .qr-admin-article-title:focus { box-shadow: none; }
