@@ -21,6 +21,7 @@ import { Markdown } from "@tiptap/markdown";
   const LOCAL_HOST = window.location.hostname;
   const DRAFT_API = isLocalLab ? `http://${LOCAL_HOST}:8787` : API;
   const DRAFT_MEDIA_API = isLocalLab ? `http://${LOCAL_HOST}:8788` : "";
+  const DRAFT_MEDIA_BRANCH = "draft-media";
   const isPreview = BRANCH !== "main";
   const STORAGE_KEY = "decap-cms-user";
   const MEDIA_CATALOG_PATH = "data/media-catalog.json";
@@ -195,7 +196,6 @@ import { Markdown } from "@tiptap/markdown";
   }
 
   async function loadDrafts() {
-    if (!isLocalLab) { drafts = []; return; }
     const result = await draftRequest("/api/drafts");
     drafts = (result.drafts || []).map((draft) => ({ ...draft, isDraft: true, author: profile.name, authorDisplayName: profile.name, authorGithubId: profile.githubId, date: draft.createdAt || new Date().toISOString() }));
   }
@@ -683,6 +683,7 @@ import { Markdown } from "@tiptap/markdown";
       return;
     }
     const pending = pendingImageCount();
+    if (saveDraft) saveDraft.disabled = pending > 0 || (!editorDirty && Boolean(currentArticle));
     if (pending) {
       publish.disabled = true;
       status.textContent = `${pending === 1 ? "Image en cours d’envoi…" : `${pending} images en cours d’envoi…`} Publication disponible dès la fin de l’envoi.`;
@@ -1117,23 +1118,61 @@ import { Markdown } from "@tiptap/markdown";
     await Promise.all(urls.map((url) => fetch(url, { method: "DELETE" }).catch(() => null)));
   }
 
+  async function ensureDraftMediaBranch() {
+    try {
+      return await request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${DRAFT_MEDIA_BRANCH}`);
+    } catch (error) {
+      if (!/404/.test(error.message)) throw error;
+      const main = await request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/main`);
+      await request(`https://api.github.com/repos/${REPOSITORY}/git/refs`, { method: "POST", body: JSON.stringify({ ref: `refs/heads/${DRAFT_MEDIA_BRANCH}`, sha: main.object.sha }) });
+      return request(`https://api.github.com/repos/${REPOSITORY}/git/ref/heads/${DRAFT_MEDIA_BRANCH}`);
+    }
+  }
+
+  async function uploadDraftImages(draftId) {
+    if (isLocalLab) return new Map();
+    const fresh = [...stagedImages.values()].filter((image) => image.status === "ready" && image.isNew && image.blobSha);
+    if (!fresh.length) return new Map();
+    const draftRef = await ensureDraftMediaBranch();
+    const parent = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits/${draftRef.object.sha}`);
+    const entries = fresh.map((image, index) => {
+      const extension = image.path.split(".").pop() || "jpg";
+      const file = `${Date.now()}-${index}-${slugify(image.fileName.replace(/\.[^.]+$/, ""))}.${extension}`;
+      image.draftPath = `drafts/${profile.githubId}/${draftId}/${file}`;
+      return { path: image.draftPath, mode: "100644", type: "blob", sha: image.blobSha };
+    });
+    const tree = await request(`https://api.github.com/repos/${REPOSITORY}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: parent.tree.sha, tree: entries }) });
+    const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message: `Enregistrer les images du brouillon`, tree: tree.sha, parents: [draftRef.object.sha] }) });
+    await request(`https://api.github.com/repos/${REPOSITORY}/git/refs/heads/${DRAFT_MEDIA_BRANCH}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) });
+    const replacements = new Map();
+    for (const image of fresh) {
+      const previous = image.path;
+      const next = `https://raw.githubusercontent.com/${REPOSITORY}/${DRAFT_MEDIA_BRANCH}/${image.draftPath}`;
+      image.path = next; image.previewUrl = next; image.isNew = false;
+      replacements.set(previous, next);
+    }
+    return replacements;
+  }
+
   async function saveDraft() {
-    if (!isLocalLab) { notice("Les brouillons ne sont disponibles que dans le laboratoire local pour le moment.", "error"); return; }
     if (pendingImageCount()) return;
     const form = root.querySelector("[data-article-form]");
     const button = root.querySelector("[data-save-draft]");
     const id = isDraft(currentArticle) ? currentArticle.id : newDraftId();
-    const next = {
-      id,
-      title: form.elements.title.value.trim(),
-      description: form.elements.description.value.trim(),
-      category: form.elements.category.value,
-      important: form.elements.important.checked,
-      body: editorMarkdown(),
-      thumbnail: pendingCover?.path || currentArticle?.thumbnail || "",
-    };
     button.disabled = true; button.textContent = "Enregistrement…";
     try {
+      const replacements = await uploadDraftImages(id);
+      let body = editorMarkdown();
+      for (const [previous, nextPath] of replacements) body = body.replaceAll(previous, nextPath);
+      const next = {
+        id,
+        title: form.elements.title.value.trim(),
+        description: form.elements.description.value.trim(),
+        category: form.elements.category.value,
+        important: form.elements.important.checked,
+        body,
+        thumbnail: pendingCover?.path || currentArticle?.thumbnail || "",
+      };
       const result = await draftRequest(`/api/drafts/${encodeURIComponent(id)}`, { method: "PUT", body: JSON.stringify(next) });
       const saved = { ...result.draft, isDraft: true, author: profile.name, authorDisplayName: profile.name, authorGithubId: profile.githubId, date: result.draft.createdAt || new Date().toISOString() };
       const index = drafts.findIndex((draft) => draft.id === id);
