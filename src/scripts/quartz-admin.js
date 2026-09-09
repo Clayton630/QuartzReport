@@ -1142,7 +1142,7 @@ import { Markdown } from "@tiptap/markdown";
       return { path: image.draftPath, mode: "100644", type: "blob", sha: image.blobSha };
     });
     const tree = await request(`https://api.github.com/repos/${REPOSITORY}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: parent.tree.sha, tree: entries }) });
-    const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message: `Enregistrer les images du brouillon`, tree: tree.sha, parents: [draftRef.object.sha] }) });
+    const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message: `[CF-Pages-Skip] Enregistrer les images du brouillon`, tree: tree.sha, parents: [draftRef.object.sha] }) });
     await request(`https://api.github.com/repos/${REPOSITORY}/git/refs/heads/${DRAFT_MEDIA_BRANCH}`, { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) });
     const replacements = new Map();
     for (const image of fresh) {
