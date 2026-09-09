@@ -503,7 +503,7 @@ import { Markdown } from "@tiptap/markdown";
     const sourceDigest = await crypto.subtle.digest("SHA-256", sourceBytes);
     const sourceSha256 = [...new Uint8Array(sourceDigest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
     const sourceUrl = URL.createObjectURL(file);
-    const image = new Image();
+    const image = new window.Image();
     await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = sourceUrl; });
     const render = async (width, height, type, quality) => {
       const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
@@ -1256,7 +1256,7 @@ import { Markdown } from "@tiptap/markdown";
     if (!file || !["image/jpeg", "image/png", "image/webp"].includes(file.type)) throw new Error("Choisissez une image JPG, PNG ou WebP.");
     if (file.size > 8 * 1024 * 1024) throw new Error("La photo dépasse 8 Mo.");
     const source = URL.createObjectURL(file);
-    const image = new Image();
+    const image = new window.Image();
     await new Promise((resolve, reject) => { image.onload = resolve; image.onerror = () => reject(new Error("Impossible de lire cette image.")); image.src = source; });
     URL.revokeObjectURL(source);
     return { image, zoom: 1, x: 50, y: 50 };
