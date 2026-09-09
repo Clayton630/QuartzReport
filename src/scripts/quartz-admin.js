@@ -833,7 +833,7 @@ import { Markdown } from "@tiptap/markdown";
   function renderDrafts({ push = true } = {}) {
     exitEditorFullscreen();
     if (push) setHistory("drafts");
-    root.innerHTML = `${renderHeader()}<section class="qr-admin-dashboard"><div class="qr-admin-dashboard__intro"><h1>Mes brouillons</h1><div class="qr-admin-dashboard__actions"><button class="qr-admin-secondary" type="button" data-dashboard>Tous les articles</button><button class="qr-admin-primary" type="button" data-new>Ajouter un article</button></div></div><div class="qr-admin-article-list">${drafts.map(draftCard).join("") || "<p class=\"qr-admin-empty\">Aucun brouillon pour le moment.</p>"}</div></section>`;
+    root.innerHTML = `${renderHeader()}<section class="qr-admin-dashboard qr-admin-dashboard--drafts"><div class="qr-admin-dashboard__intro"><h1>Mes brouillons</h1><div class="qr-admin-dashboard__actions"><button class="qr-admin-secondary" type="button" data-dashboard>Tous les articles</button><button class="qr-admin-primary" type="button" data-new>Ajouter un article</button></div></div><div class="qr-admin-article-list">${drafts.map(draftCard).join("") || "<p class=\"qr-admin-empty\">Aucun brouillon pour le moment.</p>"}</div></section>`;
     root.querySelector("[data-new]").addEventListener("click", () => openEditor());
     root.querySelector("[data-dashboard]").addEventListener("click", goBackToDashboard);
     root.querySelectorAll("[data-edit-draft]").forEach((element) => element.addEventListener("click", () => openEditor(drafts.find((draft) => draft.id === element.dataset.editDraft))));

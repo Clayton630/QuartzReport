@@ -29,6 +29,7 @@
 .qr-admin-account-menu button:hover { background: #f1f1ef; }
 .qr-admin-dashboard, .qr-admin-editor { margin: auto; padding: 28px var(--page-x-mobile) 56px; }
 .qr-admin-dashboard { width: min(100%, 1320px); }
+.qr-admin-dashboard--drafts { padding-top: 56px; }
 .qr-admin-editor { width: min(100%, 800px); }
 .qr-admin-preview-banner { margin: 0 0 20px; padding: 10px 12px; color: #634900; font-size: 13px; font-weight: 650; background: #fff3c9; border: 1px solid #eed480; border-radius: 10px; }
 .qr-admin-dashboard__intro, .qr-admin-editor__topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
@@ -194,6 +195,7 @@
   .qr-admin-header { min-height: 66px; padding: 16px max(32px, calc((100vw - 1120px) / 2)); }
   .qr-admin-brand img { height: 24px; }
   .qr-admin-dashboard, .qr-admin-editor { padding-top: 52px; }
+  .qr-admin-dashboard--drafts { padding-top: 72px; }
   .qr-admin-profile-page { min-height: calc(100vh - 66px); padding-top: 52px; }
   .qr-admin-dashboard { padding-right: max(32px, var(--page-x-mobile)); padding-left: max(32px, var(--page-x-mobile)); }
   .qr-admin-dashboard__intro { align-items: end; }
