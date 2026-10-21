@@ -122,6 +122,15 @@
       "height": 5712,
       "bytes": 5934118,
       "dhash": "c53b475b9253789e"
+    },
+    {
+      "path": "/img/uploads/1792570880682-group-3.png",
+      "sha256": "01d08e8754f0c03f77a29026ab47373ffccd6a8a37b4c5a6af7be40634d4b7a4",
+      "sourceSha256": "a7e4b62f388d6342381ee5869ebaf51c5234011464c52fbb6e69b52cfe0f4e69",
+      "width": 6030,
+      "height": 3392,
+      "bytes": 11849323,
+      "dhash": "08d284c0c890d084"
     }
   ]
 }
