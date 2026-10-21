@@ -9,6 +9,7 @@ import TableRow from "@tiptap/extension-table-row";
 import TableCell from "@tiptap/extension-table-cell";
 import TableHeader from "@tiptap/extension-table-header";
 import { Markdown } from "@tiptap/markdown";
+import { coverVariants, variantPath } from '../lib/cover-variants.js';
 
 (() => {
   const API = "https://quartzreport-oauth.claytonelhorga.workers.dev";
@@ -1150,10 +1151,53 @@ const adminCoverImages = (source, attributes = "") => {
     }
     for (const staged of stagedByPath.values()) treeEntries.push({ path: `public${staged.path}`, mode: "100644", type: "blob", sha: staged.blobSha });
     for (const imagePath of unusedPaths) treeEntries.push({ path: `public${imagePath}`, mode: "100644", type: "blob", sha: null });
+    const remainingCovers = new Set(nextSources.map((text) => parseFrontMatter(text).meta.thumbnail).filter(Boolean));
+    const previousCover = parseFrontMatter(previousSource).meta.thumbnail;
+    if (previousCover && !remainingCovers.has(previousCover)) {
+      const existingPaths = new Set(currentTree.tree.map((entry) => entry.path));
+      for (const { kind, widths } of coverVariants) for (const width of widths) {
+        const variant = `public${variantPath(previousCover, kind, width)}`;
+        if (existingPaths.has(variant)) treeEntries.push({ path: variant, mode: '100644', type: 'blob', sha: null });
+      }
+    }
     if (nextImages.length !== catalog.images.length || stagedByPath.size) {
       treeEntries.push({ path: MEDIA_CATALOG_PATH, mode: "100644", type: "blob", sha: await createGitBlob(`${JSON.stringify({ version: 1, images: nextImages }, null, 2)}\n`) });
     }
 
+    // Les aperçus sont joints au même commit que l'article, jamais publiés séparément.
+    if (!deleting) {
+      const coverSource = parseFrontMatter(source).meta.thumbnail;
+      if (coverSource) {
+        const existing = new Set(currentTree.tree.map((entry) => entry.path));
+        const staged = [...stagedImages.values()].find((image) => image.path === coverSource);
+        const missing = coverVariants.flatMap(({ kind, widths }) => widths.map((width) => ({ kind, width, path: variantPath(coverSource, kind, width) })))
+          .filter((item) => !existing.has(`public${item.path}`) || staged?.isNew);
+        if (missing.length) {
+          const image = new window.Image();
+          image.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => {
+            image.onload = resolve;
+            image.onerror = () => reject(new Error('Impossible de préparer les miniatures de couverture. Publication annulée.'));
+            image.src = staged?.previewUrl || adminImageUrl(coverSource, ref);
+          });
+          for (const item of missing) {
+            const canvas = document.createElement('canvas');
+            canvas.width = item.width;
+            canvas.height = item.kind === 'square' ? item.width : Math.round(item.width * 9 / 16);
+            const scale = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight);
+            const sw = canvas.width / scale, sh = canvas.height / scale;
+            const context = canvas.getContext('2d');
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, (image.naturalWidth - sw) / 2, (image.naturalHeight - sh) / 2, sw, sh, 0, 0, canvas.width, canvas.height);
+            const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', .82));
+            if (!blob) throw new Error('Impossible de créer les aperçus. Publication annulée.');
+            const result = await request(`https://api.github.com/repos/${REPOSITORY}/git/blobs`, { method: 'POST', body: JSON.stringify({ content: base64FromBytes(new Uint8Array(await blob.arrayBuffer())), encoding: 'base64' }) });
+            treeEntries.push({ path: `public${item.path}`, mode: '100644', type: 'blob', sha: result.sha });
+          }
+        }
+      }
+    }
     const tree = await request(`https://api.github.com/repos/${REPOSITORY}/git/trees`, { method: "POST", body: JSON.stringify({ base_tree: parent.tree.sha, tree: treeEntries }) });
     const message = deleting ? `Supprimer l’article « ${title} »` : `${currentArticle ? "Mettre à jour" : "Créer"} l’article « ${title} »`;
     const commit = await request(`https://api.github.com/repos/${REPOSITORY}/git/commits`, { method: "POST", body: JSON.stringify({ message, tree: tree.sha, parents: [ref] }) });

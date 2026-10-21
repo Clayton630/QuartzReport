@@ -51,6 +51,9 @@ importers:
         specifier: ^2.17.7
         version: 2.17.7
     devDependencies:
+      sharp:
+        specifier: 0.35.4
+        version: 0.35.4
       wrangler:
         specifier: ^4.129.0
         version: 4.129.0
@@ -3847,7 +3850,6 @@ snapshots:
       '@img/sharp-win32-arm64': 0.35.4
       '@img/sharp-win32-ia32': 0.35.4
       '@img/sharp-win32-x64': 0.35.4
-    optional: true
 
   shiki@4.4.3:
     dependencies:
